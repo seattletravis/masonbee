@@ -1,0 +1,59 @@
+# --- Virtual Environment ---
+beevenv/
+venv/
+env/
+ENV/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.pkl
+*.so
+
+# --- Django ---
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# --- Environment Variables ---
+.env
+*.env
+.env.*
+
+# --- VS Code ---
+.vscode/
+.code-workspace
+
+# --- OS / Editor Junk ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- PyCharm / JetBrains ---
+.idea/
+*.iml
+
+# --- Migrations (optional: keep if you want full history) ---
+# Uncomment if you prefer not to track migration files early on
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# --- PostgreSQL Dumps ---
+*.sql
+*.dump
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- Cache / Build ---
+build/
+dist/
+*.egg-info/
