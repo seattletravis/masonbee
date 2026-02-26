@@ -18,8 +18,25 @@ class Garden(models.Model):
     # Location fields
     address = models.CharField(max_length=255, blank=True, null=True)
     cross_streets = models.CharField(max_length=255, blank=True, null=True)
-    latitude = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True)
-    longitude = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True)
+    # latitude = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True)
+    # longitude = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True)
+
+    latitude = models.DecimalField(
+    max_digits=15,
+    decimal_places=6,
+    blank=True,
+    null=True,
+    help_text="Optional. Used to place public gardens on the map. Private gardens can leave this blank."
+)
+
+    longitude = models.DecimalField(
+    max_digits=15,
+    decimal_places=6,
+    blank=True,
+    null=True,
+    help_text="Optional. Private gardens do not need coordinates."
+)
+
     neighborhood = models.CharField(max_length=255, blank=True, null=True)
 
     # Metadata
@@ -93,9 +110,6 @@ class BeeHouse(models.Model):
     # Ecological state
     is_active = models.BooleanField(default=False)
 
-    # Physical lifecycle
-    uninstall_date = models.DateField(blank=True, null=True)
-
     tube_capacity = models.CharField(max_length=10, choices=TUBE_CAPACITY_CHOICES)
     height_above_ground_inches = models.PositiveIntegerField()
 
@@ -104,8 +118,16 @@ class BeeHouse(models.Model):
 
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
+    # Physical lifecycle
+    uninstall_date = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Enter uninstall date only if this BeeHouse has been permanently removed or otherwise decommissioned."
+    )
+
+
     def __str__(self):
-        return f"{self.house_id} ({self.garden.name})"
+        return f"{self.beehouse_id} ({self.garden.name})"
 
     def clean(self):
         if self.uninstall_date and self.is_active:
