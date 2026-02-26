@@ -63,3 +63,14 @@ pip install -r requirements.txt
 python manage.py migrate
 
 python manage.py runserver
+
+
+📅 February 26, 2026 — Data Model Validation & First Real BeeHouse Entries
+Today the core data architecture for the mason bee application proved itself in practice. After finalizing the Garden and BeeHouse models, I registered both in Django Admin and successfully added two real private gardens (front yard and back yard) along with their corresponding BeeHouses. All lifecycle logic, unique constraints, and privacy rules behaved exactly as designed.
+Key outcomes:
+- Confirmed that private gardens remain hidden from public visibility while still supporting BeeHouse entries and ecological tracking.
+- Verified that BeeHouse creation works end‑to‑end, including unique garden‑scoped IDs, coordinate handling, and lifecycle validation.
+- Added helper text to clarify the meaning of uninstall_date and prevent accidental decommissioning.
+- Validated that the admin interface is intuitive and minimalistic, supporting clean data entry without unnecessary friction.
+- Established a clear separation between private ecological nodes and future public-facing gardens (e.g., a street-facing BeeHouse for community access).
+This completes the foundational data layer for the MVP. The next step—scheduled for tomorrow—is designing the BeeHouseNotes model to capture lifecycle events (cleaning, emergence, parasite checks, installation, etc.). Once that is in place, I can begin building the map interface and minimal GUI for user signup, login, and garden/BeeHouse submission.
