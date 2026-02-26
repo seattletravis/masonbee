@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.contrib.auth.models import User
 
 class Garden(models.Model):
     name = models.CharField(max_length=255)
@@ -81,7 +82,7 @@ class BeeHouse(models.Model):
     beehouse_id = models.CharField(max_length=50)
 
     class Meta:
-        unique_together = ('garden', 'house_id')
+        unique_together = ('garden', 'beehouse_id')
 
     name = models.CharField(max_length=255, blank=True, null=True)
     beehouse_type = models.CharField(max_length=20, choices=HOUSE_TYPES)
