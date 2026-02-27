@@ -1,6 +1,9 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+
+# ----------------------------------Garden Model -------------------------------------
 
 class Garden(models.Model):
     name = models.CharField(max_length=255)
@@ -18,9 +21,6 @@ class Garden(models.Model):
     # Location fields
     address = models.CharField(max_length=255, blank=True, null=True)
     cross_streets = models.CharField(max_length=255, blank=True, null=True)
-    # latitude = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True)
-    # longitude = models.DecimalField(max_digits=15, decimal_places=6, blank=True, null=True)
-
     latitude = models.DecimalField(
     max_digits=15,
     decimal_places=6,
@@ -68,9 +68,7 @@ class Garden(models.Model):
         return self.name
 
 
-from django.core.exceptions import ValidationError
-
-from django.core.exceptions import ValidationError
+# ----------------------------BeeHouse Model ---------------------------------
 
 class BeeHouse(models.Model):
     HOUSE_TYPES = [
@@ -101,7 +99,6 @@ class BeeHouse(models.Model):
     class Meta:
         unique_together = ('garden', 'beehouse_id')
 
-    name = models.CharField(max_length=255, blank=True, null=True)
     beehouse_type = models.CharField(max_length=20, choices=HOUSE_TYPES)
 
     latitude = models.DecimalField(max_digits=15, decimal_places=6)
@@ -137,3 +134,17 @@ class BeeHouse(models.Model):
         if self.uninstall_date is not None:
             self.is_active = False
         super().save(*args, **kwargs)
+
+# -------------------------------GardenChatMessage-----------------------------
+
+class GardenChatMessage(models.Model):
+    garden = models.ForeignKey(Garden, on_delete=models.CASCADE, related_name="chat_messages")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["garden", "created_at"]),
+        ]
