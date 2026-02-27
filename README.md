@@ -74,3 +74,12 @@ Key outcomes:
 - Validated that the admin interface is intuitive and minimalistic, supporting clean data entry without unnecessary friction.
 - Established a clear separation between private ecological nodes and future public-facing gardens (e.g., a street-facing BeeHouse for community access).
 This completes the foundational data layer for the MVP. The next step—scheduled for tomorrow—is designing the BeeHouseNotes model to capture lifecycle events (cleaning, emergence, parasite checks, installation, etc.). Once that is in place, I can begin building the map interface and minimal GUI for user signup, login, and garden/BeeHouse submission.
+
+📅 February 27, 2026 — Backend Messaging Layer, Garden Chat, and Data Architecture Refinements
+- Added GardenChatMessage model and registered it in Django Admin, enabling garden‑level chat feeds tied to user accounts and garden visibility rules.
+- Implemented the Direct Messaging system (threads, participants, messages) and completed migrations to create the underlying tables in PostgreSQL.
+- Validated relational integrity across messaging models and confirmed admin visibility for moderation and testing.
+- Finalized architectural decisions for garden‑level chat vs. beehouse‑level chat, ensuring a clean, intuitive communication model aligned with privacy and user experience goals.
+- Established the plan for notification opt‑in, private messaging behavior, and profile‑page responsibilities (notifications, private gardens, settings).
+- Confirmed that Django’s built‑in User model is sufficient for the platform, avoiding unnecessary customization and keeping authentication stable.
+- Outlined the final backend tasks for tomorrow: BeeHouseNotes, notification preferences, and private garden access model, after which frontend development can begin.
