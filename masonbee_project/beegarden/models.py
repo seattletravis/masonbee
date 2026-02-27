@@ -149,3 +149,23 @@ class GardenChatMessage(models.Model):
             models.Index(fields=["garden", "created_at"]),
         ]
 
+# ---------------------------------DirectMessage-----------------------------
+class DirectMessageThread(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_message_at = models.DateTimeField(auto_now=True)
+
+class DirectMessageThreadParticipant(models.Model):
+    thread = models.ForeignKey(DirectMessageThread, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class DirectMessage(models.Model):
+    thread = models.ForeignKey(DirectMessageThread, on_delete=models.CASCADE, related_name="messages")
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        indexes = [
+            models.Index(fields=["thread", "created_at"]),
+        ]
