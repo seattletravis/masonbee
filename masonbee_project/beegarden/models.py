@@ -148,3 +148,4 @@ class GardenChatMessage(models.Model):
         indexes = [
             models.Index(fields=["garden", "created_at"]),
         ]
+
