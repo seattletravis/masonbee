@@ -48,6 +48,68 @@ masonbee/ beevenv/                  # Virtual environment (ignored by Git) mason
 
 ---
 
+## 🌿 Data Model Overview
+The system is organized around a set of relational models that describe gardens, bee houses, ecological activity, user interactions, privacy controls, and subscription‑based features. The architecture is designed to be privacy‑first, scalable, and expressive enough to support both community gardens and private backyard installations.
+
+🏡 Gardens
+Represents a physical or community garden space. Supports public, community, and private gardens with optional location data, ownership, and metadata.
+- Key fields: name, garden_type, address, coordinates, neighborhood, metadata fields
+- Ownership: private gardens may have an owner
+- Visibility: is_public determines global accessibility
+- Relations: connects to BeeHouse, GardenImage, GardenChatMessage, UserPinnedGarden, PrivateGardenAccess
+
+🐝 Bee Houses
+Each garden can contain multiple bee houses, each with its own ecological state, installation lifecycle, and coordinates.
+- Unique per garden: beehouse_id scoped to the garden
+- Lifecycle: install/uninstall dates, active state, validation rules
+- Ecology: tube capacity, orientation, height
+- Relations: connects to BeeHouseEvent
+
+📘 Bee House Events
+Time‑stamped ecological or maintenance events recorded for a bee house.
+- Event types: emergence, cleaning, winterizing, parasite checks, installation, etc.
+- Metadata: notes, created_by, timestamps
+- Indexes: optimized for chronological and type‑based queries
+
+💬 Garden Chat
+A lightweight chat system for each garden with basic moderation.
+- Moderation: banned‑word validation
+- Ordering: chronological
+- Relations: garden, user
+
+✉️ Direct Messaging
+A simple private messaging system built around threads and participants.
+- Threads: represent conversations
+- Participants: users in a thread
+- Messages: ordered, indexed, sender‑attributed
+
+📌 Pinned Gardens
+Allows users to follow gardens they care about.
+- One pin per user per garden
+- Used for: profile display, notification preferences
+- Relations: user ↔ garden
+
+🔐 Private Garden Access
+Controls visibility for private gardens and supports delegated management.
+- Roles:
+- Viewer — can see the garden
+- Manager — can grant access to others
+- Ownership: owner is defined on the Garden model
+- Relations: user ↔ garden
+
+🖼️ Garden Images
+Supports photo albums and banner images for each garden.
+- Uploads: authenticated users
+- Visibility: inherits garden visibility rules
+- Banner support: is_banner flag
+- Metadata: caption, uploaded_by, timestamps
+
+💳 User Subscription
+Represents a user’s subscription tier and enables future paid features.
+- Tiers: free, premium, pro
+- Used for: upload limits, feature gating, future billing integration
+- One‑to‑one with User
+
 ## 🚀 Getting Started (Local Development)
 
 ### 1. Clone the repository
@@ -63,7 +125,8 @@ pip install -r requirements.txt
 python manage.py migrate
 
 python manage.py runserver
-
+```
+## 🚀 Development Log
 
 📅 February 26, 2026 — Data Model Validation & First Real BeeHouse Entries
 Today the core data architecture for the mason bee application proved itself in practice. After finalizing the Garden and BeeHouse models, I registered both in Django Admin and successfully added two real private gardens (front yard and back yard) along with their corresponding BeeHouses. All lifecycle logic, unique constraints, and privacy rules behaved exactly as designed.
@@ -83,3 +146,23 @@ This completes the foundational data layer for the MVP. The next step—schedule
 - Established the plan for notification opt‑in, private messaging behavior, and profile‑page responsibilities (notifications, private gardens, settings).
 - Confirmed that Django’s built‑in User model is sufficient for the platform, avoiding unnecessary customization and keeping authentication stable.
 - Outlined the final backend tasks for tomorrow: BeeHouseNotes, notification preferences, and private garden access model, after which frontend development can begin.
+
+🗓️ February 28, 2026 — Model Architecture Finalization + Image & Subscription System
+Today I completed a major pass on the backend data architecture, bringing the models to a stable, production‑ready state. This included adding support for garden photo albums, banner images, and a future‑proof subscription system. I also reviewed and validated all relational models together as a cohesive system.
+Key accomplishments
+- Added GardenImage model to support per‑garden photo albums, banner images, and authenticated uploads.
+- Added UserSubscription model with tier support (free, premium, pro) to enable future upload limits and paid features.
+- Finalized PrivateGardenAccess with role‑based permissions (viewer, manager) to support delegated access control.
+- Validated all models together (~350 lines) for relational consistency, naming clarity, and privacy‑first behavior.
+- Confirmed that public gardens are globally visible while private gardens enforce strict access rules.
+- Ensured that the data layer now fully supports:
+- pinned gardens
+- per‑garden notifications
+- private access lists
+- delegated managers
+- chat moderation
+- beehouse lifecycle events
+- image uploads
+- subscription‑based limits
+
+
