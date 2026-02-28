@@ -259,3 +259,46 @@ class UserPinnedGarden(models.Model):
 
     def __str__(self):
         return f"{self.user.username} pinned {self.garden.name}"
+    
+# -----------------------------PrivateGardenAccess-------------------------------
+
+class PrivateGardenAccess(models.Model):
+    ROLE_CHOICES = [
+        ("viewer", "Viewer"),
+        ("manager", "Manager"),
+    ]
+
+    garden = models.ForeignKey(
+        Garden,
+        on_delete=models.CASCADE,
+        related_name="access_list"
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="private_garden_access"
+    )
+
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="viewer",
+        help_text="Viewer can see the garden. Manager can grant access to others."
+    )
+
+    granted_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="granted_private_garden_access"
+    )
+
+    granted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("garden", "user")
+
+    def __str__(self):
+        return f"{self.user.username} has {self.role} access to {self.garden.name}"
