@@ -339,3 +339,8 @@ class GardenImage(models.Model):
     class Meta:
         ordering = ["-uploaded_at"]
 
+# ------------------------------------UserSubscription-------------------------------
+class UserSubscription(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    tier = models.CharField(max_length=20, default="free")  # free, premium, pro
+    renewed_at = models.DateTimeField(auto_now_add=True)

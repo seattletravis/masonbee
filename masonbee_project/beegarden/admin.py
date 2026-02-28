@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Garden, BeeHouse, GardenChatMessage, DirectMessage, DirectMessageThread, DirectMessageThreadParticipant, BeeHouseEvent, UserPinnedGarden, PrivateGardenAccess
+from .models import Garden, BeeHouse, GardenChatMessage, DirectMessage, DirectMessageThread, DirectMessageThreadParticipant, BeeHouseEvent, UserPinnedGarden, PrivateGardenAccess, GardenImage, UserSubscription
 
 admin.site.register(Garden)
 admin.site.register(BeeHouse)
@@ -10,5 +10,8 @@ admin.site.register(DirectMessageThread)
 admin.site.register(DirectMessageThreadParticipant)
 admin.site.register(UserPinnedGarden)
 admin.site.register(PrivateGardenAccess)
+admin.site.register(GardenImage)
+admin.site.register(UserSubscription)
+
 
 # Register your models here.
