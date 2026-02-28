@@ -302,3 +302,40 @@ class PrivateGardenAccess(models.Model):
 
     def __str__(self):
         return f"{self.user.username} has {self.role} access to {self.garden.name}"
+    
+# -------------------------------------GardenImage----------------------------------
+
+class GardenImage(models.Model):
+    garden = models.ForeignKey(
+        Garden,
+        on_delete=models.CASCADE,
+        related_name="images"
+    )
+
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    image = models.ImageField(
+        upload_to="garden_images/",
+        help_text="JPEG or PNG only. Max size 5MB."
+    )
+
+    caption = models.CharField(
+        max_length=255,
+        blank=True
+    )
+
+    is_banner = models.BooleanField(
+        default=False,
+        help_text="If true, this image is used as the garden banner."
+    )
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-uploaded_at"]
+
