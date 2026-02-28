@@ -238,3 +238,24 @@ class DirectMessage(models.Model):
             models.Index(fields=["thread", "created_at"]),
         ]
 
+# ------------------------------------UserPinnedGarden------------------------------
+class UserPinnedGarden(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="pinned_gardens"
+    )
+
+    garden = models.ForeignKey(
+        Garden,
+        on_delete=models.CASCADE,
+        related_name="pinned_by"
+    )
+
+    pinned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "garden")
+
+    def __str__(self):
+        return f"{self.user.username} pinned {self.garden.name}"
