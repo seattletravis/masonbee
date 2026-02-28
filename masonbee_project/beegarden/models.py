@@ -67,7 +67,6 @@ class Garden(models.Model):
     def __str__(self):
         return self.name
 
-
 # ----------------------------BeeHouse---------------------------------
 
 class BeeHouse(models.Model):
@@ -122,7 +121,6 @@ class BeeHouse(models.Model):
         help_text="Enter uninstall date only if this BeeHouse has been permanently removed or otherwise decommissioned."
     )
 
-
     def __str__(self):
         return f"{self.beehouse_id} ({self.garden.name})"
 
@@ -136,6 +134,7 @@ class BeeHouse(models.Model):
         super().save(*args, **kwargs)
 
 # -----------------------------BeeHouseEvent-----------------------------------
+
 class BeeHouseEvent(models.Model):
     EVENT_TYPES = [
         ("emergence", "Emergence Observed"),
@@ -209,7 +208,6 @@ class GardenChatMessage(models.Model):
         self.full_clean()  # triggers clean()
         super().save(*args, **kwargs)
 
-
     class Meta:
         ordering = ["created_at"]
         indexes = [
@@ -239,6 +237,7 @@ class DirectMessage(models.Model):
         ]
 
 # ------------------------------------UserPinnedGarden------------------------------
+
 class UserPinnedGarden(models.Model):
     user = models.ForeignKey(
         User,
@@ -340,7 +339,9 @@ class GardenImage(models.Model):
         ordering = ["-uploaded_at"]
 
 # ------------------------------------UserSubscription-------------------------------
+
 class UserSubscription(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     tier = models.CharField(max_length=20, default="free")  # free, premium, pro
     renewed_at = models.DateTimeField(auto_now_add=True)
+
