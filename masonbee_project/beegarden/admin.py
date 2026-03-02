@@ -13,5 +13,4 @@ admin.site.register(PrivateGardenAccess)
 admin.site.register(GardenImage)
 admin.site.register(UserSubscription)
 
-
 # Register your models here.

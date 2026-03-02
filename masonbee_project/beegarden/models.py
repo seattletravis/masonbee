@@ -345,3 +345,5 @@ class UserSubscription(models.Model):
     tier = models.CharField(max_length=20, default="free")  # free, premium, pro
     renewed_at = models.DateTimeField(auto_now_add=True)
 
+
+
