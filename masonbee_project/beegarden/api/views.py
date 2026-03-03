@@ -30,6 +30,35 @@ class BeeHouseViewSet(viewsets.ModelViewSet):
     serializer_class = BeeHouseSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def perform_create(self, serializer):
+        garden = serializer.validated_data["garden"]
+        provided_id = serializer.validated_data.get("beehouse_id")
+
+        # If user did not provide a custom ID, auto-generate one
+        if not provided_id or provided_id.strip() == "":
+            existing_ids = (
+                BeeHouse.objects
+                .filter(garden=garden)
+                .values_list("beehouse_id", flat=True)
+            )
+
+            # Extract numeric suffixes from IDs like "House 1"
+            numbers = []
+            for hid in existing_ids:
+                if hid and hid.startswith("House "):
+                    try:
+                        num = int(hid.split("House ")[1])
+                        numbers.append(num)
+                    except (ValueError, IndexError):
+                        pass
+
+            next_number = max(numbers) + 1 if numbers else 1
+            auto_id = f"House {next_number}"
+
+            serializer.save(created_by=self.request.user, beehouse_id=auto_id)
+        else:
+            serializer.save(created_by=self.request.user)
+
     def get_queryset(self):
         qs = super().get_queryset()
         garden_id = self.request.query_params.get("garden")
