@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 
@@ -55,15 +55,15 @@ def user_can_revoke_access(requesting_user, target_user, garden: Garden) -> bool
 
 # ---------------------- Serializers (inline for now) ---------------------- #
 
-from rest_framework import serializers
-from beegarden.models import BeeHouse
-from .beehouse_serializers import BeeHouseSerializer
 
-class BeeHouseSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BeeHouse
-        fields = "__all__"
-        read_only_fields = ["id", "beehouse_id"]
+# from beegarden.models import BeeHouse, Garden
+# from beegarden.api.beehouse_serializers import BeeHouseSerializer
+
+# class BeeHouseSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = BeeHouse
+#         fields = "__all__"
+#         read_only_fields = ["id", "beehouse_id"]
 
 
 # class GardenSerializer(serializers.ModelSerializer):
@@ -72,13 +72,13 @@ class BeeHouseSerializer(serializers.ModelSerializer):
 #         fields = "__all__"
 #         read_only_fields = ["owner", "created_at", "updated_at"]
 
-class GardenSerializer(serializers.ModelSerializer):
-    beehouses = BeeHouseSerializer(many=True, read_only=True)
+# class GardenSerializer(serializers.ModelSerializer):
+#     beehouses = BeeHouseSerializer(many=True, read_only=True)
 
-    class Meta:
-        model = Garden
-        fields = "__all__"
-        read_only_fields = ["owner", "created_at", "updated_at"]
+#     class Meta:
+#         model = Garden
+#         fields = "__all__"
+#         read_only_fields = ["owner", "created_at", "updated_at"]
 
 
 
