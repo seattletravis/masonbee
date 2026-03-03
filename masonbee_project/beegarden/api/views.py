@@ -201,34 +201,3 @@ class GardenViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(uploaded_by=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-
-# from rest_framework import viewsets, permissions
-# from beegarden.models import Garden, BeeHouse
-# from .garden_serializers import GardenSerializer
-# from .beehouse_serializers import BeeHouseSerializer
-
-
-# class GardenViewSet(viewsets.ModelViewSet):
-#     queryset = Garden.objects.all()
-#     serializer_class = GardenSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-# class BeeHouseViewSet(viewsets.ModelViewSet):
-#     queryset = BeeHouse.objects.all()
-#     serializer_class = BeeHouseSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def get_queryset(self):
-#         qs = super().get_queryset()
-#         garden_id = self.request.query_params.get("garden")
-#         if garden_id:
-#             qs = qs.filter(garden_id=garden_id)
-
-#         user = self.request.user
-#         return qs.filter(
-#             garden__is_public=True
-#         ) | qs.filter(
-#             garden__managed_by=user
-#         )
