@@ -32,6 +32,29 @@ class BeeHouseViewSet(viewsets.ModelViewSet):
     serializer_class = BeeHouseSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    @action(detail=True, methods=["get"], url_path="events")
+    def events(self, request, pk=None):
+        beehouse = self.get_object()
+
+        # Only return events the user is allowed to see
+        user = request.user
+        garden = beehouse.garden
+
+        if not (
+            garden.is_public
+            or garden.owner == user
+            or garden.access_list.filter(user=user).exists()
+        ):
+            return Response({"detail": "Not authorized."}, status=403)
+
+        events = (
+            BeeHouseEvent.objects
+            .filter(beehouse=beehouse)
+            .order_by("-created_at")
+        )
+
+        serializer = BeeHouseEventSerializer(events, many=True)
+        return Response(serializer.data)
     def perform_create(self, serializer):
         garden = serializer.validated_data["garden"]
         provided_id = serializer.validated_data.get("beehouse_id")
@@ -262,3 +285,5 @@ class BeeHouseEventViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+
