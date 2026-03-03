@@ -10,6 +10,7 @@ from beegarden.models import (
     UserPinnedGarden,
     PrivateGardenAccess,
     GardenImage,
+    BeeHouseEvent,
 )
 
 from .garden_serializers import GardenSerializer
@@ -17,6 +18,7 @@ from .beehouse_serializers import BeeHouseSerializer
 from .access_serializers import PrivateGardenAccessSerializer
 from .pinned_serializers import UserPinnedGardenSerializer
 from .garden_image_serializers import GardenImageSerializer
+from .beehouse_event_serializers import BeeHouseEventSerializer
 
 from beegarden.permissions import (
     user_can_manage_garden,
@@ -230,3 +232,33 @@ class GardenViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(uploaded_by=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# ----------------BeeHouseEventViewSet--------------------
+
+class BeeHouseEventViewSet(viewsets.ModelViewSet):
+    queryset = BeeHouseEvent.objects.all()
+    serializer_class = BeeHouseEventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        beehouse_id = self.request.query_params.get("beehouse")
+        if beehouse_id:
+            qs = qs.filter(beehouse_id=beehouse_id)
+
+        user = self.request.user
+        qs = qs.filter(
+            beehouse__garden__is_public=True
+        ) | qs.filter(
+            beehouse__garden__owner=user
+        ) | qs.filter(
+            beehouse__garden__access_list__user=user
+        )
+
+        return qs.order_by("-created_at")
+
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
