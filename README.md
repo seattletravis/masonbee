@@ -166,3 +166,139 @@ Key accomplishments
 - subscription‑based limits
 
 
+🗓️ march 3rd, 2026
+
+🧩 What’s New
+
+✔️ BeeHouseEvent API (Create, List, Filter)
+
+A new BeeHouseEventViewSet now supports:
+- Creating lifecycle and maintenance events
+- Listing events globally or filtered by beehouse
+- Enforcing garden‑level visibility rules
+- Returning events in newest‑first order
+
+✔️ Controlled Vocabulary for Event Types
+
+event_type now uses a strict, model‑backed vocabulary:
+emergence, activated, deactivated, tubes_added, cleaned,
+parasite_check, tubes_replaced, winterized, maintenance,
+installed, uninstalled, destroyed, other
+
+
+Invalid values are rejected with clear API errors.
+
+✔️ Nested Endpoint: /api/beehouses/<id>/events/
+
+A new nested route allows the frontend to fetch events directly from a beehouse detail page without query parameters.
+
+✔️ Automatic Ordering
+
+All event lists are returned in descending chronological order (-created_at), giving users a natural timeline view.
+
+📘 API Schema (Current Endpoints)
+
+Below is a full overview of the current API surface, including URLs, methods, and behavior.
+
+🌱 Garden Endpoints
+GET /api/gardens/
+Returns all public gardens and private gardens the user owns or has access to.
+POST /api/gardens/
+Creates a new garden.
+Private by default unless is_public=true.
+GET /api/gardens/<id>/
+Returns a single garden if visible to the user.
+PATCH /api/gardens/<id>/
+Updates garden metadata (owner or managers only).
+DELETE /api/gardens/<id>/
+Deletes a garden (owner only).
+
+🔒 Garden Access Management
+GET /api/gardens/<id>/access_list/
+Returns users who have access to a private garden.
+POST /api/gardens/<id>/grant_access/
+Grants access to another user.
+POST /api/gardens/<id>/revoke_access/
+Revokes access from a user.
+
+📌 Pinned Gardens
+POST /api/gardens/<id>/pin/
+Pins a garden for the current user.
+DELETE /api/gardens/<id>/unpin/
+Unpins a garden.
+GET /api/pinned/
+Returns all gardens pinned by the user.
+
+🖼️ Garden Images
+GET /api/gardens/<id>/images/
+Returns all images for a garden.
+POST /api/gardens/<id>/upload_image/
+Uploads a new image to the garden.
+DELETE /api/garden-images/<id>/
+Deletes an image (owner/managers only).
+
+🏠 BeeHouse Endpoints
+GET /api/beehouses/
+Returns all visible bee houses.
+POST /api/beehouses/
+Creates a new bee house.
+If no beehouse_id is provided, the system auto‑generates:
+House 1, House 2, House 3, ...
+
+
+GET /api/beehouses/<id>/
+Returns a single bee house.
+PATCH /api/beehouses/<id>/
+Updates a bee house.
+DELETE /api/beehouses/<id>/
+Deletes a bee house.
+
+🧾 Nested: BeeHouse Events
+GET /api/beehouses/<id>/events/
+Returns all events for a specific bee house, ordered newest‑first.
+Example response:
+[
+  {
+    "id": 3,
+    "event_type": "cleaned",
+    "notes": "Cleaned tubes and removed debris.",
+    "created_at": "2026-03-03T19:25:11.270118Z",
+    "beehouse": 4,
+    "created_by": 1
+  }
+]
+
+
+
+🐝 BeeHouse Event Endpoints
+GET /api/beehouse-events/
+Returns all visible events across all gardens.
+GET /api/beehouse-events/?beehouse=<id>
+Filters events by beehouse.
+POST /api/beehouse-events/
+Creates a new event.
+Example payload:
+{
+  "beehouse": 4,
+  "event_type": "cleaned",
+  "notes": "Cleaned tubes and removed debris."
+}
+
+
+Validation
+Invalid event types return:
+{
+  "event_type": ["\"clear\" is not a valid choice."]
+}
+
+
+
+🔐 Authentication Endpoints
+POST /api/login/
+Authenticates a user and sets session + CSRF cookies.
+POST /api/logout/
+Logs out the current user.
+GET /api/me/
+Returns the authenticated user’s profile.
+
+
