@@ -2,6 +2,9 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 # ----------------------------------FriendRequests-------------------------------------
 class FriendRequest(models.Model):
@@ -377,4 +380,37 @@ class UserSubscription(models.Model):
     renewed_at = models.DateTimeField(auto_now_add=True)
 
 
+# ------------------------Avatar And Profile---------------------------
+def avatar_upload_path(instance, filename):
+    return f"avatars/user_{instance.user.id}/{filename}"
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+
+    display_name = models.CharField(max_length=50, blank=True)
+    bio = models.TextField(blank=True)
+
+    avatar = models.ImageField(
+        upload_to=avatar_upload_path,
+        blank=True,
+        null=True
+    )
+
+    # Location (off by default)
+    location_enabled = models.BooleanField(default=False)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
+    # Notification preferences
+    friend_request_notifications = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Profile for {self.user.username}"
+
+
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(_sender, instance, created, **_kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)

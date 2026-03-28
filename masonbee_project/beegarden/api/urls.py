@@ -11,6 +11,8 @@ from .friend_views import (
     FriendListView,
 )
 
+from .profile_views import UserProfileView, AvatarUploadView
+
 router = DefaultRouter()
 router.register(r"gardens", GardenViewSet, basename="garden")
 router.register(r"beehouses", BeeHouseViewSet, basename="beehouse")
@@ -26,4 +28,9 @@ urlpatterns += [
     path("friends/accept/", AcceptFriendRequestView.as_view(), name="friend-accept"),
     path("friends/decline/", DeclineFriendRequestView.as_view(), name="friend-decline"),
     path("friends/list/", FriendListView.as_view(), name="friend-list"),
+]
+
+urlpatterns += [
+    path("profile/", UserProfileView.as_view(), name="profile"),
+    path("profile/avatar/", AvatarUploadView.as_view(), name="avatar-upload"),
 ]

@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from beegarden.api.auth_views import MeView, RegisterView
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -36,3 +38,5 @@ urlpatterns = [
     path("api/token/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
     path("api/me/", MeView.as_view(), name="me"),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
