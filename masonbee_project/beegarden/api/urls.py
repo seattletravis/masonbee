@@ -20,10 +20,10 @@ router.register(r"beehouse-events", BeeHouseEventViewSet, basename="beehouse-eve
 urlpatterns = router.urls
 
 urlpatterns += [
-    path("friends/search/", UserSearchView.as_view()),
-    path("friends/request/", SendFriendRequestView.as_view()),
-    path("friends/requests/", PendingRequestsView.as_view()),
-    path("friends/accept/", AcceptFriendRequestView.as_view()),
-    path("friends/decline/", DeclineFriendRequestView.as_view()),
-    path("friends/list/", FriendListView.as_view()),
+    path("friends/search/", UserSearchView.as_view(), name="friend-search"),
+    path("friends/request/", SendFriendRequestView.as_view(), name="friend-request"),
+    path("friends/requests/", PendingRequestsView.as_view(), name="friend-requests"),
+    path("friends/accept/", AcceptFriendRequestView.as_view(), name="friend-accept"),
+    path("friends/decline/", DeclineFriendRequestView.as_view(), name="friend-decline"),
+    path("friends/list/", FriendListView.as_view(), name="friend-list"),
 ]
