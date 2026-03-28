@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from beegarden.api.auth_views import api_login, MeView
+from beegarden.api.auth_views import api_login, MeView, RegisterView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -26,11 +26,10 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/", include("beegarden.api.urls")),
-    path('api-auth/', include('rest_framework.urls')),
     path('api/login/', api_login),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/token/logout/", TokenBlacklistView.as_view(), name="token_blacklist"),
     path("api/me/", MeView.as_view(), name="me"),
-
+    path("api/register/", RegisterView.as_view(), name="register"),
 ]
