@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import FriendRequest, Friendship
+from beegarden.models import FriendRequest, Friendship
 from .friend_serializers import (
     UserSearchSerializer,
     FriendRequestSerializer,

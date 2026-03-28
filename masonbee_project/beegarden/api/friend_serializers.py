@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import FriendRequest, Friendship
+from beegarden.models import FriendRequest, Friendship
 
 class UserSearchSerializer(serializers.ModelSerializer):
     class Meta:
