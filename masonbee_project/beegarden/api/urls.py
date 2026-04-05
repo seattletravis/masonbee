@@ -1,3 +1,4 @@
+app_name = "api"
 from rest_framework.routers import DefaultRouter
 from .views import GardenViewSet, BeeHouseViewSet, BeeHouseEventViewSet
 
