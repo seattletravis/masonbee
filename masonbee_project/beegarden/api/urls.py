@@ -18,8 +18,8 @@ router.register(r"gardens", GardenViewSet, basename="garden")
 router.register(r"beehouses", BeeHouseViewSet, basename="beehouse")
 router.register(r"beehouse-events", BeeHouseEventViewSet, basename="beehouse-event")
 
-
-urlpatterns = router.urls
+urlpatterns = []
+urlpatterns += router.urls
 
 urlpatterns += [
     path("friends/search/", UserSearchView.as_view(), name="friend-search"),

@@ -39,4 +39,6 @@ urlpatterns = [
     path("api/me/", MeView.as_view(), name="me"),
 ]
 
+
+
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
