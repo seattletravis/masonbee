@@ -1,0 +1,64 @@
+# -------------------------
+# Python / Django
+# -------------------------
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
+*.pot
+*.pyc
+
+# Virtual environments
+venv/
+env/
+.masonbee/
+.masonbee_env/
+
+# Django media/uploads
+media/
+staticfiles/
+
+# -------------------------
+# Node / React / Vite
+# -------------------------
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# -------------------------
+# Logs
+# -------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# -------------------------
+# Environment variables
+# -------------------------
+.env
+.env.*
+!.env.example
+
+# -------------------------
+# Editors / IDEs
+# -------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# -------------------------
+# OS files
+# -------------------------
+.DS_Store
+Thumbs.db
