@@ -1,81 +1,115 @@
-const ACCESS_TOKEN_KEY = 'accessToken';
-const REFRESH_TOKEN_KEY = 'refreshToken';
-const TOKEN_REFRESH_BUFFER_SECONDS = 30;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-// Ensure base URL has no trailing slash
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(
-	/\/$/,
-	'',
-);
+const ACCESS_KEY = 'access';
+const REFRESH_KEY = 'refresh';
 
+let refreshHandler = null;
 let refreshPromise = null;
 
-function getStoredTokens() {
+function buildUrl(url) {
+	if (!API_BASE_URL) return url;
+	if (/^https?:\/\//i.test(url)) return url;
+
+	const base = API_BASE_URL.endsWith('/')
+		? API_BASE_URL.slice(0, -1)
+		: API_BASE_URL;
+
+	const path = url.startsWith('/') ? url : `/${url}`;
+	return `${base}${path}`;
+}
+
+function setTokens(tokens = {}) {
+	if (tokens.access) {
+		localStorage.setItem(ACCESS_KEY, tokens.access);
+	}
+	if (tokens.refresh) {
+		localStorage.setItem(REFRESH_KEY, tokens.refresh);
+	}
+}
+
+function getTokens() {
 	return {
-		access: localStorage.getItem(ACCESS_TOKEN_KEY),
-		refresh: localStorage.getItem(REFRESH_TOKEN_KEY),
+		access: localStorage.getItem(ACCESS_KEY),
+		refresh: localStorage.getItem(REFRESH_KEY),
 	};
 }
 
-function setStoredTokens({ access, refresh }) {
-	if (typeof access === 'string') {
-		localStorage.setItem(ACCESS_TOKEN_KEY, access);
-	}
-	if (typeof refresh === 'string') {
-		localStorage.setItem(REFRESH_TOKEN_KEY, refresh);
-	}
+function clearTokens() {
+	localStorage.removeItem(ACCESS_KEY);
+	localStorage.removeItem(REFRESH_KEY);
 }
 
-function clearStoredTokens() {
-	localStorage.removeItem(ACCESS_TOKEN_KEY);
-	localStorage.removeItem(REFRESH_TOKEN_KEY);
+function setRefreshHandler(fn) {
+	refreshHandler = typeof fn === 'function' ? fn : null;
+}
+
+async function defaultRefreshHandler() {
+	const { refresh } = getTokens();
+
+	if (!refresh) {
+		throw new Error('No refresh token available');
+	}
+
+	const response = await fetch(buildUrl('/api/token/refresh/'), {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ refresh }),
+	});
+
+	if (!response.ok) {
+		throw new Error('Token refresh failed');
+	}
+
+	const tokens = await response.json();
+
+	if (!tokens?.access) {
+		throw new Error('No access token returned');
+	}
+
+	setTokens({
+		access: tokens.access,
+		refresh: tokens.refresh || refresh,
+	});
+
+	return getTokens();
+}
+
+async function runRefresh() {
+	if (!refreshPromise) {
+		refreshPromise = (async () => {
+			const handler = refreshHandler || defaultRefreshHandler;
+			const result = await handler();
+
+			if (
+				result &&
+				typeof result === 'object' &&
+				(result.access || result.refresh)
+			) {
+				setTokens({
+					access: result.access || getTokens().access,
+					refresh: result.refresh || getTokens().refresh,
+				});
+			}
+
+			return getTokens();
+		})().finally(() => {
+			refreshPromise = null;
+		});
+	}
+
+	return refreshPromise;
 }
 
 function redirectToLogin() {
-	clearStoredTokens();
-	if (window.location.pathname !== '/login') {
-		window.location.href = '/login';
-	}
-}
-
-function buildUrl(url) {
-	// If absolute URL, return as-is
-	if (/^https?:\/\//i.test(url)) {
-		return url;
-	}
-	// Otherwise prefix with API base
-	return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
-}
-
-function decodeJwt(token) {
-	try {
-		const [, payload] = token.split('.');
-		if (!payload) return null;
-
-		const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
-		const padded = normalized.padEnd(
-			normalized.length + ((4 - (normalized.length % 4)) % 4),
-			'=',
-		);
-
-		return JSON.parse(atob(padded));
-	} catch {
-		return null;
-	}
-}
-
-function isTokenExpired(token, bufferSeconds = TOKEN_REFRESH_BUFFER_SECONDS) {
-	if (!token) return true;
-
-	const payload = decodeJwt(token);
-	if (!payload?.exp) return false;
-
-	const nowInSeconds = Math.floor(Date.now() / 1000);
-	return payload.exp <= nowInSeconds + bufferSeconds;
+	window.location.assign('/login');
 }
 
 async function parseResponse(response) {
-	if (response.status === 204) return null;
+	if (response.status === 204) {
+		return null;
+	}
 
 	const contentType = response.headers.get('content-type') || '';
 
@@ -83,166 +117,63 @@ async function parseResponse(response) {
 		return response.json();
 	}
 
-	const text = await response.text();
-	return text || null;
+	return response.text();
 }
 
-function createError(message, status, data) {
-	const error = new Error(message);
-	error.status = status;
-	error.data = data;
-	return error;
-}
+async function request(method, url, data, retried = false) {
+	const { access } = getTokens();
+	const headers = {};
 
-async function refreshAccessToken() {
-	if (refreshPromise) return refreshPromise;
-
-	refreshPromise = (async () => {
-		const { refresh } = getStoredTokens();
-
-		if (!refresh) {
-			throw createError('No refresh token available.', 401, null);
-		}
-
-		const response = await fetch(buildUrl('/api/token/refresh/'), {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ refresh }),
-		});
-
-		const data = await parseResponse(response);
-
-		if (!response.ok || !data?.access) {
-			throw createError(
-				'Unable to refresh access token.',
-				response.status,
-				data,
-			);
-		}
-
-		setStoredTokens({
-			access: data.access,
-			refresh: data.refresh ?? refresh,
-		});
-
-		return data.access;
-	})();
-
-	try {
-		return await refreshPromise;
-	} finally {
-		refreshPromise = null;
-	}
-}
-
-async function request(url, options = {}, retry = true) {
-	const { access } = getStoredTokens();
-	const headers = new Headers(options.headers || {});
-	const isFormData = options.body instanceof FormData;
-
-	if (!isFormData && !headers.has('Content-Type') && options.body != null) {
-		headers.set('Content-Type', 'application/json');
+	if (data !== undefined) {
+		headers['Content-Type'] = 'application/json';
 	}
 
-	let token = access;
-
-	if (token && isTokenExpired(token) && !url.includes('/api/token/refresh/')) {
-		try {
-			token = await refreshAccessToken();
-		} catch (error) {
-			redirectToLogin();
-			throw error;
-		}
-	}
-
-	if (token && !headers.has('Authorization')) {
-		headers.set('Authorization', `Bearer ${token}`);
+	if (access) {
+		headers.Authorization = `Bearer ${access}`;
 	}
 
 	const response = await fetch(buildUrl(url), {
-		...options,
+		method,
 		headers,
+		body: data !== undefined ? JSON.stringify(data) : undefined,
 	});
 
-	if (
-		response.status === 401 &&
-		retry &&
-		!url.includes('/api/token/refresh/')
-	) {
+	if (response.status === 401 && !retried) {
 		try {
-			const newAccessToken = await refreshAccessToken();
-			return request(
-				url,
-				{
-					...options,
-					headers: {
-						...Object.fromEntries(headers.entries()),
-						Authorization: `Bearer ${newAccessToken}`,
-					},
-				},
-				false,
-			);
-		} catch (error) {
+			await runRefresh();
+			return request(method, url, data, true);
+		} catch {
+			clearTokens();
 			redirectToLogin();
-			throw error;
+			throw new Error('Authentication failed');
 		}
 	}
 
-	const data = await parseResponse(response);
-
 	if (!response.ok) {
-		const message =
-			data?.detail ||
-			data?.message ||
-			`Request failed with status ${response.status}`;
-		throw createError(message, response.status, data);
+		const errorData = await parseResponse(response).catch(() => null);
+		const error = new Error(`Request failed with status ${response.status}`);
+		error.status = response.status;
+		error.data = errorData;
+		throw error;
 	}
 
-	return data;
+	return parseResponse(response);
 }
 
-const api = {
-	get(url, options = {}) {
-		return request(url, { ...options, method: 'GET' });
-	},
+export function get(url) {
+	return request('GET', url);
+}
 
-	post(url, data, options = {}) {
-		const body =
-			data instanceof FormData
-				? data
-				: data != null
-					? JSON.stringify(data)
-					: undefined;
+export function post(url, data) {
+	return request('POST', url, data);
+}
 
-		return request(url, { ...options, method: 'POST', body });
-	},
+export function put(url, data) {
+	return request('PUT', url, data);
+}
 
-	put(url, data, options = {}) {
-		const body =
-			data instanceof FormData
-				? data
-				: data != null
-					? JSON.stringify(data)
-					: undefined;
+export function del(url) {
+	return request('DELETE', url);
+}
 
-		return request(url, { ...options, method: 'PUT', body });
-	},
-
-	delete(url, options = {}) {
-		return request(url, { ...options, method: 'DELETE' });
-	},
-
-	setTokens(tokens) {
-		setStoredTokens(tokens);
-	},
-
-	getTokens() {
-		return getStoredTokens();
-	},
-
-	clearTokens() {
-		clearStoredTokens();
-	},
-};
-
-export default api;
+export { setTokens, getTokens, clearTokens, setRefreshHandler };

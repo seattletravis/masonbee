@@ -1,44 +1,30 @@
-// import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AuthProvider from './auth/AuthProvider';
+import ProtectedRoute from './auth/ProtectedRoute';
+import MainLayout from './layout/MainLayout';
 
-// // Page components (you will create these)
-// import Login from './pages/Login';
-// import Profile from './pages/Profile';
-// import MapScreen from './pages/MapScreen';
-// import GardenDetail from './pages/GardenDetail';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 
-// function App() {
-// 	return (
-// 		<BrowserRouter>
-// 			<Routes>
-// 				<Route path='/' element={<MapScreen />} />
-// 				<Route path='/login' element={<Login />} />
-// 				<Route path='/profile' element={<Profile />} />
-// 				<Route path='/garden/:id' element={<GardenDetail />} />
-// 			</Routes>
-// 		</BrowserRouter>
-// 	);
-// }
-
-// export default App;
-
-import { useEffect } from 'react';
-import api from './api/client.js';
-
-function App() {
-	useEffect(() => {
-		api
-			.post('/api/token/', {
-				username: 'testbee',
-				password: 'masonbee',
-			})
-			.then((tokens) => {
-				console.log('Tokens:', tokens);
-				api.setTokens(tokens);
-			})
-			.catch((err) => console.error('Login error:', err));
-	}, []);
-
-	return <div>Testing API… check console</div>;
+export default function App() {
+	return (
+		<AuthProvider>
+			<BrowserRouter>
+				<Routes>
+					<Route element={<MainLayout />}>
+						<Route path='/login' element={<Login />} />
+						<Route
+							path='/dashboard'
+							element={
+								<ProtectedRoute>
+									<Dashboard />
+								</ProtectedRoute>
+							}
+						/>
+						<Route path='/' element={<Login />} />
+					</Route>
+				</Routes>
+			</BrowserRouter>
+		</AuthProvider>
+	);
 }
-
-export default App;

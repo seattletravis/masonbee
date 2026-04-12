@@ -1,0 +1,67 @@
+.page {
+	padding-top: calc(var(--navbar-height) + 1rem);
+	box-sizing: border-box;
+}
+
+.dashboard {
+	padding: 1.5rem;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.dashboard-header {
+	margin-bottom: 2rem;
+}
+
+.dashboard-title {
+	font-size: 1.8rem;
+	font-weight: 700;
+	color: #1f2937;
+	margin: 0;
+}
+
+.dashboard-subtitle {
+	font-size: 1rem;
+	color: #4b5563;
+	margin-top: 0.25rem;
+}
+
+.dashboard-grid {
+	display: grid;
+	gap: 1.25rem;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.dashboard-card {
+	background: #ffffff;
+	border: 1px solid #e5e7eb;
+	border-radius: 12px;
+	padding: 1.25rem;
+	box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+	transition:
+		transform 0.15s ease,
+		box-shadow 0.15s ease;
+}
+
+.dashboard-card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.card-title {
+	font-size: 1.2rem;
+	font-weight: 600;
+	color: #1f2937;
+	margin-bottom: 0.5rem;
+}
+
+.card-text {
+	font-size: 0.95rem;
+	color: #4b5563;
+	line-height: 1.4;
+}
+
+/* Ecological accent (subtle green tone) */
+.dashboard-card {
+	border-left: 4px solid #7bbf6a;
+}

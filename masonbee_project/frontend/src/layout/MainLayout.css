@@ -1,0 +1,13 @@
+.layout-container {
+	min-height: 100svh;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+}
+
+/* This ensures all pages clear the fixed navbar */
+.layout-content {
+	padding-top: calc(var(--navbar-height) + 1rem);
+	flex: 1;
+	box-sizing: border-box;
+}
