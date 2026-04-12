@@ -1,6 +1,6 @@
 app_name = "api"
 from rest_framework.routers import DefaultRouter
-from .views import GardenViewSet, BeeHouseViewSet, BeeHouseEventViewSet
+from .views import GardenViewSet, BeeHouseViewSet, BeeHouseEventViewSet, JournalEntryViewSet
 
 from django.urls import path
 from .friend_views import (
@@ -10,6 +10,7 @@ from .friend_views import (
     AcceptFriendRequestView,
     DeclineFriendRequestView,
     FriendListView,
+    
 )
 
 from .profile_views import UserProfileView, AvatarUploadView
@@ -17,7 +18,9 @@ from .profile_views import UserProfileView, AvatarUploadView
 router = DefaultRouter()
 router.register(r"gardens", GardenViewSet, basename="garden")
 router.register(r"beehouses", BeeHouseViewSet, basename="beehouse")
-router.register(r"beehouse-events", BeeHouseEventViewSet, basename="beehouse-event")
+router.register(r"beehouse-events", BeeHouseEventViewSet, basename="beehouse-event"),
+router.register(r"journal", JournalEntryViewSet, basename="journal")
+
 
 urlpatterns = []
 urlpatterns += router.urls

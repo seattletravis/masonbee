@@ -6,7 +6,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-# ----------------------------------FriendRequests-------------------------------------
+
+
+
+# ----------------------------------FriendRequests---------------------------
 class FriendRequest(models.Model):
     STATUS_CHOICES = [
         ("pending", "Pending"),
@@ -100,6 +103,44 @@ class Garden(models.Model):
 
     def __str__(self):
         return self.name
+    
+# ----------------------------------Journal-------------------------
+
+class JournalEntry(models.Model):
+    CATEGORY_CHOICES = [
+        ("bee_activity", "Bee Activity"),
+        ("bloom", "Bloom / Flowering"),
+        ("maintenance", "Maintenance"),
+        ("observation", "General Observation"),
+        ("weather", "Weather Note"),
+        ("other", "Other"),
+    ]
+
+    garden = models.ForeignKey(
+        "Garden",   # ← string reference avoids ordering issues
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="journal_entries"
+    )
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="journal_entries"
+    )
+
+    title = models.CharField(max_length=255)
+    date = models.DateField()
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    notes = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date", "-created_at"]
+
 
 # ----------------------------BeeHouse---------------------------------
 

@@ -11,6 +11,7 @@ from beegarden.models import (
     PrivateGardenAccess,
     GardenImage,
     BeeHouseEvent,
+    JournalEntry
 )
 
 from .garden_serializers import GardenSerializer
@@ -19,6 +20,7 @@ from .access_serializers import PrivateGardenAccessSerializer
 from .pinned_serializers import UserPinnedGardenSerializer
 from .garden_image_serializers import GardenImageSerializer
 from .beehouse_event_serializers import BeeHouseEventSerializer
+from .journal_serializers import JournalEntrySerializer
 
 from beegarden.permissions import (
     user_can_manage_garden,
@@ -26,6 +28,19 @@ from beegarden.permissions import (
     user_can_grant_access,
     user_can_revoke_access,
 )
+
+class JournalEntryViewSet(viewsets.ModelViewSet):
+    serializer_class = JournalEntrySerializer
+    queryset = JournalEntry.objects.all()
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    def get_queryset(self):
+        user = self.request.user
+        return JournalEntry.objects.filter(created_by=user)
+
+
 
 class BeeHouseViewSet(viewsets.ModelViewSet):
     queryset = BeeHouse.objects.all()
