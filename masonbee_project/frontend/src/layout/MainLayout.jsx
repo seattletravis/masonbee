@@ -7,7 +7,7 @@ function MainLayout() {
 	const hideNavbar = location.pathname === '/login';
 
 	return (
-		<div className='layout-container'>
+		<div className={`layout-container ${hideNavbar ? 'no-nav' : ''}`}>
 			{!hideNavbar && <Navbar />}
 			<main className='layout-content'>
 				<Outlet />

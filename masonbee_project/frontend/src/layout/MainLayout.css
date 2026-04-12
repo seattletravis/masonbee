@@ -11,3 +11,8 @@
 	flex: 1;
 	box-sizing: border-box;
 }
+
+/* Login page: no navbar = no padding */
+.no-nav .layout-content {
+	padding-top: 0;
+}
