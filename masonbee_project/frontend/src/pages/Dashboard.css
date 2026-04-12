@@ -65,3 +65,9 @@
 .dashboard-card {
 	border-left: 4px solid #7bbf6a;
 }
+
+.dashboard-card-link {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+}

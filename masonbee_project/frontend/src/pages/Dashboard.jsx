@@ -1,4 +1,5 @@
 import './Dashboard.css';
+import { Link } from 'react-router-dom';
 
 function Dashboard() {
 	return (
@@ -9,7 +10,6 @@ function Dashboard() {
 					Welcome back — here’s what’s happening in your garden.
 				</p>
 			</header>
-
 			<div className='dashboard-grid'>
 				<div className='dashboard-card'>
 					<h2 className='card-title'>Your Gardens</h2>
@@ -52,6 +52,14 @@ function Dashboard() {
 						Data visualizations and trends from your garden’s activity.
 					</p>
 				</div>
+
+				{/* NEW JOURNAL CARD */}
+				<Link to='/journal' className='dashboard-card dashboard-card-link'>
+					<h2 className='card-title'>Journal</h2>
+					<p className='card-text'>
+						Record observations, blooms, weather notes, and bee activity.
+					</p>
+				</Link>
 			</div>
 		</div>
 	);
