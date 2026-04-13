@@ -314,6 +314,8 @@ class DirectMessage(models.Model):
 # ------------------------------------UserPinnedGarden------------------------------
 
 class UserPinnedGarden(models.Model):
+    is_default = models.BooleanField(default=False)
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

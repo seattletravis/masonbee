@@ -1,8 +1,12 @@
 from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+
+import os
+print("DEBUG: LOADED VIEWS FILE:", os.path.abspath(__file__))
 
 from beegarden.models import (
     Garden,
@@ -11,7 +15,8 @@ from beegarden.models import (
     PrivateGardenAccess,
     GardenImage,
     BeeHouseEvent,
-    JournalEntry
+    JournalEntry,
+    UserPinnedGarden
 )
 
 from .garden_serializers import GardenSerializer
@@ -28,6 +33,8 @@ from beegarden.permissions import (
     user_can_grant_access,
     user_can_revoke_access,
 )
+
+
 
 class JournalEntryViewSet(viewsets.ModelViewSet):
     serializer_class = JournalEntrySerializer
@@ -301,4 +308,23 @@ class BeeHouseEventViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def default_garden(request):
+    garden = Garden.objects.filter(owner=request.user).first()
+    if not garden:
+        return Response({"detail": "No default garden found."}, status=404)
+    return Response(GardenSerializer(garden).data)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def watched_gardens(request):
+    user = request.user
+
+    pinned = UserPinnedGarden.objects.filter(user=user).select_related("garden")
+    default = pinned.filter(is_default=True).first()
+
+    return Response({
+        "default": GardenSerializer(default.garden).data if default else None,
+        "watchlist": GardenSerializer([p.garden for p in pinned], many=True).data
+    })

@@ -29,7 +29,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # AIP router
-    path("api/", include(("beegarden.api.urls"), namespace="api")),
+    path("api/", include(("beegarden.api.urls", "api"), namespace="api")),
     
     # Auth endpoints
     path("api/register/", RegisterView.as_view(), name="register"),
