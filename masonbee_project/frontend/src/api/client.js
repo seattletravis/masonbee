@@ -106,18 +106,35 @@ function redirectToLogin() {
 	window.location.assign('/login');
 }
 
+// async function parseResponse(response) {
+// 	if (response.status === 204) {
+// 		return null;
+// 	}
+
+// 	const contentType = response.headers.get('content-type') || '';
+
+// 	if (contentType.includes('application/json')) {
+// 		return response.json();
+// 	}
+
+// 	return response.text();
+// }
+
 async function parseResponse(response) {
 	if (response.status === 204) {
 		return null;
 	}
 
-	const contentType = response.headers.get('content-type') || '';
-
-	if (contentType.includes('application/json')) {
-		return response.json();
+	const text = await response.text();
+	if (!text) {
+		return null;
 	}
 
-	return response.text();
+	try {
+		return JSON.parse(text);
+	} catch {
+		return null;
+	}
 }
 
 async function request(method, url, data, retried = false) {

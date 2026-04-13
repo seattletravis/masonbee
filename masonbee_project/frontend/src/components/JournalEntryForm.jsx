@@ -36,7 +36,7 @@ function buildInitialFormState(entry, routeGardenId) {
 	if (entry) {
 		return {
 			title: entry.title || '',
-			date: entry.date || '',
+			date: entry?.date || new Date().toISOString().slice(0, 10),
 			category: entry.category || 'observation',
 			garden:
 				entry.garden === null || entry.garden === undefined
@@ -92,7 +92,7 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 					return;
 				}
 
-				setGardens(normalizeGardens(response.data));
+				setGardens(normalizeGardens(response));
 			} catch (error) {
 				if (!isMounted) {
 					return;
