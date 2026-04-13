@@ -78,6 +78,7 @@ function Journal() {
 	const [entryBeingEdited, setEntryBeingEdited] = useState(null);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deletingEntryId, setDeletingEntryId] = useState(null);
+	const [selectedGardenId, setSelectedGardenId] = useState('all');
 
 	const loadEntries = useCallback(async () => {
 		setIsLoading(true);
@@ -100,25 +101,41 @@ function Journal() {
 	useEffect(() => {
 		loadEntries();
 	}, [loadEntries]);
+	const gardenOptions = useMemo(() => {
+		const map = new Map();
+
+		for (const entry of entries) {
+			const id = entry.garden;
+			const name = getGardenName(entry) || `Garden ${id}`;
+
+			if (id && !map.has(id)) {
+				map.set(id, { id, name });
+			}
+		}
+
+		return Array.from(map.values());
+	}, [entries]);
 
 	const displayedEntries = useMemo(() => {
-		const filteredEntries = routeGardenId
-			? entries.filter(
-					(entry) => String(entry.garden) === String(routeGardenId),
-				)
-			: entries;
+		let filtered = entries;
 
-		return [...filteredEntries].sort((firstEntry, secondEntry) => {
-			const firstDate = new Date(
-				firstEntry.date || firstEntry.created_at || 0,
-			).getTime();
-			const secondDate = new Date(
-				secondEntry.date || secondEntry.created_at || 0,
-			).getTime();
+		// If on /journal/:id, route filter takes priority
+		if (routeGardenId) {
+			filtered = filtered.filter(
+				(entry) => String(entry.garden) === String(routeGardenId),
+			);
+		} else if (selectedGardenId !== 'all') {
+			filtered = filtered.filter(
+				(entry) => String(entry.garden) === String(selectedGardenId),
+			);
+		}
 
+		return [...filtered].sort((a, b) => {
+			const firstDate = new Date(a.date || a.created_at || 0).getTime();
+			const secondDate = new Date(b.date || b.created_at || 0).getTime();
 			return secondDate - firstDate;
 		});
-	}, [entries, routeGardenId]);
+	}, [entries, routeGardenId, selectedGardenId]);
 
 	const handleCreateClick = () => {
 		setEntryBeingEdited(null);
@@ -176,12 +193,29 @@ function Journal() {
 						</p>
 					</div>
 
-					<button
-						type='button'
-						className='journal-button journal-button-primary'
-						onClick={handleCreateClick}>
-						New Entry
-					</button>
+					<div
+						style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+						{!routeGardenId && gardenOptions.length > 0 && (
+							<select
+								className='journal-field-select'
+								value={selectedGardenId}
+								onChange={(e) => setSelectedGardenId(e.target.value)}>
+								<option value='all'>All Gardens</option>
+								{gardenOptions.map((g) => (
+									<option key={g.id} value={g.id}>
+										{g.name}
+									</option>
+								))}
+							</select>
+						)}
+
+						<button
+							type='button'
+							className='journal-button journal-button-primary'
+							onClick={handleCreateClick}>
+							New Entry
+						</button>
+					</div>
 				</header>
 
 				{loadError ? (
