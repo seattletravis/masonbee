@@ -8,12 +8,13 @@ export default function useAuth() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 
+	// Load tokens on mount
 	useEffect(() => {
 		const tokens = getTokens();
 
-		if (tokens?.access && tokens?.refresh) {
+		if (tokens?.access) {
 			setAccess(tokens.access);
-			setRefreshToken(tokens.refresh);
+			setRefreshToken(tokens.refresh || null);
 			setIsAuthenticated(true);
 		} else {
 			setAccess(null);
@@ -29,12 +30,15 @@ export default function useAuth() {
 		setError(null);
 
 		try {
-			const response = await post('/api/token/', { username, password });
-			const tokens = response?.data ?? response;
+			// client.js returns raw JSON: { access, refresh }
+			const tokens = await post('/api/token/', { username, password });
 
+			// Store in client.js memory
 			setTokens(tokens);
+
+			// Store in React state
 			setAccess(tokens.access);
-			setRefreshToken(tokens.refresh);
+			setRefreshToken(tokens.refresh || null);
 			setIsAuthenticated(true);
 
 			return tokens;
@@ -68,15 +72,13 @@ export default function useAuth() {
 		setError(null);
 
 		try {
-			const response = await post('/api/token/refresh/', {
+			const data = await post('/api/token/refresh/', {
 				refresh: refreshToken,
 			});
 
-			const data = response?.data ?? response;
-
 			const nextTokens = {
 				access: data.access,
-				refresh: data.refresh ?? refreshToken,
+				refresh: data.refresh || refreshToken,
 			};
 
 			setTokens(nextTokens);

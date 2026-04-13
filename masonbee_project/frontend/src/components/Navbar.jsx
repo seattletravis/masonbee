@@ -35,6 +35,11 @@ function Navbar() {
 
 			<div className='nav-right desktop-links'>
 				{authenticated && (
+					<Link to='/my-garden' className='nav-link'>
+						My Garden
+					</Link>
+				)}
+				{authenticated && (
 					<Link to='/dashboard' className='nav-link'>
 						Dashboard
 					</Link>

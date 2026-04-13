@@ -5,6 +5,7 @@ import MainLayout from './layout/MainLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Journal from './pages/Journal';
+import MyGardenPage from './pages/MyGardenPage';
 
 export default function App() {
 	return (
@@ -32,6 +33,7 @@ export default function App() {
 								</ProtectedRoute>
 							}
 						/>
+						<Route path='/my-garden' element={<MyGardenPage />} />
 
 						<Route
 							path='/garden/:id/journal'

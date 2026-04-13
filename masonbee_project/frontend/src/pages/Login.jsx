@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { post, setTokens } from '../api/client';
+import { useAuthContext } from '../auth/AuthProvider';
 
 export default function Login() {
+	const { login } = useAuthContext();
 	const navigate = useNavigate();
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
@@ -19,9 +21,8 @@ export default function Login() {
 		setLoading(true);
 
 		try {
-			const tokens = await post('/api/token/', { username, password });
-			setTokens(tokens);
-			navigate('/dashboard');
+			await login(username, password); // ⭐ use the real login function
+			navigate('/dashboard'); // ⭐ redirect after successful login
 		} catch (err) {
 			setError(
 				err?.data?.detail || err?.message || 'Login failed. Please try again.',
