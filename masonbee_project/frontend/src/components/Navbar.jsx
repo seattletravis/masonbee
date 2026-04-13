@@ -4,7 +4,7 @@ import { useAuthContext } from '../auth/AuthProvider';
 import './Navbar.css';
 
 function Navbar() {
-	const { isAuthenticated, logout } = useAuthContext();
+	const { isAuthenticated, logout, defaultGarden } = useAuthContext();
 	const location = useLocation();
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -34,11 +34,12 @@ function Navbar() {
 			</div>
 
 			<div className='nav-right desktop-links'>
-				{authenticated && (
+				{defaultGarden && (
 					<Link to='/my-garden' className='nav-link'>
 						My Garden
 					</Link>
 				)}
+
 				{authenticated && (
 					<Link to='/dashboard' className='nav-link'>
 						Dashboard
@@ -71,6 +72,12 @@ function Navbar() {
 
 			{isOpen && (
 				<div className='mobile-menu'>
+					{defaultGarden && (
+						<Link to='/my-garden' className='mobile-link'>
+							My Garden
+						</Link>
+					)}
+
 					{authenticated && (
 						<Link to='/dashboard' className='mobile-link'>
 							Dashboard

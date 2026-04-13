@@ -151,6 +151,10 @@ async function request(method, url, data, retried = false) {
 			throw new Error('Authentication failed');
 		}
 	}
+	// ⭐ Allow 404 to return null instead of throwing
+	if (response.status === 404) {
+		return null;
+	}
 
 	if (!response.ok) {
 		const errorData = await parseResponse(response).catch(() => null);

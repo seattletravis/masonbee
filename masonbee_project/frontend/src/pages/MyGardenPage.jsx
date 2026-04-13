@@ -184,8 +184,33 @@ function MyGardenPage() {
 
 	if (!garden) {
 		return (
-			<div className='page'>
-				<p>You do not have a default garden yet.</p>
+			<div className='page' style={{ paddingTop: '2rem' }}>
+				<h1>Gardens</h1>
+				<p className='subtitle' style={{ marginBottom: '1.5rem' }}>
+					Get updates, see changes, and stay informed.
+				</p>
+
+				<div
+					className='empty-card'
+					style={{
+						border: '1px solid #ddd',
+						borderRadius: '8px',
+						padding: '1.5rem',
+						maxWidth: '480px',
+						margin: '0 auto',
+						textAlign: 'center',
+					}}>
+					<h2 style={{ marginBottom: '0.5rem' }}>No Gardens Yet</h2>
+					<p style={{ marginBottom: '1.25rem' }}>
+						Add a Garden to your Gardens List.
+					</p>
+
+					<button
+						className='button button-primary'
+						onClick={() => navigate('/gardens')}>
+						Browse Gardens
+					</button>
+				</div>
 			</div>
 		);
 	}

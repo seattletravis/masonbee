@@ -1,5 +1,6 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import useAuth from './useAuth';
+import { getUserDefaultGarden } from '../api/gardens';
 
 const AuthContext = createContext(null);
 
@@ -19,6 +20,26 @@ export default function AuthProvider({ children }) {
 		error,
 	} = useAuth();
 
+	const [defaultGarden, setDefaultGarden] = useState(null);
+	const [gardenLoading, setGardenLoading] = useState(true);
+
+	// Load default garden when authenticated
+	useEffect(() => {
+		async function loadGarden() {
+			if (!isAuthenticated) {
+				setDefaultGarden(null);
+				setGardenLoading(false);
+				return;
+			}
+
+			const garden = await getUserDefaultGarden();
+			setDefaultGarden(garden);
+			setGardenLoading(false);
+		}
+
+		loadGarden();
+	}, [isAuthenticated]);
+
 	const value = {
 		login,
 		logout,
@@ -28,6 +49,9 @@ export default function AuthProvider({ children }) {
 		isAuthenticated,
 		loading,
 		error,
+		defaultGarden,
+		setDefaultGarden,
+		gardenLoading,
 	};
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,7 +1,10 @@
 import './Dashboard.css';
 import { Link } from 'react-router-dom';
+import { useAuthContext } from '../auth/AuthProvider';
 
 function Dashboard() {
+	const { defaultGarden } = useAuthContext();
+
 	return (
 		<div className='dashboard page'>
 			<header className='dashboard-header'>
@@ -11,12 +14,14 @@ function Dashboard() {
 				</p>
 			</header>
 			<div className='dashboard-grid'>
-				<div className='dashboard-card'>
-					<h2 className='card-title'>Your Gardens</h2>
-					<p className='card-text'>
-						View and manage your mason bee gardens, houses, and locations.
-					</p>
-				</div>
+				{defaultGarden && (
+					<div className='dashboard-card'>
+						<h2 className='card-title'>My Gardens</h2>
+						<p className='card-text'>
+							View and manage your mason bee gardens, houses, and locations.
+						</p>
+					</div>
+				)}
 
 				<div className='dashboard-card'>
 					<h2 className='card-title'>Recent Activity</h2>

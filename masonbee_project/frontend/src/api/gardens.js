@@ -1,6 +1,11 @@
 // src/api/gardens.js
 import { get, post, put, del } from './client';
 
+export async function getWatchedGardens() {
+	const response = await get('/gardens/watched/');
+	return response.data;
+}
+
 export function getGardens(params = {}) {
 	return get('/gardens/', { params });
 }
@@ -9,8 +14,15 @@ export function getGarden(id) {
 	return get(`/gardens/${id}/`);
 }
 
-export function getUserDefaultGarden() {
-	return get('/gardens/default/');
+export async function getUserDefaultGarden() {
+	const response = await get('/api/gardens/default/');
+
+	// ⭐ If request() returned null (404), return null safely
+	if (response === null) {
+		return null;
+	}
+
+	return response.data;
 }
 
 export function createGarden(data) {
