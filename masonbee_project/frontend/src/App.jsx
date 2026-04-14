@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Journal from './pages/Journal';
 import MyGardenPage from './pages/MyGardenPage';
+import GardenFinderPage from './pages/GardenFinderPage';
 
 export default function App() {
 	return (
@@ -40,6 +41,14 @@ export default function App() {
 							element={
 								<ProtectedRoute>
 									<Journal />
+								</ProtectedRoute>
+							}
+						/>
+						<Route
+							path='/garden-finder'
+							element={
+								<ProtectedRoute>
+									<GardenFinderPage />
 								</ProtectedRoute>
 							}
 						/>

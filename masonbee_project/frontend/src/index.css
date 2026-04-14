@@ -34,6 +34,8 @@
 	}
 }
 
+@import 'leaflet/dist/leaflet.css';
+
 @media (prefers-color-scheme: dark) {
 	:root {
 		--text: #9ca3af;

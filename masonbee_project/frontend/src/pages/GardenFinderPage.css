@@ -1,0 +1,75 @@
+.page.garden-finder-page {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+	padding: 1.5rem;
+}
+
+.page-header {
+	margin-bottom: 1rem;
+}
+
+.page-header h1 {
+	margin: 0;
+	font-size: 1.75rem;
+	font-weight: 600;
+}
+
+.page-header p {
+	margin-top: 0.25rem;
+	color: #555;
+}
+
+.garden-finder-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+	align-items: flex-end;
+	margin-bottom: 1rem;
+}
+
+.garden-finder-field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.garden-finder-field span {
+	font-size: 0.9rem;
+	color: #444;
+}
+
+.garden-finder-field input,
+.garden-finder-field select {
+	padding: 0.5rem 0.75rem;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	font-size: 1rem;
+}
+
+.garden-finder-feedback {
+	margin: 0.5rem 0;
+	font-size: 0.95rem;
+	color: #444;
+}
+
+.garden-finder-feedback.error {
+	color: #b00020;
+	font-weight: 600;
+}
+
+.garden-finder-results {
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.section-title {
+	margin-bottom: 0.5rem;
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+.section p {
+	color: #555;
+}

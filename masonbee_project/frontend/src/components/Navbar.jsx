@@ -41,9 +41,15 @@ function Navbar() {
 				)}
 
 				{authenticated && (
-					<Link to='/dashboard' className='nav-link'>
-						Dashboard
-					</Link>
+					<>
+						<Link to='/garden-finder' className='nav-link'>
+							Garden Finder
+						</Link>
+
+						<Link to='/dashboard' className='nav-link'>
+							Dashboard
+						</Link>
+					</>
 				)}
 
 				{!authenticated && (
@@ -79,9 +85,15 @@ function Navbar() {
 					)}
 
 					{authenticated && (
-						<Link to='/dashboard' className='mobile-link'>
-							Dashboard
-						</Link>
+						<>
+							<Link to='/garden-finder' className='mobile-link'>
+								Garden Finder
+							</Link>
+
+							<Link to='/dashboard' className='mobile-link'>
+								Dashboard
+							</Link>
+						</>
 					)}
 
 					{!authenticated && (
