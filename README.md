@@ -441,3 +441,153 @@ These endpoints are generated via DRF routers.
 ---
 
 ## 📦 Project Structure (Backend)
+
+📘 Update — Backend & Frontend Progress (April 2026)
+🏗️ Backend Updates
+
+1. Added default_garden endpoint
+   Introduced a dedicated endpoint to retrieve the user’s default garden:
+
+Code
+GET /api/gardens/default/
+Purpose:  
+Provide a single source of truth for the user’s “active” or “primary” garden, used across the Dashboard, Navbar, and My Garden page.
+
+Behavior:
+
+Returns the serialized garden object if a default exists
+
+Returns null with 200 OK if the user has no default garden
+
+Eliminates noisy 404 responses in the frontend
+
+Supports future features like “Set as Default Garden” and “Pinned Gardens”
+
+Backend changes included:
+
+Added is_default field to UserPinnedGarden model
+
+Created/updated migrations
+
+Implemented default_garden view with safe fallback behavior
+
+Updated API routing under beegarden/api/urls.py
+
+2. Improved API consistency
+   We standardized the behavior of preference‑style endpoints:
+
+Default garden returns 200 with null instead of 404
+
+Watched gardens endpoint returns predictable structures
+
+All garden‑related endpoints now align with REST expectations
+
+This ensures the frontend can rely on stable, predictable responses without special‑case error handling.
+
+3. Database schema alignment
+   We resolved a schema mismatch where the is_default column was missing in the database.
+   This required:
+
+Regenerating migrations
+
+Applying them cleanly
+
+Verifying model integrity
+
+This step stabilized the entire garden preference system.
+
+🎨 Frontend Updates
+
+1. Centralized default garden loading in AuthProvider
+   The app now loads the user’s default garden once on startup:
+
+Keeps Navbar state consistent
+
+Allows Dashboard to show/hide My Garden card
+
+Allows MyGardenPage to render correctly
+
+Prevents redundant API calls across pages
+
+This is the foundation for future global user‑state features.
+
+2. Cleaned up API client and error handling
+   We reverted from Axios to a stable fetch‑based client and improved it:
+
+Silenced harmless 404/401 logs
+
+Added safe null‑return behavior
+
+Preserved token refresh logic
+
+Prevented console noise from network‑level errors
+
+The result is a quieter, more predictable dev environment.
+
+3. Routing structure stabilized
+   The app now uses a clear, maintainable route layout:
+
+Code
+/login
+/dashboard
+/my-garden
+/journal
+/garden/:id/journal
+All protected routes are wrapped in ProtectedRoute, and the layout is handled by MainLayout.
+
+4. My Garden Page groundwork
+   We prepared the My Garden page to support:
+
+Default garden display
+
+Empty‑state onboarding
+
+Future pinned gardens
+
+Future garden switching
+
+Future journal integration
+
+This page will become the user’s “home base” for garden activity.
+
+🌱 What’s Next (Roadmap)
+
+1. Garden Finder Page
+   Search gardens
+
+Sort by distance
+
+Infinite scroll
+
+Garden cards
+
+Pin/Unpin
+
+Set Default Garden
+
+Map integration (P‑Patch + user gardens)
+
+2. Pinned Gardens System
+   Multiple pinned gardens
+
+One default garden
+
+Quick switching
+
+Dashboard integration
+
+3. Journal Enhancements
+   Garden‑specific journals
+
+Bee house event linking
+
+Timeline view
+
+4. UI/UX Polish
+   Global toast notifications
+
+Smooth transitions
+
+Consistent card components
+
+Mobile‑first layout improvements

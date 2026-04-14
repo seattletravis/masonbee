@@ -60,7 +60,7 @@ function Dashboard() {
 
 				{/* NEW JOURNAL CARD */}
 				<Link to='/journal' className='dashboard-card dashboard-card-link'>
-					<h2 className='card-title'>Journal</h2>
+					<h2 className='card-title'>My Journal</h2>
 					<p className='card-text'>
 						Record observations, blooms, weather notes, and bee activity.
 					</p>
