@@ -109,9 +109,19 @@ function GardenCard({
 				<button
 					type='button'
 					className='button button-secondary'
-					onClick={() => onSetDefault(garden)}
-					disabled={defaultBusy || isDefault}>
-					{defaultBusy ? 'Saving...' : isDefault ? 'Default' : 'Set Default'}
+					onClick={() => {
+						if (isDefault) {
+							onSetDefault(null); // clear default
+						} else {
+							onSetDefault(garden); // set default
+						}
+					}}
+					disabled={defaultBusy}>
+					{defaultBusy
+						? 'Saving...'
+						: isDefault
+							? 'Clear Default'
+							: 'Set Default'}
 				</button>
 
 				<button

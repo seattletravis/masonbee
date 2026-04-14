@@ -244,15 +244,18 @@ class BeeHouseEventViewSet(viewsets.ModelViewSet):
 def default_garden(request):
     user = request.user
 
+    # POST: set or clear default
     if request.method == "POST":
         garden_id = request.data.get("garden_id")
-        if not garden_id:
-            return Response({"error": "garden_id required"}, status=400)
 
-        # Unset previous default
+        # ⭐ CLEAR DEFAULT
+        if garden_id is None:
+            UserPinnedGarden.objects.filter(user=user).update(is_default=False)
+            return Response({"status": "default cleared"}, status=200)
+
+        # ⭐ SET NEW DEFAULT
         UserPinnedGarden.objects.filter(user=user).update(is_default=False)
 
-        # Ensure the garden is pinned
         pinned, created = UserPinnedGarden.objects.get_or_create(
             user=user,
             garden_id=garden_id,
@@ -272,6 +275,7 @@ def default_garden(request):
         return Response(data, status=200)
     except UserPinnedGarden.DoesNotExist:
         return Response(None, status=200)
+
 
 
 @api_view(['GET'])

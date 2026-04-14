@@ -36,7 +36,7 @@ function Navbar() {
 			<div className='nav-right desktop-links'>
 				{defaultGarden && (
 					<Link to='/my-garden' className='nav-link'>
-						My Garden
+						My Gardens
 					</Link>
 				)}
 

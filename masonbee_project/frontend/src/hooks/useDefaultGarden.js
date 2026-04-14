@@ -1,13 +1,21 @@
 // src/hooks/useDefaultGarden.js
-import { useCallback } from 'react';
 import { post } from '../api/client';
+import { useAuthContext } from '../auth/AuthProvider';
 
-export default function useDefaultGarden(setDefaultGarden, setError) {
+export default function useDefaultGarden(setError) {
+	const { setDefaultGarden } = useAuthContext();
+
 	const setDefault = async (garden) => {
 		try {
-			await post('/api/gardens/default/', { garden_id: garden.id });
+			if (garden === null) {
+				// Clear default
+				await post('/api/gardens/default/', { garden_id: null });
+				setDefaultGarden(null);
+				return;
+			}
 
-			// ⭐ Update UI immediately
+			// Set new default
+			await post('/api/gardens/default/', { garden_id: garden.id });
 			setDefaultGarden(garden);
 		} catch (err) {
 			setError('Unable to set default garden.');

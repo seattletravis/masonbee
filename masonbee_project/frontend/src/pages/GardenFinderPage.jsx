@@ -97,25 +97,20 @@ function haversineMiles(a, b) {
 }
 
 function GardenFinderPage() {
-	const { isAuthenticated, loading } = useAuthContext();
+	const { defaultGarden, setDefaultGarden, isAuthenticated, loading } =
+		useAuthContext();
+
 	const navigate = useNavigate();
 
 	// 🌱 Bootstrap pinned + default gardens
-	const {
-		pinned,
-		setPinned,
-		defaultGarden,
-		setDefaultGarden,
-		isBootstrapping,
-		error,
-		setError,
-	} = useBootstrapGardens();
+	const { pinned, setPinned, isBootstrapping, error, setError } =
+		useBootstrapGardens();
 
 	// 🌱 Pin/unpin logic
 	const { togglePin } = usePinnedGardens(pinned, setPinned, setError);
 
 	// 🌱 Default garden logic
-	const { setDefault } = useDefaultGarden(setDefaultGarden, setError);
+	const { setDefault } = useDefaultGarden(setError);
 
 	// 🌱 Garden list + pagination
 	const [gardens, setGardens] = useState([]);
@@ -240,8 +235,15 @@ function GardenFinderPage() {
 		togglePin(garden).finally(() => setPinBusyId(null));
 	};
 
-	// 🌱 Default garden handler
 	const handleSetDefault = (garden) => {
+		// Clearing default
+		if (garden === null) {
+			setDefaultBusyId('clear'); // any placeholder is fine
+			setDefault(null).finally(() => setDefaultBusyId(null));
+			return;
+		}
+
+		// Setting default
 		const id = String(garden.id);
 		setDefaultBusyId(id);
 		setDefault(garden).finally(() => setDefaultBusyId(null));

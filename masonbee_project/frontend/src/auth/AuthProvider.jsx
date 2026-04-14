@@ -1,3 +1,4 @@
+// src/auth/AuthProvider.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
 import useAuth from './useAuth';
 import { getUserDefaultGarden } from '../api/gardens';
@@ -23,7 +24,6 @@ export default function AuthProvider({ children }) {
 	const [defaultGarden, setDefaultGarden] = useState(null);
 	const [gardenLoading, setGardenLoading] = useState(true);
 
-	// Load default garden when authenticated
 	useEffect(() => {
 		async function loadGarden() {
 			if (!isAuthenticated) {
