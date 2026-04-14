@@ -135,12 +135,20 @@ async function request(method, url, data, retried = false) {
 		headers.Authorization = `Bearer ${access}`;
 	}
 
-	const response = await fetch(buildUrl(url), {
-		method,
-		headers,
-		body: data !== undefined ? JSON.stringify(data) : undefined,
-	});
+	let response;
 
+	try {
+		response = await fetch(buildUrl(url), {
+			method,
+			headers,
+			body: data !== undefined ? JSON.stringify(data) : undefined,
+		});
+	} catch (err) {
+		// ⭐ Prevent fetch network errors from logging in the console
+		return null;
+	}
+
+	// ⭐ Silence harmless 401 BEFORE refresh logic triggers browser errors
 	if (response.status === 401 && !retried) {
 		try {
 			await runRefresh();
@@ -151,8 +159,14 @@ async function request(method, url, data, retried = false) {
 			throw new Error('Authentication failed');
 		}
 	}
-	// ⭐ Allow 404 to return null instead of throwing
+
+	// ⭐ Silence harmless 404 (no default garden, no pinned garden, etc.)
 	if (response.status === 404) {
+		return null;
+	}
+
+	// ⭐ If 401 happens *after* retry, treat it as null instead of logging
+	if (response.status === 401) {
 		return null;
 	}
 

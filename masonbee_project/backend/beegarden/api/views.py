@@ -308,13 +308,25 @@ class BeeHouseEventViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
-@api_view(['GET'])
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def default_garden(request):
+#     garden = Garden.objects.filter(owner=request.user).first()
+#     if not garden:
+#         return Response({"detail": "No default garden found."}, status=404)
+#     return Response(GardenSerializer(garden).data)
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def default_garden(request):
-    garden = Garden.objects.filter(owner=request.user).first()
-    if not garden:
-        return Response({"detail": "No default garden found."}, status=404)
-    return Response(GardenSerializer(garden).data)
+    try:
+        pinned = UserPinnedGarden.objects.get(user=request.user, is_default=True)
+        serializer = GardenSerializer(pinned.garden)
+        return Response(serializer.data, status=200)
+    except UserPinnedGarden.DoesNotExist:
+        # ⭐ Option B: return 200 with null instead of 404
+        return Response(None, status=200)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
