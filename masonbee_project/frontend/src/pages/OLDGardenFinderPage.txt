@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GardenCard from '../components/GardenCard';
+import { del, get, post } from '../api/client';
 import './GardenFinderPage.css';
 import { useAuthContext } from '../auth/AuthProvider';
-import { get } from '../api/client';
-
+import { getTokens } from '../api/client';
 import useBootstrapGardens from '../hooks/useBootstrapGardens';
 import usePinnedGardens from '../hooks/usePinnedGardens';
 import useDefaultGarden from '../hooks/useDefaultGarden';
@@ -44,9 +44,16 @@ function useUserLocation(shouldRequest) {
 	const [location, setLocation] = useState(null);
 	const [locationError, setLocationError] = useState('');
 	const [isLocating, setIsLocating] = useState(false);
+
+	// NEW: prevents repeated geolocation prompts
 	const [locationRequested, setLocationRequested] = useState(false);
 
 	useEffect(() => {
+		// Only request if:
+		// - distance mode is on
+		// - we haven't already requested
+		// - we aren't currently requesting
+		// - we don't already have a location
 		if (!shouldRequest || locationRequested || location || isLocating) return;
 
 		if (!navigator.geolocation) {
@@ -54,7 +61,7 @@ function useUserLocation(shouldRequest) {
 			return;
 		}
 
-		setLocationRequested(true);
+		setLocationRequested(true); // <-- prevents all future prompts
 		setIsLocating(true);
 
 		navigator.geolocation.getCurrentPosition(
@@ -100,7 +107,7 @@ function GardenFinderPage() {
 	const { isAuthenticated, loading } = useAuthContext();
 	const navigate = useNavigate();
 
-	// 🌱 Bootstrap pinned + default gardens
+	// Bootstrap pinned + default gardens
 	const {
 		pinned,
 		setPinned,
@@ -111,38 +118,38 @@ function GardenFinderPage() {
 		setError,
 	} = useBootstrapGardens();
 
-	// 🌱 Pin/unpin logic
+	// Pin/unpin logic
 	const { togglePin } = usePinnedGardens(pinned, setPinned, setError);
 
-	// 🌱 Default garden logic
+	// Default garden logic
 	const { setDefault } = useDefaultGarden(setDefaultGarden, setError);
 
-	// 🌱 Garden list + pagination
+	// Garden list + pagination
 	const [gardens, setGardens] = useState([]);
 	const [page, setPage] = useState(1);
 	const [hasMore, setHasMore] = useState(true);
 
-	// 🌱 Search
+	// Search
 	const [searchQuery, setSearchQuery] = useState('');
 	const debouncedSearch = useDebounce(searchQuery, 300);
 
-	// 🌱 Sorting
+	// Sorting
 	const [sortMode, setSortMode] = useState('name');
 	const shouldSortByDistance = sortMode === 'distance';
 
-	// 🌱 Loading states
+	// Loading states
 	const [isLoading, setIsLoading] = useState(true);
 	const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-	// 🌱 Busy indicators
+	// Busy indicators
 	const [pinBusyId, setPinBusyId] = useState(null);
 	const [defaultBusyId, setDefaultBusyId] = useState(null);
 
-	// 🌱 Location
+	// Location
 	const { location, locationError, isLocating } =
 		useUserLocation(shouldSortByDistance);
 
-	// 🌱 Fetch gardens
+	// Fetch gardens
 	const fetchGardens = useCallback(
 		async (targetPage, query, { append } = { append: false }) => {
 			const url = `/api/gardens/?page=${targetPage}&search=${query.trim()}`;
@@ -174,29 +181,29 @@ function GardenFinderPage() {
 				setIsLoadingMore(false);
 			}
 		},
-		[setError],
+		[],
 	);
 
-	// 🌱 Fetch gardens when search changes
+	// Fetch gardens when search changes
 	useEffect(() => {
 		setHasMore(true);
 		fetchGardens(1, debouncedSearch, { append: false });
 	}, [debouncedSearch, fetchGardens]);
 
-	// 🌱 Infinite scroll handler
+	// Infinite scroll handler
 	const handleLoadMore = useCallback(() => {
 		if (isLoading || isLoadingMore || !hasMore) return;
 		fetchGardens(page + 1, debouncedSearch, { append: true });
 	}, [isLoading, isLoadingMore, hasMore, page, debouncedSearch, fetchGardens]);
 
-	// 🌱 Infinite scroll sentinel
+	// Infinite scroll sentinel
 	const sentinelRef = useInfiniteScroll({
 		onIntersect: handleLoadMore,
 		hasMore,
 		isEnabled: !isLoading && !isLoadingMore,
 	});
 
-	// 🌱 Distance lookup
+	// Distance lookup
 	const distanceLookup = useMemo(() => {
 		if (!shouldSortByDistance || !location) return {};
 
@@ -215,7 +222,7 @@ function GardenFinderPage() {
 		return lookup;
 	}, [gardens, location, shouldSortByDistance]);
 
-	// 🌱 Sorted gardens
+	// Sorted gardens
 	let displayedGardens = [...gardens];
 
 	if (!shouldSortByDistance || !location) {
@@ -233,27 +240,27 @@ function GardenFinderPage() {
 		});
 	}
 
-	// 🌱 Pin handler
+	// Pin handler
 	const handleTogglePin = (garden) => {
 		const id = String(garden.id);
 		setPinBusyId(id);
 		togglePin(garden).finally(() => setPinBusyId(null));
 	};
 
-	// 🌱 Default garden handler
+	// Default garden handler
 	const handleSetDefault = (garden) => {
 		const id = String(garden.id);
 		setDefaultBusyId(id);
 		setDefault(garden).finally(() => setDefaultBusyId(null));
 	};
 
-	// 🌱 View garden handler
+	// View garden handler
 	const handleViewGarden = useCallback(
 		(garden) => navigate(`/garden/${garden.id}`),
 		[navigate],
 	);
 
-	// 🌱 Empty state
+	// Empty state
 	const isEmpty = !isLoading && displayedGardens.length === 0;
 
 	return (

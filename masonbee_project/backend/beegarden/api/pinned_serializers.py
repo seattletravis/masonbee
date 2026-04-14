@@ -1,15 +1,23 @@
+
 from rest_framework import serializers
-from beegarden.models import UserPinnedGarden
+from beegarden.models import UserPinnedGarden, Garden
+
+class MinimalGardenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Garden
+        fields = ("id", "name")  # add more fields if needed
 
 class UserPinnedGardenSerializer(serializers.ModelSerializer):
+    garden = MinimalGardenSerializer(read_only=True)
+
     def validate(self, attrs):
         user = self.context["request"].user
 
-        # If user is setting this as default, unset all others
         if attrs.get("is_default"):
             UserPinnedGarden.objects.filter(user=user).update(is_default=False)
 
         return attrs
+
     class Meta:
         model = UserPinnedGarden
         fields = "__all__"

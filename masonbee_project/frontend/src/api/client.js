@@ -165,9 +165,8 @@ async function request(method, url, data, retried = false) {
 		return null;
 	}
 
-	// ⭐ If 401 happens *after* retry, treat it as null instead of logging
 	if (response.status === 401) {
-		return null;
+		throw new Error('Unauthorized');
 	}
 
 	if (!response.ok) {

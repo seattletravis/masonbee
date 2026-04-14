@@ -9,3 +9,8 @@ class GardenSerializer(serializers.ModelSerializer):
         model = Garden
         fields = "__all__"
         read_only_fields = ["owner", "created_at", "updated_at"]
+        
+class MinimalGardenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Garden
+        fields = ("id", "name")  # add more fields if needed

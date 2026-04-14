@@ -18,7 +18,7 @@ from beegarden.models import (
     UserPinnedGarden
 )
 
-from .garden_serializers import GardenSerializer
+from .garden_serializers import GardenSerializer, MinimalGardenSerializer
 from .beehouse_serializers import BeeHouseSerializer
 from .access_serializers import PrivateGardenAccessSerializer
 from .pinned_serializers import UserPinnedGardenSerializer
@@ -226,24 +226,19 @@ class BeeHouseEventViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def default_garden(request):
-#     garden = Garden.objects.filter(owner=request.user).first()
-#     if not garden:
-#         return Response({"detail": "No default garden found."}, status=404)
-#     return Response(GardenSerializer(garden).data)
+
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def default_garden(request):
     try:
         pinned = UserPinnedGarden.objects.get(user=request.user, is_default=True)
-        serializer = GardenSerializer(pinned.garden)
-        return Response(serializer.data, status=200)
+        data = MinimalGardenSerializer(pinned.garden).data
+        return Response(data, status=200)
     except UserPinnedGarden.DoesNotExist:
-        # ⭐ Option B: return 200 with null instead of 404
+        # Must return explicit JSON null, not empty body
         return Response(None, status=200)
+
 
 
 @api_view(['GET'])
@@ -252,9 +247,6 @@ def watched_gardens(request):
     user = request.user
 
     pinned = UserPinnedGarden.objects.filter(user=user).select_related("garden")
-    default = pinned.filter(is_default=True).first()
 
-    return Response({
-        "default": GardenSerializer(default.garden).data if default else None,
-        "watchlist": GardenSerializer([p.garden for p in pinned], many=True).data
-    })
+    return Response(UserPinnedGardenSerializer(pinned, many=True).data)
+
