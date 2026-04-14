@@ -228,17 +228,50 @@ class BeeHouseEventViewSet(viewsets.ModelViewSet):
 
 
 
-@api_view(["GET"])
+# @api_view(["GET"])
+# @permission_classes([IsAuthenticated])
+# def default_garden(request):
+#     try:
+#         pinned = UserPinnedGarden.objects.get(user=request.user, is_default=True)
+#         data = MinimalGardenSerializer(pinned.garden).data
+#         return Response(data, status=200)
+#     except UserPinnedGarden.DoesNotExist:
+#         # Must return explicit JSON null, not empty body
+#         return Response(None, status=200)
+
+@api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
 def default_garden(request):
+    user = request.user
+
+    if request.method == "POST":
+        garden_id = request.data.get("garden_id")
+        if not garden_id:
+            return Response({"error": "garden_id required"}, status=400)
+
+        # Unset previous default
+        UserPinnedGarden.objects.filter(user=user).update(is_default=False)
+
+        # Ensure the garden is pinned
+        pinned, created = UserPinnedGarden.objects.get_or_create(
+            user=user,
+            garden_id=garden_id,
+            defaults={"is_default": True}
+        )
+
+        if not created:
+            pinned.is_default = True
+            pinned.save()
+
+        return Response({"status": "default set"}, status=200)
+
+    # GET: return current default
     try:
-        pinned = UserPinnedGarden.objects.get(user=request.user, is_default=True)
+        pinned = UserPinnedGarden.objects.get(user=user, is_default=True)
         data = MinimalGardenSerializer(pinned.garden).data
         return Response(data, status=200)
     except UserPinnedGarden.DoesNotExist:
-        # Must return explicit JSON null, not empty body
         return Response(None, status=200)
-
 
 
 @api_view(['GET'])

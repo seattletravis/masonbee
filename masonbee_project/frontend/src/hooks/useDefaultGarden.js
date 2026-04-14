@@ -3,21 +3,16 @@ import { useCallback } from 'react';
 import { post } from '../api/client';
 
 export default function useDefaultGarden(setDefaultGarden, setError) {
-	const setDefault = useCallback(
-		async (garden) => {
-			setError('');
+	const setDefault = async (garden) => {
+		try {
+			await post('/api/gardens/default/', { garden_id: garden.id });
 
-			try {
-				const result = await post('/api/gardens/default/', {
-					garden_id: garden.id,
-				});
-				setDefaultGarden(result || garden);
-			} catch {
-				setError('Unable to set the default garden.');
-			}
-		},
-		[setDefaultGarden, setError],
-	);
+			// ⭐ Update UI immediately
+			setDefaultGarden(garden);
+		} catch (err) {
+			setError('Unable to set default garden.');
+		}
+	};
 
 	return { setDefault };
 }
