@@ -1,18 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GardenCard from '../components/GardenCard';
 import './GardenFinderPage.css';
 import { useAuthContext } from '../auth/AuthProvider';
 import { get } from '../api/client';
 
-import useBootstrapGardens from '../hooks/useBootstrapGardens';
 import usePinnedGardens from '../hooks/usePinnedGardens';
 import useDefaultGarden from '../hooks/useDefaultGarden';
 import GardenMap from '../components/GardenMap';
-
-export function useGardenContext() {
-	return useOutletContext();
-}
 
 function useDebounce(value, delay = 300) {
 	const [debouncedValue, setDebouncedValue] = useState(value);
@@ -102,16 +97,22 @@ function haversineMiles(a, b) {
 }
 
 function GardenFinderPage() {
-	const { defaultGarden, setDefaultGarden, isAuthenticated, loading } =
-		useAuthContext();
+	const {
+		defaultGarden,
+		setDefaultGarden,
+		isAuthenticated,
+		loading,
+		pinned,
+		setPinned,
+		hasPinnedGardens,
+	} = useAuthContext();
 
 	const navigate = useNavigate();
 
-	// 🌱 Bootstrap pinned + default gardens
-	const { pinned, setPinned, isBootstrapping, error, setError } =
-		useBootstrapGardens();
+	// 🌱 Error + bootstrap flags (local to this page)
+	const [error, setError] = useState('');
 
-	// 🌱 Pin/unpin logic
+	// 🌱 Pin/unpin logic (still uses global pinned)
 	const { togglePin } = usePinnedGardens(pinned, setPinned, setError);
 
 	// 🌱 Default garden logic
@@ -267,13 +268,6 @@ function GardenFinderPage() {
 
 	return (
 		<div className='page garden-finder-page'>
-			<Outlet
-				context={{
-					pinned,
-					hasPinnedGardens: Object.keys(pinned).length > 0,
-					defaultGarden,
-				}}
-			/>
 			<header className='page-header'>
 				<div>
 					<h1>Garden Finder</h1>
@@ -283,7 +277,6 @@ function GardenFinderPage() {
 					</p>
 				</div>
 			</header>
-
 			<section className='section'>
 				<div className='garden-finder-toolbar'>
 					<label className='garden-finder-field'>
@@ -295,7 +288,6 @@ function GardenFinderPage() {
 							placeholder='Search gardens by name'
 						/>
 					</label>
-
 					<label className='garden-finder-field'>
 						<span>Sort</span>
 						<select
@@ -312,7 +304,6 @@ function GardenFinderPage() {
 						{viewMode === 'list' ? 'Map View' : 'List View'}
 					</button>
 				</div>
-
 				{defaultGarden?.name ? (
 					<p className='garden-finder-feedback'>
 						Default garden: <strong>{defaultGarden.name}</strong>
@@ -333,12 +324,6 @@ function GardenFinderPage() {
 
 				{error && <p className='garden-finder-feedback error'>{error}</p>}
 			</section>
-
-			{isBootstrapping && !displayedGardens.length && (
-				<section className='section'>
-					<p>Loading your garden preferences...</p>
-				</section>
-			)}
 
 			{isLoading && (
 				<section className='section'>

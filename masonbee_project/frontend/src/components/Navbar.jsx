@@ -3,27 +3,25 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../auth/AuthProvider';
 import './Navbar.css';
 
-function Navbar() {
-	const { isAuthenticated, logout, defaultGarden } = useAuthContext();
+function Navbar({ defaultGarden, hasPinnedGardens }) {
+	const { isAuthenticated, logout } = useAuthContext();
 	const location = useLocation();
 	const [isOpen, setIsOpen] = useState(false);
+
+	const showMyGardens = defaultGarden || hasPinnedGardens;
 
 	useEffect(() => {
 		setIsOpen(false);
 	}, [location.pathname]);
 
-	const toggleMenu = () => {
-		setIsOpen((prev) => !prev);
-	};
+	const toggleMenu = () => setIsOpen((prev) => !prev);
 
 	const handleLogout = () => {
 		setIsOpen(false);
-		if (typeof logout === 'function') {
-			logout();
-		}
+		if (typeof logout === 'function') logout();
 	};
 
-	const authenticated = Boolean(isAuthenticated);
+	const authenticated = isAuthenticated === true;
 
 	return (
 		<nav className='navbar'>
@@ -34,7 +32,7 @@ function Navbar() {
 			</div>
 
 			<div className='nav-right desktop-links'>
-				{defaultGarden && (
+				{showMyGardens && (
 					<Link to='/my-gardens' className='nav-link'>
 						My Gardens
 					</Link>
@@ -78,9 +76,9 @@ function Navbar() {
 
 			{isOpen && (
 				<div className='mobile-menu'>
-					{defaultGarden && (
+					{showMyGardens && (
 						<Link to='/my-gardens' className='mobile-link'>
-							My Garden
+							My Gardens
 						</Link>
 					)}
 

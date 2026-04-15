@@ -1,16 +1,15 @@
-import { Outlet, useLocation, useOutletContext } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useEffect, useState } from 'react';
+import { useAuthContext } from '../auth/AuthProvider';
 import './MainLayout.css';
 
 function MainLayout() {
 	const location = useLocation();
-	const { defaultGarden, hasPinnedGardens } = useOutletContext() || {};
-	const pathname = location.pathname;
+	const { defaultGarden, hasPinnedGardens } = useAuthContext(); // ← Always correct source
+	const { loading } = useAuthContext;
+	const hideNavbar = location.pathname === '/login' || loading;
 
-	const hideNavbar = pathname === '/login';
-
-	// Delay ONLY the login page to avoid first-load flash
 	const [ready, setReady] = useState(!hideNavbar);
 
 	useEffect(() => {
@@ -22,7 +21,6 @@ function MainLayout() {
 		}
 	}, [hideNavbar]);
 
-	// If we're on login and not ready yet, render nothing
 	if (hideNavbar && !ready) return null;
 
 	return (

@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuthContext } from '../auth/AuthProvider';
 
 function Dashboard() {
-	const { defaultGarden } = useAuthContext();
+	const { defaultGarden, hasPinnedGardens } = useAuthContext();
+
+	const showMyGardensCard = Boolean(defaultGarden) || Boolean(hasPinnedGardens);
 
 	return (
 		<div className='dashboard page'>
@@ -13,14 +15,15 @@ function Dashboard() {
 					Welcome back — here’s what’s happening in your garden.
 				</p>
 			</header>
+
 			<div className='dashboard-grid'>
-				{defaultGarden && (
-					<div className='dashboard-card'>
+				{showMyGardensCard && (
+					<Link to='/my-gardens' className='dashboard-card dashboard-card-link'>
 						<h2 className='card-title'>My Gardens</h2>
 						<p className='card-text'>
 							View and manage your mason bee gardens, houses, and locations.
 						</p>
-					</div>
+					</Link>
 				)}
 
 				<div className='dashboard-card'>
@@ -58,7 +61,6 @@ function Dashboard() {
 					</p>
 				</div>
 
-				{/* NEW JOURNAL CARD */}
 				<Link to='/journal' className='dashboard-card dashboard-card-link'>
 					<h2 className='card-title'>My Journal</h2>
 					<p className='card-text'>
