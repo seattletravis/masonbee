@@ -351,6 +351,7 @@ function GardenFinderPage() {
 						defaultGarden={defaultGarden}
 						userLocation={location}
 						onSelectGarden={handleViewGarden}
+						shouldSortByDistance={shouldSortByDistance}
 					/>
 				</section>
 			)}

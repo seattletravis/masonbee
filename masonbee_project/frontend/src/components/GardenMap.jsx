@@ -68,6 +68,21 @@ function FlyToGarden({ garden }) {
 	return null;
 }
 
+function FlyToUser({ userLocation, shouldSortByDistance }) {
+	const map = useMap();
+
+	useEffect(() => {
+		if (!shouldSortByDistance) return;
+		if (!userLocation) return;
+
+		map.flyTo([userLocation.latitude, userLocation.longitude], 13, {
+			duration: 1.0,
+		});
+	}, [shouldSortByDistance, userLocation, map]);
+
+	return null;
+}
+
 // ---------------------------
 // MAIN COMPONENT
 // ---------------------------
@@ -77,6 +92,7 @@ export default function GardenMap({
 	defaultGarden,
 	userLocation,
 	onSelectGarden,
+	shouldSortByDistance,
 }) {
 	const center = userLocation
 		? [userLocation.latitude, userLocation.longitude]
@@ -90,6 +106,10 @@ export default function GardenMap({
 			className='garden-map'>
 			<ResizeHandler />
 			<FlyToGarden garden={defaultGarden} />
+			<FlyToUser
+				userLocation={userLocation}
+				shouldSortByDistance={shouldSortByDistance}
+			/>
 
 			<TileLayer
 				attribution='&copy; OpenStreetMap contributors'
