@@ -1,0 +1,10 @@
+.garden-map {
+	width: 100%;
+	height: calc(100vh - 180px);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.garden-finder-map-container {
+	padding: 0 1rem 1rem;
+}

@@ -8,6 +8,7 @@ import { get } from '../api/client';
 import useBootstrapGardens from '../hooks/useBootstrapGardens';
 import usePinnedGardens from '../hooks/usePinnedGardens';
 import useDefaultGarden from '../hooks/useDefaultGarden';
+import GardenMap from '../components/GardenMap';
 
 function useDebounce(value, delay = 300) {
 	const [debouncedValue, setDebouncedValue] = useState(value);
@@ -132,6 +133,7 @@ function GardenFinderPage() {
 	// 🌱 Busy indicators
 	const [pinBusyId, setPinBusyId] = useState(null);
 	const [defaultBusyId, setDefaultBusyId] = useState(null);
+	const [viewMode, setViewMode] = useState('list');
 
 	// 🌱 Location
 	const { location, locationError, isLocating } =
@@ -291,6 +293,12 @@ function GardenFinderPage() {
 							<option value='distance'>Distance</option>
 						</select>
 					</label>
+					<button
+						type='button'
+						className='button button-secondary'
+						onClick={() => setViewMode(viewMode === 'list' ? 'map' : 'list')}>
+						{viewMode === 'list' ? 'Map View' : 'List View'}
+					</button>
 				</div>
 
 				{defaultGarden?.name ? (
@@ -335,7 +343,19 @@ function GardenFinderPage() {
 				</section>
 			)}
 
-			{!isLoading && displayedGardens.length > 0 && (
+			{viewMode === 'map' && (
+				<section className='garden-finder-map-container'>
+					<GardenMap
+						gardens={displayedGardens}
+						pinned={pinned}
+						defaultGarden={defaultGarden}
+						userLocation={location}
+						onSelectGarden={handleViewGarden}
+					/>
+				</section>
+			)}
+
+			{viewMode === 'list' && !isLoading && displayedGardens.length > 0 && (
 				<section className='garden-finder-results'>
 					{displayedGardens.map((garden) => {
 						const id = String(garden.id);
