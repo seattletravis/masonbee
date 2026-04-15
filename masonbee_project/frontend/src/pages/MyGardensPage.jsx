@@ -1,295 +1,115 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getJournalEntries } from '../api/journal';
-import { getBeehouses } from '../api/beehouses';
-import { getUserDefaultGarden } from '../api/gardens';
+import { Link, useNavigate } from 'react-router-dom';
+import MyGardenCard from '../components/MyGardenCard';
+import { useAuthContext } from '../auth/AuthProvider';
+import './MyGardensPage.css';
 
-function normalizeCollection(payload) {
-	if (Array.isArray(payload)) {
-		return payload;
-	}
-
-	if (Array.isArray(payload?.results)) {
-		return payload.results;
-	}
-
-	return [];
-}
-
-function getErrorMessage(error, fallbackMessage) {
-	return (
-		error?.response?.data?.detail ||
-		error?.response?.data?.message ||
-		error?.message ||
-		fallbackMessage
-	);
-}
-
-function matchesGardenId(value, gardenId) {
-	return String(value) === String(gardenId);
-}
-
-function isLinkedToGarden(record, gardenId) {
-	if (!record || gardenId == null) {
-		return false;
-	}
-
-	const candidateValues = [
-		record.garden,
-		record.garden_id,
-		record.gardenId,
-		record?.garden?.id,
-		record?.garden_details?.id,
-	];
-
-	return candidateValues.some(
-		(value) => value != null && matchesGardenId(value, gardenId),
-	);
-}
-
-function formatGardenType(gardenType) {
-	if (!gardenType) {
-		return 'Unknown';
-	}
-
-	return gardenType
-		.split('_')
-		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-		.join(' ');
-}
-
-function MetadataRow({ label, value, isLink = false }) {
-	if (value == null || value === '') {
-		return null;
-	}
-
-	return (
-		<div style={{ marginBottom: '0.75rem' }}>
-			<strong>{label}:</strong>{' '}
-			{isLink ? (
-				<a href={value} target='_blank' rel='noreferrer'>
-					{value}
-				</a>
-			) : (
-				<span>{value}</span>
-			)}
-		</div>
-	);
-}
-
-function StatCard({ label, value }) {
-	return (
-		<div className='stat-card'>
-			<h3 className='section-title'>{value}</h3>
-			<p>{label}</p>
-		</div>
-	);
-}
-
-function MyGardenPage() {
+function MyGardensPage() {
 	const navigate = useNavigate();
-	const [garden, setGarden] = useState(null);
-	const [journalEntries, setJournalEntries] = useState([]);
-	const [beehouses, setBeehouses] = useState([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [loadError, setLoadError] = useState('');
+	const {
+		defaultGarden,
+		setDefaultGarden,
+		pinned,
+		hasPinnedGardens,
+		isAuthenticated,
+	} = useAuthContext();
 
-	const loadGardenDashboard = useCallback(async () => {
-		setIsLoading(true);
-		setLoadError('');
+	// Normalize pinned gardens (AuthProvider already ensures clean shape)
+	const pinnedGardens = Object.values(pinned || {}).map(
+		(record) => record.garden,
+	);
 
-		try {
-			const [gardenData, journalData, beehouseData] = await Promise.all([
-				getUserDefaultGarden(),
-				getJournalEntries(),
-				getBeehouses(),
-			]);
+	const defaultGardenId = defaultGarden?.id;
+	const pinnedGardensWithoutDefault = pinnedGardens.filter(
+		(g) => g.id !== defaultGardenId,
+	);
 
-			setGarden(gardenData || null);
-			setJournalEntries(normalizeCollection(journalData));
-			setBeehouses(normalizeCollection(beehouseData));
-		} catch (error) {
-			setLoadError(
-				getErrorMessage(
-					error,
-					'Unable to load your garden dashboard right now.',
-				),
-			);
-		} finally {
-			setIsLoading(false);
-		}
-	}, []);
+	const showEmptyState =
+		!defaultGarden && pinnedGardensWithoutDefault.length === 0;
 
-	useEffect(() => {
-		loadGardenDashboard();
-	}, [loadGardenDashboard]);
+	const handleViewGarden = (garden) => {
+		navigate(`/garden/${garden.id}`);
+	};
 
-	const journalEntryCount = useMemo(() => {
-		if (!garden?.id) {
-			return 0;
-		}
+	const handleLogJournal = (garden) => {
+		navigate(`/journal/new?gardenId=${garden.id}`);
+	};
 
-		return journalEntries.filter((entry) => isLinkedToGarden(entry, garden.id))
-			.length;
-	}, [garden?.id, journalEntries]);
+	const handleAddBeeNotes = (garden) => {
+		navigate(`/beehouse-notes/new?gardenId=${garden.id}`);
+	};
 
-	const beehouseCount = useMemo(() => {
-		if (!garden?.id) {
-			return 0;
-		}
-
-		return beehouses.filter((beehouse) => isLinkedToGarden(beehouse, garden.id))
-			.length;
-	}, [beehouses, garden?.id]);
-
-	const handleViewJournalEntries = useCallback(() => {
-		if (!garden?.id) {
-			return;
-		}
-
-		navigate(`/journal/${garden.id}`);
-	}, [garden?.id, navigate]);
-
-	const handleAddJournalEntry = useCallback(() => {
-		if (!garden?.id) {
-			return;
-		}
-
-		navigate(`/journal?new=1&garden=${garden.id}`);
-	}, [garden?.id, navigate]);
-
-	const handleViewBeehouses = useCallback(() => {
-		if (!garden?.id) {
-			return;
-		}
-
-		navigate(`/beehouses?garden=${garden.id}`);
-	}, [garden?.id, navigate]);
-
-	if (isLoading) {
-		return (
-			<div className='page'>
-				<p>Loading your garden...</p>
-			</div>
-		);
-	}
-
-	if (loadError) {
-		return (
-			<div className='page'>
-				<p>{loadError}</p>
-			</div>
-		);
-	}
-
-	if (!garden) {
-		return (
-			<div className='page' style={{ paddingTop: '2rem' }}>
-				<h1>Gardens</h1>
-				<p className='subtitle' style={{ marginBottom: '1.5rem' }}>
-					Get updates, see changes, and stay informed.
-				</p>
-
-				<div
-					className='empty-card'
-					style={{
-						border: '1px solid #ddd',
-						borderRadius: '8px',
-						padding: '1.5rem',
-						maxWidth: '480px',
-						margin: '0 auto',
-						textAlign: 'center',
-					}}>
-					<h2 style={{ marginBottom: '0.5rem' }}>No Gardens Yet</h2>
-					<p style={{ marginBottom: '1.25rem' }}>
-						Add a Garden to your Gardens List.
-					</p>
-
-					<button
-						className='button button-primary'
-						onClick={() => navigate('/gardens')}>
-						Browse Gardens
-					</button>
-				</div>
-			</div>
-		);
-	}
+	const handleSetDefault = (garden) => {
+		setDefaultGarden(garden);
+	};
 
 	return (
-		<div className='page'>
-			<header className='page-header' style={{ marginBottom: '1.5rem' }}>
+		<div className='page my-gardens-page'>
+			<header className='page-header'>
 				<div>
-					<h1>{garden.name}</h1>
-					<div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-						<span className='button button-secondary'>
-							{formatGardenType(garden.garden_type)}
-						</span>
-						{garden.neighborhood ? <span>{garden.neighborhood}</span> : null}
-					</div>
+					<h1>My Gardens</h1>
+					<p>
+						Keep your go-to garden close, jump into your journal, and add bee
+						notes without leaving this page.
+					</p>
 				</div>
 			</header>
 
-			<section className='section'>
-				<h2 className='section-title'>Garden Metadata</h2>
-				<MetadataRow label='Address' value={garden.address} />
-				<MetadataRow label='Cross streets' value={garden.cross_streets} />
-				<MetadataRow label='Managed by' value={garden.managed_by} />
-				<MetadataRow label='URL' value={garden.url} isLink />
-				<MetadataRow label='Number of plots' value={garden.num_plots} />
-				<MetadataRow label='Size (sqft)' value={garden.size_sqft} />
-				<MetadataRow
-					label='Access'
-					value={garden.is_public ? 'Public' : 'Private'}
-				/>
-			</section>
+			{defaultGarden && (
+				<section className='my-gardens-page__hero'>
+					<h2 className='section-title'>Default Garden</h2>
+					<MyGardenCard
+						garden={defaultGarden}
+						isDefault
+						isPinned={Boolean(pinned[defaultGardenId])}
+						onViewGarden={handleViewGarden}
+						onLogJournal={handleLogJournal}
+						onAddBeeNotes={handleAddBeeNotes}
+						onSetDefault={handleSetDefault}
+					/>
+				</section>
+			)}
 
-			<section className='section'>
-				<h2 className='section-title'>Stats</h2>
-				<div
-					style={{
-						display: 'grid',
-						gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-						gap: '1rem',
-					}}>
-					<StatCard label='Journal Entries' value={journalEntryCount} />
-					<StatCard label='Beehouses' value={beehouseCount} />
-				</div>
-			</section>
-
-			{garden.latitude != null && garden.longitude != null ? (
-				<section className='section'>
-					<h2 className='section-title'>Map</h2>
-					<div>
-						Map placeholder — coordinates: {garden.latitude}, {garden.longitude}
+			{pinnedGardensWithoutDefault.length > 0 && (
+				<section className='my-gardens-page__pinned'>
+					<h2 className='section-title'>Pinned Gardens</h2>
+					<div className='my-gardens-page__grid'>
+						{pinnedGardensWithoutDefault.map((garden) => (
+							<MyGardenCard
+								key={garden.id}
+								garden={garden}
+								isDefault={false}
+								isPinned
+								onViewGarden={handleViewGarden}
+								onLogJournal={handleLogJournal}
+								onAddBeeNotes={handleAddBeeNotes}
+								onSetDefault={handleSetDefault}
+							/>
+						))}
 					</div>
 				</section>
-			) : null}
+			)}
 
-			<section className='section'>
-				<h2 className='section-title'>Quick Actions</h2>
-				<div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-					<button
-						type='button'
-						className='button button-secondary'
-						onClick={handleViewJournalEntries}>
-						View Journal Entries
-					</button>
-					<button
-						type='button'
-						className='button button-primary'
-						onClick={handleAddJournalEntry}>
-						Add Journal Entry
-					</button>
-					<button
-						type='button'
-						className='button button-secondary'
-						onClick={handleViewBeehouses}>
-						View Beehouses
-					</button>
-				</div>
-			</section>
+			{showEmptyState && (
+				<section className='my-gardens-page__empty'>
+					<h2 className='section-title'>No saved gardens yet</h2>
+					<p>
+						{isAuthenticated
+							? 'Browse gardens to pin your favorites or choose a default garden.'
+							: 'Sign in and browse gardens to start building your garden list.'}
+					</p>
+					<Link to='/garden-finder' className='button button-primary'>
+						Find a Garden
+					</Link>
+				</section>
+			)}
+
+			<div className='my-gardens-page__browse'>
+				<Link to='/garden-finder' className='my-gardens-page__browse-link'>
+					<span className='button button-secondary'>Browse More Gardens</span>
+				</Link>
+			</div>
 		</div>
 	);
 }
 
-export default MyGardenPage;
+export default MyGardensPage;
