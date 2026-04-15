@@ -5,7 +5,7 @@ import MainLayout from './layout/MainLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Journal from './pages/Journal';
-import MyGardenPage from './pages/MyGardenPage';
+import MyGardensPage from './pages/MyGardensPage';
 import GardenFinderPage from './pages/GardenFinderPage';
 import 'leaflet/dist/leaflet.css';
 
@@ -35,7 +35,7 @@ export default function App() {
 								</ProtectedRoute>
 							}
 						/>
-						<Route path='/my-garden' element={<MyGardenPage />} />
+						<Route path='/my-gardens' element={<MyGardensPage />} />
 
 						<Route
 							path='/garden/:id/journal'

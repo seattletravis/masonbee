@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import GardenCard from '../components/GardenCard';
 import './GardenFinderPage.css';
 import { useAuthContext } from '../auth/AuthProvider';
@@ -9,6 +9,10 @@ import useBootstrapGardens from '../hooks/useBootstrapGardens';
 import usePinnedGardens from '../hooks/usePinnedGardens';
 import useDefaultGarden from '../hooks/useDefaultGarden';
 import GardenMap from '../components/GardenMap';
+
+export function useGardenContext() {
+	return useOutletContext();
+}
 
 function useDebounce(value, delay = 300) {
 	const [debouncedValue, setDebouncedValue] = useState(value);
@@ -263,6 +267,13 @@ function GardenFinderPage() {
 
 	return (
 		<div className='page garden-finder-page'>
+			<Outlet
+				context={{
+					pinned,
+					hasPinnedGardens: Object.keys(pinned).length > 0,
+					defaultGarden,
+				}}
+			/>
 			<header className='page-header'>
 				<div>
 					<h1>Garden Finder</h1>

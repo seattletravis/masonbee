@@ -35,7 +35,7 @@ function Navbar() {
 
 			<div className='nav-right desktop-links'>
 				{defaultGarden && (
-					<Link to='/my-garden' className='nav-link'>
+					<Link to='/my-gardens' className='nav-link'>
 						My Gardens
 					</Link>
 				)}
@@ -79,7 +79,7 @@ function Navbar() {
 			{isOpen && (
 				<div className='mobile-menu'>
 					{defaultGarden && (
-						<Link to='/my-garden' className='mobile-link'>
+						<Link to='/my-gardens' className='mobile-link'>
 							My Garden
 						</Link>
 					)}

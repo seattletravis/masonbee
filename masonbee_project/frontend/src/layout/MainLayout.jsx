@@ -1,10 +1,11 @@
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useOutletContext } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { useEffect, useState } from 'react';
 import './MainLayout.css';
 
 function MainLayout() {
 	const location = useLocation();
+	const { defaultGarden, hasPinnedGardens } = useOutletContext() || {};
 	const pathname = location.pathname;
 
 	const hideNavbar = pathname === '/login';
@@ -26,7 +27,12 @@ function MainLayout() {
 
 	return (
 		<div className={`layout-container ${hideNavbar ? 'no-nav' : ''}`}>
-			{!hideNavbar && <Navbar />}
+			{!hideNavbar && (
+				<Navbar
+					defaultGarden={defaultGarden}
+					hasPinnedGardens={hasPinnedGardens}
+				/>
+			)}
 			<main className='layout-content'>
 				<Outlet />
 			</main>
