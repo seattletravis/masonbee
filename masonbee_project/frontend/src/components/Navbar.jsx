@@ -25,54 +25,56 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 
 	return (
 		<nav className='navbar'>
-			<div className='nav-left'>
-				<Link to='/' className='nav-logo'>
-					MasonBee
-				</Link>
-			</div>
-
-			<div className='nav-right desktop-links'>
-				{showMyGardens && (
-					<Link to='/my-gardens' className='nav-link'>
-						My Gardens
+			<div className='navbar__inner'>
+				<div className='nav-left'>
+					<Link to='/' className='nav-logo'>
+						MasonBee
 					</Link>
-				)}
+				</div>
 
-				{authenticated && (
-					<>
-						<Link to='/garden-finder' className='nav-link'>
-							Garden Finder
+				<div className='nav-right desktop-links'>
+					{showMyGardens && (
+						<Link to='/my-gardens' className='nav-link'>
+							My Gardens
 						</Link>
+					)}
 
-						<Link to='/dashboard' className='nav-link'>
-							Dashboard
+					{authenticated && (
+						<>
+							<Link to='/garden-finder' className='nav-link'>
+								Garden Finder
+							</Link>
+
+							<Link to='/dashboard' className='nav-link'>
+								Dashboard
+							</Link>
+						</>
+					)}
+
+					{!authenticated && (
+						<Link to='/login' className='nav-link'>
+							Login
 						</Link>
-					</>
-				)}
+					)}
 
-				{!authenticated && (
-					<Link to='/login' className='nav-link'>
-						Login
-					</Link>
-				)}
+					{authenticated && (
+						<button type='button' className='nav-button' onClick={handleLogout}>
+							Logout
+						</button>
+					)}
+				</div>
 
-				{authenticated && (
-					<button type='button' className='nav-button' onClick={handleLogout}>
-						Logout
-					</button>
-				)}
+				<button
+					type='button'
+					className={`hamburger mobile-only ${isOpen ? 'open' : ''}`}
+					onClick={toggleMenu}
+					aria-label='Toggle navigation menu'
+					aria-expanded={isOpen}>
+					<div className='bar' />
+					<div className='bar' />
+					<div className='bar' />
+				</button>
 			</div>
-
-			<button
-				type='button'
-				className={`hamburger mobile-only ${isOpen ? 'open' : ''}`}
-				onClick={toggleMenu}
-				aria-label='Toggle navigation menu'
-				aria-expanded={isOpen}>
-				<div className='bar' />
-				<div className='bar' />
-				<div className='bar' />
-			</button>
 
 			{isOpen && (
 				<div className='mobile-menu'>

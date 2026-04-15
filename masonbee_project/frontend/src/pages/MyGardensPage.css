@@ -1,42 +1,32 @@
+/* Root container for the page */
 .my-gardens-page {
 	display: flex;
 	flex-direction: column;
 	gap: 1.5rem;
-	padding: 1rem;
+
+	/* Fix: Add breathing room on left/right */
+	padding: 1.5rem;
+
+	/* Fix: Center content and prevent edge hugging */
 	max-width: 900px;
 	margin: 0 auto;
 }
 
-.my-gardens-page__hero {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-	margin-bottom: 1.5rem;
-}
-
-.my-gardens-page__hero .garden-card {
-	border: 1px solid rgba(15, 23, 42, 0.08);
-	box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
-}
-
+/* Section spacing */
+.my-gardens-page__hero,
 .my-gardens-page__pinned {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-	margin-bottom: 1.5rem;
+	margin-bottom: 2rem;
 }
 
+/* Grid spacing */
 .my-gardens-page__grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 	gap: 1rem;
 }
 
+/* Empty state spacing */
 .my-gardens-page__empty {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 1rem;
 	padding: 2rem;
 	border-radius: 1rem;
 	background: linear-gradient(
@@ -47,58 +37,21 @@
 	border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
+/* Browse More Gardens CTA */
 .my-gardens-page__browse {
 	display: flex;
 	justify-content: flex-start;
-	margin-top: 2rem;
+	margin-top: 2rem; /* Fix: Add spacing above CTA */
 }
 
 .my-gardens-page__browse-link {
 	text-decoration: none;
 }
 
-.my-garden-card {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-	transition:
-		box-shadow 0.2s ease,
-		transform 0.2s ease;
-
-	border: 1px solid rgba(15, 23, 42, 0.08);
-	border-radius: 1rem;
-	padding: 1rem;
-	background: #fff;
-}
-
-.my-garden-card:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
-}
-
-.my-garden-card > .garden-card .garden-card__actions {
-	display: none;
-}
-
-.my-garden-card__actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem;
-}
-
-.my-garden-card__status {
-	margin: 0;
-	font-size: 0.95rem;
-	color: #475569;
-}
-
+/* Mobile adjustments */
 @media (max-width: 640px) {
-	.my-garden-card__actions {
-		flex-direction: column;
-	}
-
-	.my-garden-card__actions .button {
-		width: 100%;
+	.my-gardens-page {
+		padding: 1rem; /* Slightly tighter on mobile */
 	}
 
 	.my-gardens-page__browse {

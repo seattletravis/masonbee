@@ -5,15 +5,17 @@ import './MyGardensPage.css';
 
 function MyGardensPage() {
 	const navigate = useNavigate();
+
 	const {
 		defaultGarden,
 		setDefaultGarden,
 		pinned,
+		setPinned,
 		hasPinnedGardens,
 		isAuthenticated,
 	} = useAuthContext();
 
-	// Normalize pinned gardens (AuthProvider already ensures clean shape)
+	// Normalize pinned gardens (AuthProvider ensures clean shape)
 	const pinnedGardens = Object.values(pinned || {}).map(
 		(record) => record.garden,
 	);
@@ -26,6 +28,7 @@ function MyGardensPage() {
 	const showEmptyState =
 		!defaultGarden && pinnedGardensWithoutDefault.length === 0;
 
+	// Handlers
 	const handleViewGarden = (garden) => {
 		navigate(`/garden/${garden.id}`);
 	};
@@ -42,6 +45,13 @@ function MyGardensPage() {
 		setDefaultGarden(garden);
 	};
 
+	const handleTogglePin = (garden) => {
+		const id = String(garden.id);
+		const updated = { ...pinned };
+		delete updated[id];
+		setPinned(updated);
+	};
+
 	return (
 		<div className='page my-gardens-page'>
 			<header className='page-header'>
@@ -54,6 +64,7 @@ function MyGardensPage() {
 				</div>
 			</header>
 
+			{/* Default Garden */}
 			{defaultGarden && (
 				<section className='my-gardens-page__hero'>
 					<h2 className='section-title'>Default Garden</h2>
@@ -65,10 +76,12 @@ function MyGardensPage() {
 						onLogJournal={handleLogJournal}
 						onAddBeeNotes={handleAddBeeNotes}
 						onSetDefault={handleSetDefault}
+						onTogglePin={handleTogglePin}
 					/>
 				</section>
 			)}
 
+			{/* Pinned Gardens */}
 			{pinnedGardensWithoutDefault.length > 0 && (
 				<section className='my-gardens-page__pinned'>
 					<h2 className='section-title'>Pinned Gardens</h2>
@@ -83,12 +96,14 @@ function MyGardensPage() {
 								onLogJournal={handleLogJournal}
 								onAddBeeNotes={handleAddBeeNotes}
 								onSetDefault={handleSetDefault}
+								onTogglePin={handleTogglePin}
 							/>
 						))}
 					</div>
 				</section>
 			)}
 
+			{/* Empty State */}
 			{showEmptyState && (
 				<section className='my-gardens-page__empty'>
 					<h2 className='section-title'>No saved gardens yet</h2>
@@ -103,6 +118,7 @@ function MyGardensPage() {
 				</section>
 			)}
 
+			{/* Browse More */}
 			<div className='my-gardens-page__browse'>
 				<Link to='/garden-finder' className='my-gardens-page__browse-link'>
 					<span className='button button-secondary'>Browse More Gardens</span>
