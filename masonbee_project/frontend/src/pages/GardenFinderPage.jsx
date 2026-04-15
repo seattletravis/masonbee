@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import GardenCard from '../components/GardenCard';
+import GardenFinderCard from '../components/GardenFinderCard';
 import './GardenFinderPage.css';
 import { useAuthContext } from '../auth/AuthProvider';
 import { get } from '../api/client';
@@ -363,7 +363,7 @@ function GardenFinderPage() {
 						const pinnedRecord = pinned[id];
 
 						return (
-							<GardenCard
+							<GardenFinderCard
 								key={garden.id}
 								garden={garden}
 								isPinned={Boolean(pinnedRecord)}

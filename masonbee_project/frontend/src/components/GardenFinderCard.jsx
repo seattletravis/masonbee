@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import './GardenCard.css';
+import './GardenFinderCard.css';
 
 function formatAccessLabel(isPublic) {
 	if (isPublic == null) return 'Unknown Access';
@@ -29,7 +29,7 @@ function formatDistance(distanceMiles) {
 		: `${distanceMiles.toFixed(2)} mi away`;
 }
 
-function GardenCard({
+function GardenFinderCard({
 	garden,
 	isPinned,
 	isDefault,
@@ -135,4 +135,4 @@ function GardenCard({
 	);
 }
 
-export default GardenCard;
+export default GardenFinderCard;
