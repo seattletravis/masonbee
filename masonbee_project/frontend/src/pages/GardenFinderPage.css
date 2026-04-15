@@ -73,3 +73,8 @@
 .section p {
 	color: #555;
 }
+
+.garden-finder-map-container {
+	padding: 0 1rem 1rem;
+	height: calc(100vh - 200px);
+}

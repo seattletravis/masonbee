@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Journal from './pages/Journal';
 import MyGardenPage from './pages/MyGardenPage';
 import GardenFinderPage from './pages/GardenFinderPage';
+import 'leaflet/dist/leaflet.css';
 
 export default function App() {
 	return (
