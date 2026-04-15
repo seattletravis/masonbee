@@ -5,14 +5,14 @@
 	box-sizing: border-box;
 }
 
-/* This ensures all pages clear the fixed navbar */
+/* Default: all pages get navbar padding */
 .layout-content {
-	padding-top: calc(var(--navbar-height) + 1rem);
+	padding-top: calc(var(--navbar-height));
 	flex: 1;
 	box-sizing: border-box;
 }
 
 /* Login page: no navbar = no padding */
 .no-nav .layout-content {
-	padding-top: 0;
+	padding-top: 0 !important;
 }
