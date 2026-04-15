@@ -35,8 +35,8 @@ const defaultIcon = new L.Icon({
 
 const userIcon = new L.Icon({
 	iconUrl: 'https://maps.gstatic.com/mapfiles/ms2/micons/blue-dot.png',
-	iconSize: [20, 20],
-	iconAnchor: [10, 10],
+	iconSize: [40, 40],
+	iconAnchor: [20, 20],
 });
 
 // ---------------------------
