@@ -173,6 +173,7 @@ function GardenFinderPage() {
 		},
 		[setError],
 	);
+	const [isFullscreen, setIsFullscreen] = useState(false);
 
 	// 🌱 Fetch gardens when search changes
 	useEffect(() => {
@@ -344,7 +345,8 @@ function GardenFinderPage() {
 			)}
 
 			{viewMode === 'map' && (
-				<section className='garden-finder-map-container'>
+				<section
+					className={`garden-finder-map-container ${isFullscreen ? 'fullscreen' : ''}`}>
 					<GardenMap
 						gardens={displayedGardens}
 						pinned={pinned}
@@ -352,6 +354,8 @@ function GardenFinderPage() {
 						userLocation={location}
 						onSelectGarden={handleViewGarden}
 						shouldSortByDistance={shouldSortByDistance}
+						isFullscreen={isFullscreen}
+						setIsFullscreen={setIsFullscreen}
 					/>
 				</section>
 			)}

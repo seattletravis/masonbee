@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
 	MapContainer,
 	TileLayer,
@@ -42,11 +43,15 @@ const userIcon = new L.Icon({
 // ---------------------------
 // Resize Handler
 // ---------------------------
-function ResizeHandler() {
+function ResizeHandler({ isFullscreen }) {
 	const map = useMap();
+
 	useEffect(() => {
-		setTimeout(() => map.invalidateSize(), 200);
-	}, [map]);
+		setTimeout(() => {
+			map.invalidateSize();
+		}, 200);
+	}, [map, isFullscreen]); // ⭐ rerun when fullscreen toggles
+
 	return null;
 }
 
@@ -93,82 +98,93 @@ export default function GardenMap({
 	userLocation,
 	onSelectGarden,
 	shouldSortByDistance,
+	isFullscreen,
+	setIsFullscreen,
 }) {
+	// const [isFullscreen, setIsFullscreen] = useState(false); - Now coming from props
 	const center = userLocation
 		? [userLocation.latitude, userLocation.longitude]
 		: [47.6062, -122.3321]; // Seattle fallback
 
 	return (
-		<MapContainer
-			center={center}
-			zoom={12}
-			scrollWheelZoom={true}
-			className='garden-map'>
-			<ResizeHandler />
-			<FlyToGarden garden={defaultGarden} />
-			<FlyToUser
-				userLocation={userLocation}
-				shouldSortByDistance={shouldSortByDistance}
-			/>
+		<div
+			className={`garden-finder-map-container ${isFullscreen ? 'fullscreen' : ''}`}>
+			<MapContainer
+				center={center}
+				zoom={12}
+				scrollWheelZoom={true}
+				className={`garden-map ${isFullscreen ? 'fullscreen' : ''}`}>
+				<ResizeHandler isFullscreen={isFullscreen} />
+				<FlyToGarden garden={defaultGarden} />
+				<FlyToUser
+					userLocation={userLocation}
+					shouldSortByDistance={shouldSortByDistance}
+				/>
 
-			<TileLayer
-				attribution='&copy; OpenStreetMap contributors'
-				url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-			/>
+				<TileLayer
+					attribution='&copy; OpenStreetMap contributors'
+					url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+				/>
 
-			{/* User location */}
-			{userLocation && (
-				<Marker
-					position={[userLocation.latitude, userLocation.longitude]}
-					icon={userIcon}>
-					<Popup>You are here</Popup>
-				</Marker>
-			)}
+				{/* User location */}
+				{userLocation && (
+					<Marker
+						position={[userLocation.latitude, userLocation.longitude]}
+						icon={userIcon}>
+						<Popup>You are here</Popup>
+					</Marker>
+				)}
+				<div
+					className='map-fullscreen-toggle'
+					onClick={() => setIsFullscreen(!isFullscreen)}>
+					{isFullscreen ? '🗗' : '🗖'}
+				</div>
 
-			{/* Tuned clustering */}
-			<MarkerClusterGroup
-				chunkedLoading
-				maxClusterRadius={20} // ⭐ Show ~2× more pins before clustering
-				spiderfyOnMaxZoom={true}
-				showCoverageOnHover={false}
-				zoomToBoundsOnClick={true}>
-				{gardens.map((g) => {
-					if (!g.latitude || !g.longitude) return null;
+				{/* Tuned clustering */}
+				<MarkerClusterGroup
+					chunkedLoading
+					maxClusterRadius={20} // ⭐ Show ~2× more pins before clustering
+					spiderfyOnMaxZoom={true}
+					showCoverageOnHover={false}
+					zoomToBoundsOnClick={true}>
+					{gardens.map((g) => {
+						if (!g.latitude || !g.longitude) return null;
 
-					const isDefault = defaultGarden?.id === g.id;
-					const isPinned = Boolean(pinned[String(g.id)]);
+						const isDefault = defaultGarden?.id === g.id;
+						const isPinned = Boolean(pinned[String(g.id)]);
 
-					const icon = isDefault
-						? defaultIcon
-						: isPinned
-							? pinnedIcon
-							: regularIcon;
+						const icon = isDefault
+							? defaultIcon
+							: isPinned
+								? pinnedIcon
+								: regularIcon;
 
-					return (
-						<Marker
-							key={g.id}
-							position={[g.latitude, g.longitude]}
-							icon={icon}
-							eventHandlers={{
-								click: () => onSelectGarden(g),
-							}}>
-							<Tooltip direction='top' offset={[0, -10]} opacity={0.9}>
-								{g.name}
-							</Tooltip>
+						return (
+							<Marker
+								key={g.id}
+								position={[g.latitude, g.longitude]}
+								icon={icon}
+								eventHandlers={{
+									click: () => onSelectGarden(g),
+								}}>
+								<Tooltip direction='top' offset={[0, -10]} opacity={0.9}>
+									{g.name}
+								</Tooltip>
 
-							<Popup>
-								<strong>{g.name}</strong>
-								<br />
-								<button
-									className='button button-small'
-									onClick={() => onSelectGarden(g)}>
-									View Garden
-								</button>
-							</Popup>
-						</Marker>
-					);
-				})}
-			</MarkerClusterGroup>
-		</MapContainer>
+								<Popup>
+									<strong>{g.name}</strong>
+									<br />
+									<button
+										className='button button-small'
+										onClick={() => onSelectGarden(g)}>
+										View Garden
+									</button>
+								</Popup>
+							</Marker>
+						);
+					})}
+				</MarkerClusterGroup>
+			</MapContainer>
+		</div>
 	);
 }

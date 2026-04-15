@@ -9,3 +9,44 @@
 	padding: 0 1rem 1rem;
 	height: calc(100vh - 200px);
 }
+
+/* Fullscreen toggle button */
+.map-fullscreen-toggle {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 9999;
+	background: white;
+	border-radius: 6px;
+	padding: 6px 10px;
+	font-size: 20px;
+	cursor: pointer;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+	user-select: none;
+}
+
+/* Fullscreen map mode */
+.garden-map.fullscreen {
+	position: fixed !important;
+	top: 0 !important;
+	left: 0 !important;
+	width: 100vw !important;
+	height: 100vh !important;
+	z-index: 9998 !important;
+	border-radius: 0 !important;
+}
+
+.garden-finder-map-container.fullscreen {
+	position: fixed !important;
+	top: 0 !important;
+	left: 0 !important;
+	width: 100vw !important;
+	height: 100vh !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	z-index: 9997 !important;
+}
+
+.map-fullscreen-toggle {
+	pointer-events: auto;
+}
