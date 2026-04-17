@@ -5,7 +5,7 @@ import MainLayout from './layout/MainLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Journal from './pages/Journal';
-import JournalEntryForm from './components/JournalEntryForm';
+// import JournalEntryForm from './components/JournalEntryForm';
 import MyGardensPage from './pages/MyGardensPage';
 import GardenFinderPage from './pages/GardenFinderPage';
 import 'leaflet/dist/leaflet.css';
@@ -36,14 +36,14 @@ export default function App() {
 								</ProtectedRoute>
 							}
 						/>
-						<Route
+						{/* <Route
 							path='/journal/new'
 							element={
 								<ProtectedRoute>
 									<JournalEntryForm isOpen={true} />
 								</ProtectedRoute>
 							}
-						/>
+						/> */}
 
 						<Route path='/my-gardens' element={<MyGardensPage />} />
 

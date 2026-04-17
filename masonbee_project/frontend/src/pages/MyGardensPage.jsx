@@ -39,7 +39,7 @@ function MyGardensPage() {
 	};
 
 	const handleLogJournal = (garden) => {
-		navigate(`/journal/new?gardenId=${garden.id}`);
+		navigate(`/journal?gardenId=${garden.id}`);
 	};
 
 	const handleAddBeeNotes = (garden) => {

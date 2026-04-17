@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { deleteJournalEntry, getJournalEntries } from '../api/journal';
 import JournalEntryForm from '../components/JournalEntryForm';
 import './Journal.css';
@@ -13,64 +13,37 @@ const CATEGORY_OPTIONS = [
 	{ value: 'other', label: 'Other' },
 ];
 
-const categoryLabelMap = CATEGORY_OPTIONS.reduce((accumulator, option) => {
-	accumulator[option.value] = option.label;
-	return accumulator;
+const categoryLabelMap = CATEGORY_OPTIONS.reduce((acc, option) => {
+	acc[option.value] = option.label;
+	return acc;
 }, {});
 
 function normalizeEntries(payload) {
-	if (Array.isArray(payload)) {
-		return payload;
-	}
-
-	if (Array.isArray(payload?.results)) {
-		return payload.results;
-	}
-
+	if (Array.isArray(payload)) return payload;
+	if (Array.isArray(payload?.results)) return payload.results;
 	return [];
 }
 
 function truncateNotes(notes) {
-	if (!notes) {
-		return 'No notes yet.';
-	}
-
-	if (notes.length <= 200) {
-		return notes;
-	}
-
+	if (!notes) return 'No notes yet.';
+	if (notes.length <= 200) return notes;
 	return `${notes.slice(0, 200).trimEnd()}...`;
 }
 
 function getGardenName(entry) {
-	if (typeof entry?.garden_name === 'string' && entry.garden_name.trim()) {
-		return entry.garden_name;
-	}
-
-	if (
-		typeof entry?.garden_display === 'string' &&
-		entry.garden_display.trim()
-	) {
-		return entry.garden_display;
-	}
-
-	if (typeof entry?.garden_label === 'string' && entry.garden_label.trim()) {
-		return entry.garden_label;
-	}
-
-	if (typeof entry?.garden === 'object' && entry.garden?.name) {
-		return entry.garden.name;
-	}
-
-	if (typeof entry?.garden_details?.name === 'string') {
-		return entry.garden_details.name;
-	}
-
+	if (entry?.garden_name?.trim()) return entry.garden_name;
+	if (entry?.garden_display?.trim()) return entry.garden_display;
+	if (entry?.garden_label?.trim()) return entry.garden_label;
+	if (entry?.garden?.name) return entry.garden.name;
+	if (entry?.garden_details?.name) return entry.garden_details.name;
 	return '';
 }
 
 function Journal() {
 	const { id: routeGardenId } = useParams();
+	const [searchParams] = useSearchParams();
+	const gardenIdFromQuery = searchParams.get('gardenId');
+
 	const [entries, setEntries] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [loadError, setLoadError] = useState('');
@@ -101,13 +74,21 @@ function Journal() {
 	useEffect(() => {
 		loadEntries();
 	}, [loadEntries]);
+
+	// ⭐ Auto-open form when coming from My Gardens
+	useEffect(() => {
+		if (gardenIdFromQuery) {
+			setEntryBeingEdited(null);
+			setIsFormOpen(true);
+		}
+	}, [gardenIdFromQuery]);
+
 	const gardenOptions = useMemo(() => {
 		const map = new Map();
 
 		for (const entry of entries) {
 			const id = entry.garden;
 			const name = getGardenName(entry) || `Garden ${id}`;
-
 			if (id && !map.has(id)) {
 				map.set(id, { id, name });
 			}
@@ -119,7 +100,6 @@ function Journal() {
 	const displayedEntries = useMemo(() => {
 		let filtered = entries;
 
-		// If on /journal/:id, route filter takes priority
 		if (routeGardenId) {
 			filtered = filtered.filter(
 				(entry) => String(entry.garden) === String(routeGardenId),
@@ -159,18 +139,14 @@ function Journal() {
 			'Delete this journal entry? This action cannot be undone.',
 		);
 
-		if (!confirmed) {
-			return;
-		}
+		if (!confirmed) return;
 
 		setDeletingEntryId(entryId);
 		setDeleteError('');
 
 		try {
 			await deleteJournalEntry(entryId);
-			setEntries((currentEntries) =>
-				currentEntries.filter((entry) => entry.id !== entryId),
-			);
+			setEntries((current) => current.filter((entry) => entry.id !== entryId));
 		} catch (error) {
 			setDeleteError(
 				error?.response?.data?.detail ||
@@ -218,20 +194,16 @@ function Journal() {
 					</div>
 				</header>
 
-				{loadError ? (
-					<p className='journal-feedback error'>{loadError}</p>
-				) : null}
-				{deleteError ? (
-					<p className='journal-feedback error'>{deleteError}</p>
-				) : null}
+				{loadError && <p className='journal-feedback error'>{loadError}</p>}
+				{deleteError && <p className='journal-feedback error'>{deleteError}</p>}
 
-				{isLoading ? (
+				{isLoading && (
 					<div className='journal-state-card'>
 						<p>Loading journal entries...</p>
 					</div>
-				) : null}
+				)}
 
-				{!isLoading && displayedEntries.length === 0 ? (
+				{!isLoading && displayedEntries.length === 0 && (
 					<div className='journal-state-card'>
 						<h2>No entries yet</h2>
 						<p>
@@ -239,9 +211,9 @@ function Journal() {
 							or garden maintenance.
 						</p>
 					</div>
-				) : null}
+				)}
 
-				{!isLoading && displayedEntries.length > 0 ? (
+				{!isLoading && displayedEntries.length > 0 && (
 					<div className='journal-grid'>
 						{displayedEntries.map((entry) => {
 							const gardenName = getGardenName(entry);
@@ -258,9 +230,9 @@ function Journal() {
 										</span>
 									</div>
 
-									{gardenName ? (
+									{gardenName && (
 										<p className='journal-garden-label'>Garden: {gardenName}</p>
-									) : null}
+									)}
 
 									<p className='journal-card-notes'>
 										{truncateNotes(entry.notes)}
@@ -285,7 +257,7 @@ function Journal() {
 							);
 						})}
 					</div>
-				) : null}
+				)}
 			</div>
 
 			<JournalEntryForm
