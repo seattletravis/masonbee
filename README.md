@@ -591,3 +591,65 @@ Smooth transitions
 Consistent card components
 
 Mobile‑first layout improvements
+
+🚀 New Feature: My Gardens Page - Update 4/17/26
+A new My Gardens page has been added to the application, giving authenticated users a dedicated dashboard for managing their personal gardens. This page is designed to provide quick access to the gardens a user has pinned or set as their default, along with tools for interacting with each garden.
+
+✨ Key Features
+Default Garden Section  
+Displays the user’s selected default garden at the top of the page with clear visual indicators and quick‑action buttons.
+
+Pinned Gardens Section  
+Shows all gardens the user has pinned, excluding the default garden to avoid duplication.
+
+Standalone MyGardenCard Component  
+Introduced a new, fully independent card component specifically for the My Gardens page.
+This card:
+
+Presents a clean, personalized layout
+
+Shows garden details (address, cross streets, plots, manager)
+
+Includes action buttons for:
+
+Viewing the garden
+
+Logging a journal entry
+
+Adding bee house notes
+
+Setting the garden as default
+
+Unpinning the garden
+
+Decoupled Architecture  
+The MyGardenCard is intentionally not based on the GardenFinderCard.
+The Finder card is optimized for discovery, while the My Gardens card is optimized for personal management and interaction.
+
+Updated Layout & Styling
+
+Added a centered page container with consistent max‑width
+
+Updated Navbar layout to ensure symmetrical padding and proper centering
+
+Added a polished visual style for MyGardenCard, including hover elevation, badges, and responsive button layout
+
+🧭 Navigation Updates
+The Navbar now conditionally displays the My Gardens link when:
+
+A default garden exists, or
+
+The user has pinned gardens
+
+This ensures the link only appears when the page is relevant to the user.
+
+🛠 Internal Improvements
+Cleaned up layout inconsistencies across the app
+
+Introduced a .navbar\_\_inner wrapper for proper centering
+
+Standardized padding across breakpoints
+
+Improved separation of concerns between Finder and My Gardens components
+
+Prepared the architecture for future enhancements (garden stats, beehouse summaries, seasonal insights, etc.)
