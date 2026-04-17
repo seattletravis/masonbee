@@ -1,5 +1,21 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import './MyGardenCard.css';
+
+function formatManagerName(garden) {
+	return garden.managed_by || 'Not listed';
+}
+
+function formatPlotCount(garden) {
+	return garden.num_plots ?? 'Not listed';
+}
+
+function formatAddress(garden) {
+	return garden.address || 'Not listed';
+}
+
+function formatCrossStreets(garden) {
+	return garden.cross_streets || 'Not listed';
+}
 
 function MyGardenCard({
 	garden,
@@ -13,14 +29,17 @@ function MyGardenCard({
 }) {
 	if (!garden) return null;
 
-	const { name, address, cross_streets, manager, num_plots } = garden;
+	const address = useMemo(() => formatAddress(garden), [garden]);
+	const crossStreets = useMemo(() => formatCrossStreets(garden), [garden]);
+	const managerName = useMemo(() => formatManagerName(garden), [garden]);
+	const plotCount = useMemo(() => formatPlotCount(garden), [garden]);
 
 	return (
 		<div
 			className={`my-garden-card${isDefault ? ' my-garden-card--default' : ''}`}>
 			{/* Header */}
 			<div className='my-garden-card__header'>
-				<h3 className='my-garden-card__title'>{name}</h3>
+				<h3 className='my-garden-card__title'>{garden.name}</h3>
 
 				<div className='my-garden-card__badges'>
 					{isDefault && (
@@ -40,16 +59,16 @@ function MyGardenCard({
 			{/* Garden Info */}
 			<div className='my-garden-card__info'>
 				<p>
-					<strong>Address:</strong> {address || 'Not listed'}
+					<strong>Address:</strong> {address}
 				</p>
 				<p>
-					<strong>Cross streets:</strong> {cross_streets || 'Not listed'}
+					<strong>Cross streets:</strong> {crossStreets}
 				</p>
 				<p>
-					<strong>Plots:</strong> {num_plots ?? 'Not listed'}
+					<strong>Plots:</strong> {plotCount}
 				</p>
 				<p>
-					<strong>Manager:</strong> {manager || 'Not listed'}
+					<strong>Manager:</strong> {managerName}
 				</p>
 			</div>
 

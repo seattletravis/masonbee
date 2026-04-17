@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MyGardenCard from '../components/MyGardenCard';
 import { useAuthContext } from '../auth/AuthProvider';
+import { get } from '../api/client';
+
 import './MyGardensPage.css';
 
 function MyGardensPage() {
@@ -51,6 +54,33 @@ function MyGardensPage() {
 		delete updated[id];
 		setPinned(updated);
 	};
+
+	useEffect(() => {
+		async function hydrate() {
+			const updatedPinned = { ...pinned };
+
+			// Hydrate default garden
+			if (defaultGarden?.id) {
+				const full = await get(`/api/gardens/${defaultGarden.id}/`);
+				if (full) setDefaultGarden(full);
+			}
+
+			// Hydrate pinned gardens
+			for (const key of Object.keys(updatedPinned)) {
+				const g = updatedPinned[key]?.garden;
+				if (g?.id) {
+					const full = await get(`/api/gardens/${g.id}/`);
+					if (full) {
+						updatedPinned[key].garden = full;
+					}
+				}
+			}
+
+			setPinned(updatedPinned);
+		}
+
+		hydrate();
+	}, [defaultGarden?.id, Object.keys(pinned).length]);
 
 	return (
 		<div className='page my-gardens-page'>
