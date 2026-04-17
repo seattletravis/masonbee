@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import * as api from '../api/client';
 import { createJournalEntry, updateJournalEntry } from '../api/journal';
 
@@ -53,7 +53,13 @@ function buildInitialFormState(entry, routeGardenId) {
 }
 
 function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
-	const { id: routeGardenId } = useParams();
+	const [searchParams] = useSearchParams();
+	const gardenIdFromQuery = searchParams.get('gardenId');
+	const [selectedGarden, setSelectedGarden] = useState(null);
+
+	const { id: routeGardenIdFromUrl } = useParams();
+	const routeGardenId = gardenIdFromQuery || routeGardenIdFromUrl;
+
 	const [formData, setFormData] = useState(() =>
 		buildInitialFormState(entry, routeGardenId),
 	);
@@ -117,25 +123,39 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 		};
 	}, [isGardenLocked, isOpen]);
 
+	useEffect(() => {
+		if (!routeGardenId) return;
+
+		let isMounted = true;
+
+		async function loadGarden() {
+			try {
+				const data = await api.get(`/api/gardens/${routeGardenId}/`);
+				if (isMounted) setSelectedGarden(data);
+			} catch (err) {
+				console.error('Failed to load garden', err);
+			}
+		}
+
+		loadGarden();
+
+		return () => {
+			isMounted = false;
+		};
+	}, [routeGardenId]);
+
 	const selectedGardenName = useMemo(() => {
-		if (!isGardenLocked) {
-			return '';
-		}
+		if (!isGardenLocked) return '';
 
-		if (entry?.garden_name) {
-			return entry.garden_name;
-		}
+		if (selectedGarden?.name) return selectedGarden.name;
 
-		if (
-			entry?.garden &&
-			typeof entry.garden === 'object' &&
-			entry.garden.name
-		) {
+		if (entry?.garden_name) return entry.garden_name;
+
+		if (entry?.garden && typeof entry.garden === 'object' && entry.garden.name)
 			return entry.garden.name;
-		}
 
 		return `Garden #${routeGardenId}`;
-	}, [entry, isGardenLocked, routeGardenId]);
+	}, [isGardenLocked, selectedGarden, entry, routeGardenId]);
 
 	if (!isOpen) {
 		return null;

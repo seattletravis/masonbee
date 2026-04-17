@@ -1,13 +1,15 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MyGardenCard from '../components/MyGardenCard';
 import { useAuthContext } from '../auth/AuthProvider';
 import { get } from '../api/client';
-
 import './MyGardensPage.css';
 
 function MyGardensPage() {
 	const navigate = useNavigate();
+
+	const [showJournalForm, setShowJournalForm] = useState(false);
+	const [journalGardenId, setJournalGardenId] = useState(null);
 
 	const {
 		defaultGarden,
@@ -82,6 +84,12 @@ function MyGardensPage() {
 		hydrate();
 	}, [defaultGarden?.id, Object.keys(pinned).length]);
 
+	useEffect(() => {
+		if (!isAuthenticated) {
+			navigate('/login');
+		}
+	}, [isAuthenticated, navigate]);
+
 	return (
 		<div className='page my-gardens-page'>
 			<header className='page-header'>
@@ -97,7 +105,7 @@ function MyGardensPage() {
 			{/* Default Garden */}
 			{defaultGarden && (
 				<section className='my-gardens-page__hero'>
-					<h2 className='section-title'>Default Garden</h2>
+					<h2 className='section-title'>My Default Garden</h2>
 					<MyGardenCard
 						garden={defaultGarden}
 						isDefault
@@ -114,7 +122,7 @@ function MyGardensPage() {
 			{/* Pinned Gardens */}
 			{pinnedGardensWithoutDefault.length > 0 && (
 				<section className='my-gardens-page__pinned'>
-					<h2 className='section-title'>Pinned Gardens</h2>
+					<h2 className='section-title'>My Pinned Gardens</h2>
 					<div className='my-gardens-page__grid'>
 						{pinnedGardensWithoutDefault.map((garden) => (
 							<MyGardenCard
