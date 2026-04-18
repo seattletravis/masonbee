@@ -35,7 +35,7 @@ function MyGardensPage() {
 
 	// Handlers
 	const handleViewGarden = (garden) => {
-		navigate(`/garden/${garden.id}`);
+		navigate(`/gardens/${garden.id}`);
 	};
 
 	const handleLogJournal = (garden) => {

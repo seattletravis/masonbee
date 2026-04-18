@@ -8,6 +8,7 @@ import Journal from './pages/Journal';
 // import JournalEntryForm from './components/JournalEntryForm';
 import MyGardensPage from './pages/MyGardensPage';
 import GardenFinderPage from './pages/GardenFinderPage';
+import ViewOneGardenPage from './pages/ViewOneGardenPage';
 import 'leaflet/dist/leaflet.css';
 
 export default function App() {
@@ -36,14 +37,7 @@ export default function App() {
 								</ProtectedRoute>
 							}
 						/>
-						{/* <Route
-							path='/journal/new'
-							element={
-								<ProtectedRoute>
-									<JournalEntryForm isOpen={true} />
-								</ProtectedRoute>
-							}
-						/> */}
+						<Route path='/gardens/:id' element={<ViewOneGardenPage />} />
 
 						<Route path='/my-gardens' element={<MyGardensPage />} />
 

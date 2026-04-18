@@ -1,0 +1,66 @@
+/* Root page wrapper */
+.view-one-garden-page {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+	padding: 1rem;
+}
+
+/* Header */
+.view-one-garden-page__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	flex-wrap: wrap;
+	gap: 1rem;
+}
+
+.view-one-garden-page__location {
+	font-size: 1rem;
+	opacity: 0.8;
+}
+
+.view-one-garden-page__timestamps {
+	font-size: 0.9rem;
+	opacity: 0.7;
+}
+
+/* Header actions */
+.view-one-garden-page__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+}
+
+/* Metadata */
+.view-one-garden-page__metadata {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.view-one-garden-page__meta-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 0.75rem;
+}
+
+/* Map placeholder */
+.view-one-garden-page__map-placeholder {
+	height: 300px;
+	border: 1px solid currentColor;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	opacity: 0.7;
+}
+
+/* Beehouses & Journal sections reuse journal-grid and journal-card */
+.view-one-garden-page__beehouses,
+.view-one-garden-page__journal {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
