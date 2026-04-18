@@ -125,7 +125,7 @@ function ViewOneGardenPage() {
 	);
 
 	const handleLogJournal = useCallback(() => {
-		navigate(`/journal?gardenId=${id}`);
+		navigate(`/journal?gardenId=${id}&returnTo=/gardens/${id}`);
 	}, [id, navigate]);
 
 	const handleAddBeeNotes = useCallback(() => {

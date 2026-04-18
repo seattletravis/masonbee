@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { deleteJournalEntry, getJournalEntries } from '../api/journal';
 import JournalEntryForm from '../components/JournalEntryForm';
 import './Journal.css';
@@ -41,8 +41,10 @@ function getGardenName(entry) {
 
 function Journal() {
 	const { id: routeGardenId } = useParams();
+	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
 	const gardenIdFromQuery = searchParams.get('gardenId');
+	const returnTo = searchParams.get('returnTo');
 
 	const [entries, setEntries] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
@@ -132,6 +134,10 @@ function Journal() {
 	const handleCloseForm = () => {
 		setEntryBeingEdited(null);
 		setIsFormOpen(false);
+
+		if (returnTo) {
+			navigate(returnTo);
+		}
 	};
 
 	const handleDelete = async (entryId) => {
@@ -265,6 +271,10 @@ function Journal() {
 				onClose={handleCloseForm}
 				onSubmitSuccess={async () => {
 					await loadEntries();
+
+					if (returnTo) {
+						navigate(returnTo);
+					}
 				}}
 				entry={entryBeingEdited}
 			/>
