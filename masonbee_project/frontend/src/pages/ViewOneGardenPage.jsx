@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as api from '../api/client';
+import { useAuthContext } from '../auth/AuthProvider';
 import './ViewOneGardenPage.css';
 
 function normalizeCollection(payload) {
@@ -62,10 +63,15 @@ function truncateNotes(notes) {
 	return `${notes.slice(0, 180).trimEnd()}...`;
 }
 
-function ViewOneGardenPage() {
+export default function ViewOneGardenPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 
+	// ⭐ AuthProvider global state
+	const { defaultGarden, setDefaultGarden, pinned, setPinned, gardenLoading } =
+		useAuthContext();
+
+	// ⭐ Local UI state
 	const [isLoading, setIsLoading] = useState(true);
 	const [loadError, setLoadError] = useState('');
 	const [garden, setGarden] = useState(null);
@@ -77,6 +83,9 @@ function ViewOneGardenPage() {
 	const [isSavingPin, setIsSavingPin] = useState(false);
 	const [actionError, setActionError] = useState('');
 
+	// ------------------------------------------------------------
+	// ⭐ Load all data for this garden
+	// ------------------------------------------------------------
 	const loadGardenPage = useCallback(async () => {
 		setIsLoading(true);
 		setLoadError('');
@@ -91,8 +100,13 @@ function ViewOneGardenPage() {
 			setGarden(gardenData || null);
 			setJournalEntries(normalizeCollection(journalData));
 			setBeehouses(normalizeCollection(beehouseData));
-			setIsPinned(Boolean(gardenData?.pinned));
-			setIsDefault(Boolean(gardenData?.is_default));
+
+			// ⭐ Compute default from AuthProvider
+			setIsDefault(defaultGarden?.id === Number(id));
+
+			// ⭐ Compute pinned from AuthProvider
+			const pinnedRecord = pinned[String(id)];
+			setIsPinned(Boolean(pinnedRecord));
 		} catch (error) {
 			setLoadError(
 				getErrorMessage(error, 'Unable to load this garden right now.'),
@@ -100,12 +114,15 @@ function ViewOneGardenPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	}, [id]);
+	}, [id, defaultGarden, pinned]);
 
 	useEffect(() => {
-		loadGardenPage();
-	}, [loadGardenPage]);
+		if (!gardenLoading) loadGardenPage();
+	}, [id, gardenLoading]);
 
+	// ------------------------------------------------------------
+	// ⭐ Sorted lists
+	// ------------------------------------------------------------
 	const sortedBeehouses = useMemo(
 		() =>
 			[...beehouses].sort((a, b) =>
@@ -124,6 +141,9 @@ function ViewOneGardenPage() {
 		[journalEntries],
 	);
 
+	// ------------------------------------------------------------
+	// ⭐ Navigation handlers
+	// ------------------------------------------------------------
 	const handleLogJournal = useCallback(() => {
 		navigate(`/journal?gardenId=${id}&returnTo=/gardens/${id}`);
 	}, [id, navigate]);
@@ -132,14 +152,69 @@ function ViewOneGardenPage() {
 		navigate(`/beehouses/new?gardenId=${id}`);
 	}, [id, navigate]);
 
-	const handleSetDefault = useCallback(async () => {
+	const handleEditEntry = useCallback(
+		(entryId) => {
+			navigate(`/journal?gardenId=${id}&editEntryId=${entryId}`);
+		},
+		[id, navigate],
+	);
+
+	// ------------------------------------------------------------
+	// ⭐ Pin / Unpin
+	// ------------------------------------------------------------
+	const handleTogglePin = useCallback(async () => {
+		setIsSavingPin(true);
+		setActionError('');
+
+		try {
+			if (!isPinned) {
+				// ⭐ PIN
+				const result = await api.post(`/api/gardens/${id}/pin/`, {});
+				if (result?.id) {
+					setPinned({
+						...pinned,
+						[String(result.garden.id)]: result,
+					});
+				}
+			} else {
+				// ⭐ UNPIN
+				await api.del(`/api/gardens/${id}/unpin/`);
+				const updated = { ...pinned };
+				delete updated[String(id)];
+				setPinned(updated);
+			}
+
+			await loadGardenPage();
+		} catch (error) {
+			setActionError(
+				getErrorMessage(error, 'Unable to update the pinned state right now.'),
+			);
+		} finally {
+			setIsSavingPin(false);
+		}
+	}, [id, isPinned, pinned, setPinned, loadGardenPage]);
+
+	// ------------------------------------------------------------
+	// ⭐ Set Default Garden (Option B)
+	// ------------------------------------------------------------
+	async function handleSetDefault() {
 		setIsSavingDefault(true);
 		setActionError('');
 
 		try {
-			const updated = await api.patch(`/api/gardens/${id}/set_default/`, {});
-			setGarden((g) => (g ? { ...g, ...updated, is_default: true } : g));
-			setIsDefault(true);
+			// ⭐ Step 1 — backend update
+			await api.post('/api/gardens/default/', {
+				garden_id: Number(id),
+			});
+
+			// ⭐ Step 2 — fetch full garden
+			const fullGarden = await api.get(`/api/gardens/${id}/`);
+
+			// ⭐ Step 3 — update global context
+			setDefaultGarden(fullGarden);
+
+			// ⭐ Step 4 — refresh UI
+			await loadGardenPage();
 		} catch (error) {
 			setActionError(
 				getErrorMessage(
@@ -150,38 +225,12 @@ function ViewOneGardenPage() {
 		} finally {
 			setIsSavingDefault(false);
 		}
-	}, [id]);
+	}
 
-	const handleTogglePin = useCallback(async () => {
-		setIsSavingPin(true);
-		setActionError('');
-
-		const nextPinned = !isPinned;
-		const endpoint = nextPinned
-			? `/api/gardens/${id}/pin/`
-			: `/api/gardens/${id}/unpin/`;
-
-		try {
-			const updated = await api.post(endpoint, {});
-			setGarden((g) => (g ? { ...g, ...updated, pinned: nextPinned } : g));
-			setIsPinned(nextPinned);
-		} catch (error) {
-			setActionError(
-				getErrorMessage(error, 'Unable to update the pinned state right now.'),
-			);
-		} finally {
-			setIsSavingPin(false);
-		}
-	}, [id, isPinned]);
-
-	const handleEditEntry = useCallback(
-		(entryId) => {
-			navigate(`/journal?gardenId=${id}&editEntryId=${entryId}`);
-		},
-		[id, navigate],
-	);
-
-	if (isLoading) {
+	// ------------------------------------------------------------
+	// ⭐ Render states
+	// ------------------------------------------------------------
+	if (gardenLoading || isLoading) {
 		return (
 			<div className='page view-one-garden-page'>
 				<div className='journal-state-card'>
@@ -210,6 +259,9 @@ function ViewOneGardenPage() {
 		);
 	}
 
+	// ------------------------------------------------------------
+	// ⭐ Main Render
+	// ------------------------------------------------------------
 	return (
 		<div className='page view-one-garden-page'>
 			<header className='view-one-garden-page__header'>
@@ -378,5 +430,3 @@ function ViewOneGardenPage() {
 		</div>
 	);
 }
-
-export default ViewOneGardenPage;
