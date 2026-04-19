@@ -1,0 +1,79 @@
+.beehouse-entry-form {
+	margin-top: 1rem;
+	padding: 1rem;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+}
+
+.beehouse-entry-form h3 {
+	margin-bottom: 1rem;
+	font-size: 1.25rem;
+	color: var(--text-strong);
+}
+
+/* Grid layout for clean alignment */
+.form-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 1fr 1fr;
+}
+
+/* Make full-width items span both columns */
+.form-grid button[type='button'],
+.form-grid button[type='submit'],
+.form-grid .checkbox-row {
+	grid-column: span 2;
+}
+
+/* Inputs */
+.form-grid label {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.9rem;
+	color: var(--text);
+}
+
+.form-grid input,
+.form-grid select {
+	margin-top: 0.25rem;
+	padding: 0.5rem;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--surface-raised);
+	color: var(--text);
+	font-size: 0.95rem;
+}
+
+/* Checkbox row */
+.checkbox-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* Error text */
+.error-text {
+	color: var(--danger);
+	margin-bottom: 0.75rem;
+	font-weight: 500;
+}
+
+/* Buttons */
+.beehouse-entry-form .button-small {
+	width: fit-content;
+	justify-self: start;
+}
+
+/* Mobile layout */
+@media (max-width: 600px) {
+	.form-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.form-grid button[type='button'],
+	.form-grid button[type='submit'],
+	.form-grid .checkbox-row {
+		grid-column: span 1;
+	}
+}

@@ -5,4 +5,4 @@ class BeeHouseSerializer(serializers.ModelSerializer):
     class Meta:
         model = BeeHouse
         fields = "__all__"
-        read_only_fields = ["id", "beehouse_id"]
+        read_only_fields = ["id"]

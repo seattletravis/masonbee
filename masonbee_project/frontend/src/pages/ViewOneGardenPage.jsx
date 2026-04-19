@@ -5,6 +5,7 @@ import { useAuthContext } from '../auth/AuthProvider';
 import SingleGardenMap from '../components/SingleGardenMap';
 import useUserLocation from '../hooks/useUserLocation';
 import GardenMetadata from '../components/GardenMetadata';
+import BeehouseEntryForm from '../components/BeehouseEntryForm';
 import './ViewOneGardenPage.css';
 
 function normalizeCollection(payload) {
@@ -40,6 +41,11 @@ function formatCoordinates(latitude, longitude) {
 function formatLocation(garden) {
 	if (garden?.address) return garden.address;
 	return formatCoordinates(garden?.latitude, garden?.longitude);
+}
+
+function formatBeehouseDisplayName(b, garden) {
+	if (!b || !garden) return 'Beehouse';
+	return `${garden.name} – ${b.beehouse_id}`;
 }
 
 function formatBeehouseType(b) {
@@ -87,6 +93,7 @@ export default function ViewOneGardenPage() {
 	const [actionError, setActionError] = useState('');
 
 	const { location: userLocation } = useUserLocation(true);
+	const [showBeehouseForm, setShowBeehouseForm] = useState(false);
 
 	// ------------------------------------------------------------
 	// ⭐ Load all data for this garden
@@ -317,8 +324,28 @@ export default function ViewOneGardenPage() {
 			{actionError && <p className='journal-feedback error'>{actionError}</p>}
 
 			<section className='section view-one-garden-page__beehouses'>
-				<h2 className='section-title'>Beehouses</h2>
+				<div className='section-header'>
+					<h2 className='section-title'>Beehouses</h2>
 
+					<button
+						className='button button-small'
+						onClick={() => setShowBeehouseForm((prev) => !prev)}>
+						{showBeehouseForm ? 'Cancel' : 'Add Beehouse'}
+					</button>
+				</div>
+
+				{/* Beehouse Entry Form (toggle) */}
+				{showBeehouseForm && (
+					<BeehouseEntryForm
+						gardenId={id}
+						onCreated={async () => {
+							await loadGardenPage(); // reload beehouses, garden, journal
+							setShowBeehouseForm(false);
+						}}
+					/>
+				)}
+
+				{/* Existing Beehouse List */}
 				{sortedBeehouses.length === 0 ? (
 					<div className='journal-state-card'>
 						<p>No beehouses have been added to this garden yet.</p>
@@ -330,7 +357,7 @@ export default function ViewOneGardenPage() {
 								<div className='journal-card-top'>
 									<div>
 										<h3 className='journal-card-title'>
-											{b.name || 'Unnamed Beehouse'}
+											{garden?.name} - {b.beehouse_id}
 										</h3>
 										<p className='journal-card-date'>
 											Last inspection: {formatInspectionDate(b)}

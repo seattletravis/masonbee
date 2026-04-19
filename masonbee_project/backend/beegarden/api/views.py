@@ -33,8 +33,6 @@ from beegarden.permissions import (
     user_can_revoke_access,
 )
 
-
-
 class JournalEntryViewSet(viewsets.ModelViewSet):
     serializer_class = JournalEntrySerializer
     queryset = JournalEntry.objects.all()
@@ -48,77 +46,6 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
 
 
 
-class BeeHouseViewSet(viewsets.ModelViewSet):
-    queryset = BeeHouse.objects.all()
-    serializer_class = BeeHouseSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    @action(detail=True, methods=["get"], url_path="events")
-    def events(self, request, pk=None):
-        beehouse = self.get_object()
-
-        # Only return events the user is allowed to see
-        user = request.user
-        garden = beehouse.garden
-
-        if not (
-            garden.is_public
-            or garden.owner == user
-            or garden.access_list.filter(user=user).exists()
-        ):
-            return Response({"detail": "Not authorized."}, status=403)
-
-        events = (
-            BeeHouseEvent.objects
-            .filter(beehouse=beehouse)
-            .order_by("-created_at")
-        )
-
-        serializer = BeeHouseEventSerializer(events, many=True)
-        return Response(serializer.data)
-    def perform_create(self, serializer):
-        garden = serializer.validated_data["garden"]
-        provided_id = serializer.validated_data.get("beehouse_id")
-
-        # If user did not provide a custom ID, auto-generate one
-        if not provided_id or provided_id.strip() == "":
-            existing_ids = (
-                BeeHouse.objects
-                .filter(garden=garden)
-                .values_list("beehouse_id", flat=True)
-            )
-
-            # Extract numeric suffixes from IDs like "House 1"
-            numbers = []
-            for hid in existing_ids:
-                if hid and hid.startswith("House "):
-                    try:
-                        num = int(hid.split("House ")[1])
-                        numbers.append(num)
-                    except (ValueError, IndexError):
-                        pass
-
-            next_number = max(numbers) + 1 if numbers else 1
-            auto_id = f"House {next_number}"
-
-            serializer.save(created_by=self.request.user, beehouse_id=auto_id)
-        else:
-            serializer.save(created_by=self.request.user)
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        garden_id = self.request.query_params.get("garden")
-        if garden_id:
-            qs = qs.filter(garden_id=garden_id)
-
-        user = self.request.user
-        return qs.filter(
-            garden__is_public=True
-        ) | qs.filter(
-            garden__owner=user
-        ) | qs.filter(
-            garden__access_list__user=user
-        )
 
 from django.db.models import Q
 from rest_framework import filters
@@ -133,7 +60,6 @@ class GardenViewSet(viewsets.ModelViewSet):
     - manage private access
     - upload images
     """
-
 
     @action(detail=True, methods=["post"])
     def pin(self, request, pk=None):
@@ -195,9 +121,59 @@ class GardenViewSet(viewsets.ModelViewSet):
             )
 
         return qs
-
-
 # ----------------BeeHouseEventViewSet--------------------
+
+class BeeHouseViewSet(viewsets.ModelViewSet):
+    queryset = BeeHouse.objects.all()
+    serializer_class = BeeHouseSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=["get"], url_path="events")
+    def events(self, request, pk=None):
+        beehouse = self.get_object()
+        user = request.user
+        garden = beehouse.garden
+
+        if not (
+            garden.is_public
+            or garden.owner == user
+            or garden.access_list.filter(user=user).exists()
+        ):
+            return Response({"detail": "Not authorized."}, status=403)
+
+        events = BeeHouseEvent.objects.filter(beehouse=beehouse).order_by("-created_at")
+        serializer = BeeHouseEventSerializer(events, many=True)
+        return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        print("DEBUG incoming beehouse_id:", repr(serializer.validated_data.get("beehouse_id")))
+
+        garden = serializer.validated_data["garden"]
+        provided_id = serializer.validated_data.get("beehouse_id")
+
+        if not provided_id or provided_id.strip() == "":
+            existing_ids = (
+                BeeHouse.objects
+                .filter(garden=garden)
+                .values_list("beehouse_id", flat=True)
+            )
+
+            numbers = []
+            for hid in existing_ids:
+                if hid and hid.startswith("House "):
+                    try:
+                        num = int(hid.split("House ")[1])
+                        numbers.append(num)
+                    except (ValueError, IndexError):
+                        pass
+
+            next_number = max(numbers) + 1 if numbers else 1
+            auto_id = f"House {next_number}"
+
+            serializer.save(created_by=self.request.user, beehouse_id=auto_id)
+        else:
+            serializer.save(created_by=self.request.user, beehouse_id=provided_id)
+
 
 class BeeHouseEventViewSet(viewsets.ModelViewSet):
     queryset = BeeHouseEvent.objects.all()
@@ -207,11 +183,14 @@ class BeeHouseEventViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
 
+        # Filter by beehouse if provided
         beehouse_id = self.request.query_params.get("beehouse")
         if beehouse_id:
             qs = qs.filter(beehouse_id=beehouse_id)
 
         user = self.request.user
+
+        # Only return events the user is allowed to see
         qs = qs.filter(
             beehouse__garden__is_public=True
         ) | qs.filter(
@@ -222,22 +201,6 @@ class BeeHouseEventViewSet(viewsets.ModelViewSet):
 
         return qs.order_by("-created_at")
 
-
-    def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
-
-
-
-# @api_view(["GET"])
-# @permission_classes([IsAuthenticated])
-# def default_garden(request):
-#     try:
-#         pinned = UserPinnedGarden.objects.get(user=request.user, is_default=True)
-#         data = MinimalGardenSerializer(pinned.garden).data
-#         return Response(data, status=200)
-#     except UserPinnedGarden.DoesNotExist:
-#         # Must return explicit JSON null, not empty body
-#         return Response(None, status=200)
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
@@ -275,8 +238,6 @@ def default_garden(request):
         return Response(data, status=200)
     except UserPinnedGarden.DoesNotExist:
         return Response(None, status=200)
-
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
