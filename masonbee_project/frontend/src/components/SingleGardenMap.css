@@ -1,0 +1,11 @@
+.single-garden-map-container {
+	width: 100%;
+	height: 350px;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.single-garden-map {
+	width: 100%;
+	height: 100%;
+}

@@ -72,7 +72,10 @@ export default function AuthProvider({ children }) {
 				setPinned(lookup);
 				setDefaultGarden(def || null);
 			} catch (err) {
-				console.error('Unable to load saved garden preferences', err);
+				// ⭐ Ignore 401s silently
+				if (err?.response?.status !== 401) {
+					console.error('Unable to load saved garden preferences', err);
+				}
 			}
 		}
 

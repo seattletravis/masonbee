@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as api from '../api/client';
 import { useAuthContext } from '../auth/AuthProvider';
+import SingleGardenMap from '../components/SingleGardenMap';
+import useUserLocation from '../hooks/useUserLocation';
+
 import './ViewOneGardenPage.css';
 
 function normalizeCollection(payload) {
@@ -82,6 +85,8 @@ export default function ViewOneGardenPage() {
 	const [isSavingDefault, setIsSavingDefault] = useState(false);
 	const [isSavingPin, setIsSavingPin] = useState(false);
 	const [actionError, setActionError] = useState('');
+
+	const { location: userLocation } = useUserLocation(true);
 
 	// ------------------------------------------------------------
 	// ⭐ Load all data for this garden
@@ -332,9 +337,7 @@ export default function ViewOneGardenPage() {
 
 			<section className='section view-one-garden-page__map'>
 				<h2 className='section-title'>Map</h2>
-				<div className='view-one-garden-page__map-placeholder'>
-					Future map component placeholder
-				</div>
+				<SingleGardenMap garden={garden} userLocation={userLocation} />
 			</section>
 
 			<section className='section view-one-garden-page__beehouses'>

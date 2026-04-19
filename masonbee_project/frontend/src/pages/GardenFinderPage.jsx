@@ -8,6 +8,7 @@ import { get } from '../api/client';
 import usePinnedGardens from '../hooks/usePinnedGardens';
 import useDefaultGarden from '../hooks/useDefaultGarden';
 import GardenMap from '../components/GardenMap';
+import useUserLocation from '../hooks/useUserLocation';
 
 function useDebounce(value, delay = 300) {
 	const [debouncedValue, setDebouncedValue] = useState(value);
@@ -40,43 +41,43 @@ function useInfiniteScroll({ onIntersect, hasMore, isEnabled }) {
 	return sentinelRef;
 }
 
-function useUserLocation(shouldRequest) {
-	const [location, setLocation] = useState(null);
-	const [locationError, setLocationError] = useState('');
-	const [isLocating, setIsLocating] = useState(false);
-	const [locationRequested, setLocationRequested] = useState(false);
+// function useUserLocation(shouldRequest) {
+// 	const [location, setLocation] = useState(null);
+// 	const [locationError, setLocationError] = useState('');
+// 	const [isLocating, setIsLocating] = useState(false);
+// 	const [locationRequested, setLocationRequested] = useState(false);
 
-	useEffect(() => {
-		if (!shouldRequest || locationRequested || location || isLocating) return;
+// 	useEffect(() => {
+// 		if (!shouldRequest || locationRequested || location || isLocating) return;
 
-		if (!navigator.geolocation) {
-			setLocationError('Geolocation is not supported on this device.');
-			return;
-		}
+// 		if (!navigator.geolocation) {
+// 			setLocationError('Geolocation is not supported on this device.');
+// 			return;
+// 		}
 
-		setLocationRequested(true);
-		setIsLocating(true);
+// 		setLocationRequested(true);
+// 		setIsLocating(true);
 
-		navigator.geolocation.getCurrentPosition(
-			(pos) => {
-				setLocation({
-					latitude: pos.coords.latitude,
-					longitude: pos.coords.longitude,
-				});
-				setIsLocating(false);
-			},
-			() => {
-				setLocationError(
-					'Location access unavailable. Sorting alphabetically instead.',
-				);
-				setIsLocating(false);
-			},
-			{ enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
-		);
-	}, [shouldRequest, locationRequested, location, isLocating]);
+// 		navigator.geolocation.getCurrentPosition(
+// 			(pos) => {
+// 				setLocation({
+// 					latitude: pos.coords.latitude,
+// 					longitude: pos.coords.longitude,
+// 				});
+// 				setIsLocating(false);
+// 			},
+// 			() => {
+// 				setLocationError(
+// 					'Location access unavailable. Sorting alphabetically instead.',
+// 				);
+// 				setIsLocating(false);
+// 			},
+// 			{ enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
+// 		);
+// 	}, [shouldRequest, locationRequested, location, isLocating]);
 
-	return { location, locationError, isLocating };
-}
+// 	return { location, locationError, isLocating };
+// }
 
 function toRadians(v) {
 	return (v * Math.PI) / 180;
