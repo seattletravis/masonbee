@@ -41,44 +41,6 @@ function useInfiniteScroll({ onIntersect, hasMore, isEnabled }) {
 	return sentinelRef;
 }
 
-// function useUserLocation(shouldRequest) {
-// 	const [location, setLocation] = useState(null);
-// 	const [locationError, setLocationError] = useState('');
-// 	const [isLocating, setIsLocating] = useState(false);
-// 	const [locationRequested, setLocationRequested] = useState(false);
-
-// 	useEffect(() => {
-// 		if (!shouldRequest || locationRequested || location || isLocating) return;
-
-// 		if (!navigator.geolocation) {
-// 			setLocationError('Geolocation is not supported on this device.');
-// 			return;
-// 		}
-
-// 		setLocationRequested(true);
-// 		setIsLocating(true);
-
-// 		navigator.geolocation.getCurrentPosition(
-// 			(pos) => {
-// 				setLocation({
-// 					latitude: pos.coords.latitude,
-// 					longitude: pos.coords.longitude,
-// 				});
-// 				setIsLocating(false);
-// 			},
-// 			() => {
-// 				setLocationError(
-// 					'Location access unavailable. Sorting alphabetically instead.',
-// 				);
-// 				setIsLocating(false);
-// 			},
-// 			{ enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
-// 		);
-// 	}, [shouldRequest, locationRequested, location, isLocating]);
-
-// 	return { location, locationError, isLocating };
-// }
-
 function toRadians(v) {
 	return (v * Math.PI) / 180;
 }
@@ -109,6 +71,10 @@ function GardenFinderPage() {
 	} = useAuthContext();
 
 	const navigate = useNavigate();
+
+	function handleSelectGarden(garden) {
+		navigate(`/gardens/${garden.id}`);
+	}
 
 	// 🌱 Error + bootstrap flags (local to this page)
 	const [error, setError] = useState('');
@@ -260,7 +226,7 @@ function GardenFinderPage() {
 
 	// 🌱 View garden handler
 	const handleViewGarden = useCallback(
-		(garden) => navigate(`/garden/${garden.id}`),
+		(garden) => navigate(`/gardens/${garden.id}`),
 		[navigate],
 	);
 

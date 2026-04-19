@@ -101,7 +101,6 @@ export default function GardenMap({
 	isFullscreen,
 	setIsFullscreen,
 }) {
-	// const [isFullscreen, setIsFullscreen] = useState(false); - Now coming from props
 	const center = userLocation
 		? [userLocation.latitude, userLocation.longitude]
 		: [47.6062, -122.3321]; // Seattle fallback
@@ -163,10 +162,7 @@ export default function GardenMap({
 							<Marker
 								key={g.id}
 								position={[g.latitude, g.longitude]}
-								icon={icon}
-								eventHandlers={{
-									click: () => onSelectGarden(g),
-								}}>
+								icon={icon}>
 								<Tooltip direction='top' offset={[0, -10]} opacity={0.9}>
 									{g.name}
 								</Tooltip>
