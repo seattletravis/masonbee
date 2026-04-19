@@ -4,7 +4,7 @@ import * as api from '../api/client';
 import { useAuthContext } from '../auth/AuthProvider';
 import SingleGardenMap from '../components/SingleGardenMap';
 import useUserLocation from '../hooks/useUserLocation';
-
+import GardenMetadata from '../components/GardenMetadata';
 import './ViewOneGardenPage.css';
 
 function normalizeCollection(payload) {
@@ -316,30 +316,6 @@ export default function ViewOneGardenPage() {
 
 			{actionError && <p className='journal-feedback error'>{actionError}</p>}
 
-			<section className='section view-one-garden-page__metadata'>
-				<h2 className='section-title'>Garden Metadata</h2>
-				<p>{garden.description || 'No description available.'}</p>
-
-				<div className='view-one-garden-page__meta-grid'>
-					<p>
-						<strong>Coordinates:</strong>{' '}
-						{formatCoordinates(garden.latitude, garden.longitude)}
-					</p>
-					<p>
-						<strong>Pinned status:</strong> {isPinned ? 'Pinned' : 'Not pinned'}
-					</p>
-					<p>
-						<strong>Default status:</strong>{' '}
-						{isDefault ? 'Default garden' : 'Not default'}
-					</p>
-				</div>
-			</section>
-
-			<section className='section view-one-garden-page__map'>
-				<h2 className='section-title'>Map</h2>
-				<SingleGardenMap garden={garden} userLocation={userLocation} />
-			</section>
-
 			<section className='section view-one-garden-page__beehouses'>
 				<h2 className='section-title'>Beehouses</h2>
 
@@ -382,6 +358,22 @@ export default function ViewOneGardenPage() {
 						))}
 					</div>
 				)}
+			</section>
+
+			<section className='section view-one-garden-page__map'>
+				<h2 className='section-title'>Map</h2>
+				<SingleGardenMap garden={garden} userLocation={userLocation} />
+			</section>
+
+			<section className='section view-one-garden-page__metadata'>
+				<h2 className='section-title'>Garden Metadata</h2>
+
+				<GardenMetadata
+					garden={garden}
+					isPinned={isPinned}
+					isDefault={isDefault}
+					userLocation={userLocation}
+				/>
 			</section>
 
 			<section className='section view-one-garden-page__journal'>
