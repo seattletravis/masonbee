@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import './BeehouseEntryForm.css';
 
 export default function BeehouseEntryForm({ gardenId, onCreated }) {
 	const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -129,84 +130,101 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 
 	return (
 		<form className='beehouse-entry-form' onSubmit={handleSubmit}>
-			{error && <div className='error'>{error}</div>}
-			<label>Custom Beehouse ID (optional)</label>
-			<input
-				type='text'
-				value={customBeehouseId}
-				onChange={(e) => setCustomBeehouseId(e.target.value)}
-				placeholder='Leave blank to auto‑assign'
-			/>
+			{error && <div className='error-text'>{error}</div>}
 
-			<label>Bee House Type *</label>
-			<select
-				required
-				value={beehouseType}
-				onChange={(e) => setBeehouseType(e.target.value)}>
-				<option value=''>Select type</option>
-				{HOUSE_TYPES.map((t) => (
-					<option key={t.value} value={t.value}>
-						{t.label}
-					</option>
-				))}
-			</select>
+			<div className='form-grid'>
+				<label>
+					Custom Beehouse ID (optional)
+					<input
+						type='text'
+						value={customBeehouseId}
+						onChange={(e) => setCustomBeehouseId(e.target.value)}
+						placeholder='Leave blank to auto‑assign'
+					/>
+				</label>
 
-			<label>Tube Capacity *</label>
-			<select
-				required
-				value={tubeCapacity}
-				onChange={(e) => setTubeCapacity(e.target.value)}>
-				<option value=''>Select capacity</option>
-				{TUBE_CAPACITY.map((t) => (
-					<option key={t.value} value={t.value}>
-						{t.label}
-					</option>
-				))}
-			</select>
+				<label>
+					Bee House Type *
+					<select
+						required
+						value={beehouseType}
+						onChange={(e) => setBeehouseType(e.target.value)}>
+						<option value=''>Select type</option>
+						{HOUSE_TYPES.map((t) => (
+							<option key={t.value} value={t.value}>
+								{t.label}
+							</option>
+						))}
+					</select>
+				</label>
 
-			<label>Height Above Ground (inches) *</label>
-			<input
-				required
-				type='number'
-				value={heightInches}
-				onChange={(e) => setHeightInches(e.target.value)}
-			/>
+				<label>
+					Tube Capacity *
+					<select
+						required
+						value={tubeCapacity}
+						onChange={(e) => setTubeCapacity(e.target.value)}>
+						<option value=''>Select capacity</option>
+						{TUBE_CAPACITY.map((t) => (
+							<option key={t.value} value={t.value}>
+								{t.label}
+							</option>
+						))}
+					</select>
+				</label>
 
-			<label>Orientation</label>
-			<select
-				value={orientation}
-				onChange={(e) => setOrientation(e.target.value)}>
-				<option value=''>None</option>
-				{ORIENTATIONS.map((o) => (
-					<option key={o} value={o}>
-						{o}
-					</option>
-				))}
-			</select>
+				<label>
+					Height Above Ground (inches) *
+					<input
+						required
+						type='number'
+						value={heightInches}
+						onChange={(e) => setHeightInches(e.target.value)}
+					/>
+				</label>
 
-			<label>Latitude *</label>
-			<input
-				required
-				type='text'
-				value={latitude}
-				onChange={(e) => setLatitude(e.target.value)}
-			/>
+				<label>
+					Orientation
+					<select
+						value={orientation}
+						onChange={(e) => setOrientation(e.target.value)}>
+						<option value=''>None</option>
+						{ORIENTATIONS.map((o) => (
+							<option key={o} value={o}>
+								{o}
+							</option>
+						))}
+					</select>
+				</label>
 
-			<label>Longitude *</label>
-			<input
-				required
-				type='text'
-				value={longitude}
-				onChange={(e) => setLongitude(e.target.value)}
-			/>
+				<label>
+					Latitude *
+					<input
+						required
+						type='text'
+						value={latitude}
+						onChange={(e) => setLatitude(e.target.value)}
+					/>
+				</label>
 
-			<button type='button' onClick={useCurrentLocation}>
-				Use Current Location
-			</button>
+				<label>
+					Longitude *
+					<input
+						required
+						type='text'
+						value={longitude}
+						onChange={(e) => setLongitude(e.target.value)}
+					/>
+				</label>
 
-			<button type='submit' disabled={loading}>
-				{loading ? 'Saving...' : 'Add Bee House'}
-			</button>
+				<button type='button' onClick={useCurrentLocation}>
+					Use Current Location
+				</button>
+
+				<button type='submit' disabled={loading}>
+					{loading ? 'Saving...' : 'Add Bee House'}
+				</button>
+			</div>
 		</form>
 	);
 }
