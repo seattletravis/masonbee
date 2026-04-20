@@ -1,0 +1,74 @@
+.bee-notes-entry-form {
+	margin-top: 1rem;
+	padding: 1rem;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+}
+
+.bee-notes-entry-form h3 {
+	margin-bottom: 1rem;
+	font-size: 1.25rem;
+	color: var(--text-strong);
+}
+
+.form-grid {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: 1fr 1fr;
+}
+
+.full-width {
+	grid-column: span 2;
+}
+
+.form-grid label {
+	display: flex;
+	flex-direction: column;
+	font-size: 0.9rem;
+	color: var(--text);
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea {
+	margin-top: 0.25rem;
+	padding: 0.5rem;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--surface-raised);
+	color: var(--text);
+	font-size: 0.95rem;
+}
+
+.error-text {
+	color: var(--danger);
+	margin-bottom: 0.75rem;
+	font-weight: 500;
+}
+
+.bee-notes-entry-form button {
+	width: fit-content;
+	justify-self: start;
+	padding: 0.5rem 1rem;
+	border-radius: 6px;
+	border: 1px solid var(--border);
+	background: var(--surface-raised);
+	color: var(--text-strong);
+	cursor: pointer;
+}
+
+.bee-notes-entry-form button:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+	.form-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.full-width {
+		grid-column: span 1;
+	}
+}

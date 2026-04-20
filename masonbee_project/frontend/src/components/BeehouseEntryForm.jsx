@@ -15,9 +15,7 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [customBeehouseId, setCustomBeehouseId] = useState('');
-	useEffect(() => {
-		console.log('customBeehouseId:', customBeehouseId);
-	}, [customBeehouseId]);
+
 	const HOUSE_TYPES = [
 		{ value: 'block', label: 'Wood Block' },
 		{ value: 'straw', label: 'Straw Bundle / Container' },
@@ -70,8 +68,6 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 			return;
 		}
 
-		console.log('SUBMIT customBeehouseId:', customBeehouseId);
-
 		// Log payload AFTER validation
 		const payload = {
 			garden: Number(gardenId),
@@ -84,7 +80,6 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 			orientation: orientation || null,
 			is_active: false,
 		};
-		console.log('PAYLOAD SENT:', payload);
 
 		try {
 			const res = await fetch(`${API_BASE}/api/beehouses/`, {
@@ -122,7 +117,6 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 
 			setLoading(false);
 		} catch (err) {
-			console.error('Network error:', err);
 			setError('Network error.');
 			setLoading(false);
 		}
@@ -130,6 +124,8 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 
 	return (
 		<form className='beehouse-entry-form' onSubmit={handleSubmit}>
+			<h3>Add Beehouse</h3>
+
 			{error && <div className='error-text'>{error}</div>}
 
 			<div className='form-grid'>

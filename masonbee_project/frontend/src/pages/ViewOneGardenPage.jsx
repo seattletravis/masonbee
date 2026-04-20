@@ -6,6 +6,7 @@ import SingleGardenMap from '../components/SingleGardenMap';
 import useUserLocation from '../hooks/useUserLocation';
 import GardenMetadata from '../components/GardenMetadata';
 import BeehouseEntryForm from '../components/BeehouseEntryForm';
+import BeeNotesEntryForm from '../components/BeeNotesEntryForm';
 import './ViewOneGardenPage.css';
 
 function normalizeCollection(payload) {
@@ -94,6 +95,7 @@ export default function ViewOneGardenPage() {
 
 	const { location: userLocation } = useUserLocation(true);
 	const [showBeehouseForm, setShowBeehouseForm] = useState(false);
+	const [showBeeNotesForm, setShowBeeNotesForm] = useState(false);
 
 	// ------------------------------------------------------------
 	// ⭐ Load all data for this garden
@@ -293,12 +295,6 @@ export default function ViewOneGardenPage() {
 						Log Journal Entry
 					</button>
 
-					<button
-						className='button button-secondary'
-						onClick={handleAddBeeNotes}>
-						Add Bee Notes
-					</button>
-
 					{!isDefault && (
 						<button
 							className='button button-secondary'
@@ -327,19 +323,45 @@ export default function ViewOneGardenPage() {
 				<div className='section-header'>
 					<h2 className='section-title'>Beehouses</h2>
 
-					<button
-						className='button button-small'
-						onClick={() => setShowBeehouseForm((prev) => !prev)}>
-						{showBeehouseForm ? 'Cancel' : 'Add Beehouse'}
-					</button>
+					<div className='section-header-actions'>
+						{/* Add Beehouse button (hidden when Bee Notes form is open) */}
+						{!showBeeNotesForm && (
+							<button
+								className='button button-small'
+								onClick={() => setShowBeehouseForm((prev) => !prev)}>
+								{showBeehouseForm ? 'Cancel' : 'Add Beehouse'}
+							</button>
+						)}
+
+						{/* Add Bee Notes button (hidden when Beehouse form is open) */}
+						{!showBeehouseForm && (
+							<button
+								className='button button-small'
+								onClick={() => setShowBeeNotesForm((prev) => !prev)}>
+								{showBeeNotesForm ? 'Cancel' : 'Add Bee Notes'}
+							</button>
+						)}
+					</div>
 				</div>
+
+				{/* Bee Notes Entry Form (toggle) */}
+				{showBeeNotesForm && (
+					<BeeNotesEntryForm
+						gardenId={id}
+						beehouses={beehouses}
+						onCreated={async () => {
+							await loadGardenPage();
+							setShowBeeNotesForm(false);
+						}}
+					/>
+				)}
 
 				{/* Beehouse Entry Form (toggle) */}
 				{showBeehouseForm && (
 					<BeehouseEntryForm
 						gardenId={id}
 						onCreated={async () => {
-							await loadGardenPage(); // reload beehouses, garden, journal
+							await loadGardenPage();
 							setShowBeehouseForm(false);
 						}}
 					/>
@@ -375,10 +397,8 @@ export default function ViewOneGardenPage() {
 								<div className='journal-card-actions'>
 									<button
 										className='journal-button journal-button-secondary'
-										onClick={() =>
-											navigate(`/beehouses/${b.id}/notes/new?gardenId=${id}`)
-										}>
-										Add Bee Notes
+										onClick={() => setShowBeeNotesForm(true)}>
+										Add Beenote
 									</button>
 								</div>
 							</article>
