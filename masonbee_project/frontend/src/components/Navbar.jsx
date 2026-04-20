@@ -27,9 +27,7 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 		<nav className='navbar'>
 			<div className='navbar__inner'>
 				<div className='nav-left'>
-					<Link to='/' className='nav-logo'>
-						MasonBee
-					</Link>
+					<Link className='nav-logo'>MasonBee</Link>
 				</div>
 
 				<div className='nav-right desktop-links'>
@@ -99,6 +97,12 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 								Dashboard
 							</Link>
 						</>
+					)}
+
+					{authenticated && (
+						<Link to='/profile' className='nav-link'>
+							Profile
+						</Link>
 					)}
 
 					{!authenticated && (

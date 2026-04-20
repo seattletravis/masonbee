@@ -179,7 +179,7 @@ function Journal() {
 						style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
 						{!routeGardenId && gardenOptions.length > 0 && (
 							<select
-								className='journal-field-select'
+								className='journal-garden-select'
 								value={selectedGardenId}
 								onChange={(e) => setSelectedGardenId(e.target.value)}>
 								<option value='all'>All Gardens</option>

@@ -318,7 +318,10 @@ export default function ViewOneGardenPage() {
 			</header>
 
 			{actionError && <p className='journal-feedback error'>{actionError}</p>}
-
+			<section className='section view-one-garden-page__map'>
+				<h2 className='section-title'>Map</h2>
+				<SingleGardenMap garden={garden} userLocation={userLocation} />
+			</section>
 			<section className='section view-one-garden-page__beehouses'>
 				<div className='section-header'>
 					<h2 className='section-title'>Beehouses</h2>
@@ -409,11 +412,6 @@ export default function ViewOneGardenPage() {
 						))}
 					</div>
 				)}
-			</section>
-
-			<section className='section view-one-garden-page__map'>
-				<h2 className='section-title'>Map</h2>
-				<SingleGardenMap garden={garden} userLocation={userLocation} />
 			</section>
 
 			<section className='section view-one-garden-page__metadata'>

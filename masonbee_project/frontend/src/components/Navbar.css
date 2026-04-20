@@ -24,9 +24,10 @@
 }
 
 .nav-logo {
-	color: #1f2937;
 	font-size: 1.2rem;
 	font-weight: 700;
+	cursor: default;
+	color: inherit;
 	text-decoration: none;
 	letter-spacing: 0.02em;
 }
