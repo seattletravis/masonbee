@@ -427,6 +427,7 @@ class UserSubscription(models.Model):
 def avatar_upload_path(instance, filename):
     return f"avatars/user_{instance.user.id}/{filename}"
 
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
 
@@ -439,16 +440,12 @@ class UserProfile(models.Model):
         null=True
     )
 
-    # Location (off by default)
-    location_enabled = models.BooleanField(default=False)
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
-
-    # Notification preferences
+    # Friend request preferences
     friend_request_notifications = models.BooleanField(default=True)
 
     def __str__(self):
         return f"Profile for {self.user.username}"
+
 
 
 

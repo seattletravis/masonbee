@@ -322,7 +322,11 @@ export default function ViewOneGardenPage() {
 			<section className='section view-one-garden-page__beehouses'>
 				<div className='section-header'>
 					<h2 className='section-title'>Beehouses</h2>
-
+					<p>
+						All beehouse locations entered here are private and only you can see
+						them. The data is used to determine mason bee population densities
+						for the "Probability of Finding Mason Bees" map.
+					</p>
 					<div className='section-header-actions'>
 						{/* Add Beehouse button (hidden when Bee Notes form is open) */}
 						{!showBeeNotesForm && (
@@ -338,7 +342,7 @@ export default function ViewOneGardenPage() {
 							<button
 								className='button button-small'
 								onClick={() => setShowBeeNotesForm((prev) => !prev)}>
-								{showBeeNotesForm ? 'Cancel' : 'Add Bee Notes'}
+								{showBeeNotesForm ? 'Cancel' : 'Add Bee Note'}
 							</button>
 						)}
 					</div>
@@ -398,7 +402,7 @@ export default function ViewOneGardenPage() {
 									<button
 										className='journal-button journal-button-secondary'
 										onClick={() => setShowBeeNotesForm(true)}>
-										Add Beenote
+										Add Bee Note
 									</button>
 								</div>
 							</article>

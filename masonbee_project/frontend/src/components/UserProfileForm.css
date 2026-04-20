@@ -1,0 +1,86 @@
+.profile-form-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 2000;
+}
+
+.profile-form-container {
+	background: white;
+	padding: 2rem;
+	border-radius: 8px;
+	width: 420px;
+	max-width: 90%;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.profile-form-container h2 {
+	margin-top: 0;
+	margin-bottom: 1.5rem;
+	text-align: center;
+}
+
+.profile-form-container label {
+	display: block;
+	margin-bottom: 1rem;
+	font-weight: 500;
+}
+
+.profile-form-container input[type='text'],
+.profile-form-container textarea {
+	width: 100%;
+	padding: 0.5rem;
+	margin-top: 0.35rem;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.profile-form-container textarea {
+	min-height: 80px;
+	resize: vertical;
+}
+
+.checkbox-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.profile-avatar-preview {
+	width: 90px;
+	height: 90px;
+	border-radius: 50%;
+	object-fit: cover;
+	display: block;
+	margin: 1rem auto;
+}
+
+.profile-form-buttons {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 1.5rem;
+}
+
+.cancel-btn {
+	background: #ccc;
+	border: none;
+	padding: 0.6rem 1.2rem;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.save-btn {
+	background: #2d7df4;
+	color: white;
+	border: none;
+	padding: 0.6rem 1.2rem;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.save-btn:hover {
+	background: #1f63c7;
+}

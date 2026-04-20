@@ -10,19 +10,17 @@ class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        profile = request.user.profile
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
         serializer = UserProfileSerializer(profile)
         return Response(serializer.data)
 
     def put(self, request):
-        profile = request.user.profile
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
         serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
       
 class AvatarUploadView(APIView):
     permission_classes = [IsAuthenticated]

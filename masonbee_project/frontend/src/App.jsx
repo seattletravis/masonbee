@@ -9,6 +9,7 @@ import Journal from './pages/Journal';
 import MyGardensPage from './pages/MyGardensPage';
 import GardenFinderPage from './pages/GardenFinderPage';
 import ViewOneGardenPage from './pages/ViewOneGardenPage';
+import MyProfilePage from './pages/MyProfilePage';
 import 'leaflet/dist/leaflet.css';
 
 export default function App() {
@@ -40,6 +41,8 @@ export default function App() {
 						<Route path='/gardens/:id' element={<ViewOneGardenPage />} />
 
 						<Route path='/my-gardens' element={<MyGardensPage />} />
+
+						<Route path='/profile' element={<MyProfilePage />} />
 
 						<Route
 							path='/garden/:id/journal'

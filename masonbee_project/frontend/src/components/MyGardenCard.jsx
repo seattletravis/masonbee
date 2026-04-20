@@ -23,7 +23,6 @@ function MyGardenCard({
 	isPinned,
 	onViewGarden,
 	onLogJournal,
-	onAddBeeNotes,
 	onSetDefault,
 	onTogglePin,
 }) {
@@ -86,13 +85,6 @@ function MyGardenCard({
 					className='button button-secondary'
 					onClick={() => onLogJournal(garden)}>
 					Log Journal Entry
-				</button>
-
-				<button
-					type='button'
-					className='button button-secondary'
-					onClick={() => onAddBeeNotes(garden)}>
-					Add Bee Notes
 				</button>
 
 				{!isDefault && (

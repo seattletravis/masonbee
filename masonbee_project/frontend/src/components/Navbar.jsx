@@ -56,6 +56,11 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 							Login
 						</Link>
 					)}
+					{authenticated && (
+						<Link to='/profile' className='nav-link'>
+							Profile
+						</Link>
+					)}
 
 					{authenticated && (
 						<button type='button' className='nav-button' onClick={handleLogout}>

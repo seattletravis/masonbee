@@ -8,9 +8,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "display_name",
             "bio",
             "avatar",
-            "location_enabled",
-            "latitude",
-            "longitude",
             "friend_request_notifications",
         ]
         read_only_fields = ["avatar"]
+
+

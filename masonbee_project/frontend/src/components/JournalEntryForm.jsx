@@ -33,10 +33,12 @@ function normalizeGardens(payload) {
 }
 
 function buildInitialFormState(entry, routeGardenId) {
+	const today = new Date().toISOString().slice(0, 10);
+
 	if (entry) {
 		return {
 			title: entry.title || '',
-			date: entry?.date || new Date().toISOString().slice(0, 10),
+			date: entry.date || today,
 			category: entry.category || 'observation',
 			garden:
 				entry.garden === null || entry.garden === undefined
@@ -48,6 +50,7 @@ function buildInitialFormState(entry, routeGardenId) {
 
 	return {
 		...EMPTY_FORM,
+		date: today,
 		garden: routeGardenId || '',
 	};
 }
@@ -69,7 +72,9 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 	const [submitError, setSubmitError] = useState('');
 	const [gardensError, setGardensError] = useState('');
 
-	const isGardenLocked = Boolean(routeGardenId);
+	// const isGardenLocked = Boolean(routeGardenId);
+	const isGardenLocked = false;
+
 	const dialogTitle = entry ? 'Edit Entry' : 'New Entry';
 
 	useEffect(() => {
@@ -176,7 +181,8 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 		setSubmitError('');
 
 		const payload = {
-			title: formData.title.trim(),
+			title: formData.title.trim() || 'My Journal Entry',
+
 			date: formData.date,
 			category: formData.category,
 			garden: formData.garden ? Number(formData.garden) : null,
@@ -251,7 +257,7 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 								name='title'
 								value={formData.title}
 								onChange={handleChange}
-								placeholder='Early bloom activity near the bee house'
+								placeholder='Title Required - Please add a title'
 								required
 							/>
 						</label>
@@ -282,33 +288,25 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 							</select>
 						</label>
 
-						{isGardenLocked ? (
-							<div className='journal-field'>
-								<span>Garden</span>
-								<div className='journal-readonly-field'>
-									{selectedGardenName}
-								</div>
-							</div>
-						) : (
-							<label className='journal-field'>
-								<span>Garden</span>
-								<select
-									name='garden'
-									value={formData.garden}
-									onChange={handleChange}
-									disabled={isLoadingGardens}>
-									<option value=''>No garden selected</option>
-									{gardens.map((garden) => (
-										<option key={garden.id} value={garden.id}>
-											{garden.name}
-										</option>
-									))}
-								</select>
-								{gardensError ? (
-									<small className='journal-inline-error'>{gardensError}</small>
-								) : null}
-							</label>
-						)}
+						<label className='journal-field'>
+							<span>Garden</span>
+							<select
+								name='garden'
+								value={formData.garden}
+								onChange={handleChange}
+								disabled={isLoadingGardens}>
+								<option value=''>No garden selected</option>
+								{gardens.map((garden) => (
+									<option key={garden.id} value={garden.id}>
+										{garden.name}
+									</option>
+								))}
+							</select>
+
+							{gardensError ? (
+								<small className='journal-inline-error'>{gardensError}</small>
+							) : null}
+						</label>
 					</div>
 
 					<label className='journal-field'>
