@@ -3,6 +3,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 2rem;
+	padding: 1.5rem;
 }
 
 /* Header */
@@ -67,4 +68,47 @@
 .section-header-actions {
 	display: flex;
 	gap: 0.5rem;
+}
+
+.section-header-left {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.collapse-toggle {
+	background: #e8e8e8;
+	border: 1px solid #ccc;
+	padding: 0.25rem 0.6rem;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 0.85rem;
+	transition: background 0.2s ease;
+}
+
+.collapse-toggle:hover {
+	background: #dcdcdc;
+}
+
+.section-description {
+	margin-top: 0.5rem;
+	margin-bottom: 1rem;
+	color: #555;
+	line-height: 1.4;
+}
+
+.view-one-garden-page__beehouses .journal-grid {
+	margin-top: 1rem;
+}
+
+.view-one-garden-page__beehouses .journal-card {
+	min-width: 260px;
+}
+
+.view-one-garden-page__beehouses form {
+	margin-bottom: 1rem;
+}
+
+.view-one-garden-page__beehouses {
+	width: 100%;
 }

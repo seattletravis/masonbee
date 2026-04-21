@@ -96,6 +96,7 @@ export default function ViewOneGardenPage() {
 	const { location: userLocation } = useUserLocation(true);
 	const [showBeehouseForm, setShowBeehouseForm] = useState(false);
 	const [showBeeNotesForm, setShowBeeNotesForm] = useState(false);
+	const [showBeehouseList, setShowBeehouseList] = useState(false);
 
 	// ------------------------------------------------------------
 	// ⭐ Load all data for this garden
@@ -323,13 +324,18 @@ export default function ViewOneGardenPage() {
 				<SingleGardenMap garden={garden} userLocation={userLocation} />
 			</section>
 			<section className='section view-one-garden-page__beehouses'>
+				{/* Header */}
 				<div className='section-header'>
-					<h2 className='section-title'>Beehouses</h2>
-					<p>
-						All beehouse locations entered here are private and only you can see
-						them. The data is used to determine mason bee population densities
-						for the "Probability of Finding Mason Bees" map.
-					</p>
+					<div className='section-header-left'>
+						<h2 className='section-title'>Beehouses</h2>
+
+						<button
+							className='collapse-toggle'
+							onClick={() => setShowBeehouseList((prev) => !prev)}>
+							{showBeehouseList ? 'Hide Beehouse List' : 'Expand Beehouse List'}
+						</button>
+					</div>
+
 					<div className='section-header-actions'>
 						{/* Add Beehouse button (hidden when Bee Notes form is open) */}
 						{!showBeeNotesForm && (
@@ -351,7 +357,14 @@ export default function ViewOneGardenPage() {
 					</div>
 				</div>
 
-				{/* Bee Notes Entry Form (toggle) */}
+				{/* Description (moved OUT of header for proper layout) */}
+				<p className='section-description'>
+					All beehouse locations entered here are private and only you can see
+					them. The data is used to determine mason bee population densities for
+					the "Probability of Finding Mason Bees" map.
+				</p>
+
+				{/* Bee Notes Entry Form */}
 				{showBeeNotesForm && (
 					<BeeNotesEntryForm
 						gardenId={id}
@@ -363,7 +376,7 @@ export default function ViewOneGardenPage() {
 					/>
 				)}
 
-				{/* Beehouse Entry Form (toggle) */}
+				{/* Beehouse Entry Form */}
 				{showBeehouseForm && (
 					<BeehouseEntryForm
 						gardenId={id}
@@ -374,44 +387,45 @@ export default function ViewOneGardenPage() {
 					/>
 				)}
 
-				{/* Existing Beehouse List */}
-				{sortedBeehouses.length === 0 ? (
-					<div className='journal-state-card'>
-						<p>No beehouses have been added to this garden yet.</p>
-					</div>
-				) : (
-					<div className='journal-grid'>
-						{sortedBeehouses.map((b) => (
-							<article key={b.id} className='journal-card'>
-								<div className='journal-card-top'>
-									<div>
-										<h3 className='journal-card-title'>
-											{garden?.name} - {b.beehouse_id}
-										</h3>
-										<p className='journal-card-date'>
-											Last inspection: {formatInspectionDate(b)}
-										</p>
+				{/* Collapsible Beehouse List */}
+				{showBeehouseList &&
+					(sortedBeehouses.length === 0 ? (
+						<div className='journal-state-card'>
+							<p>No beehouses have been added to this garden yet.</p>
+						</div>
+					) : (
+						<div className='journal-grid'>
+							{sortedBeehouses.map((b) => (
+								<article key={b.id} className='journal-card'>
+									<div className='journal-card-top'>
+										<div>
+											<h3 className='journal-card-title'>
+												{garden?.name} – {b.beehouse_id}
+											</h3>
+											<p className='journal-card-date'>
+												Last inspection: {formatInspectionDate(b)}
+											</p>
+										</div>
 									</div>
-								</div>
 
-								<p>
-									<strong>Type:</strong> {formatBeehouseType(b)}
-								</p>
-								<p>
-									<strong>Status:</strong> {formatBeehouseStatus(b)}
-								</p>
+									<p>
+										<strong>Type:</strong> {formatBeehouseType(b)}
+									</p>
+									<p>
+										<strong>Status:</strong> {formatBeehouseStatus(b)}
+									</p>
 
-								<div className='journal-card-actions'>
-									<button
-										className='journal-button journal-button-secondary'
-										onClick={() => setShowBeeNotesForm(true)}>
-										Add Bee Note
-									</button>
-								</div>
-							</article>
-						))}
-					</div>
-				)}
+									<div className='journal-card-actions'>
+										<button
+											className='journal-button journal-button-secondary'
+											onClick={() => setShowBeeNotesForm(true)}>
+											Add Bee Note
+										</button>
+									</div>
+								</article>
+							))}
+						</div>
+					))}
 			</section>
 
 			<section className='section view-one-garden-page__metadata'>
