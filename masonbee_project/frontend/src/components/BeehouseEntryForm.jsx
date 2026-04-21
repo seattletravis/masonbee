@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './BeehouseEntryForm.css';
 
-export default function BeehouseEntryForm({ gardenId, onCreated }) {
+export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 	const API_BASE = import.meta.env.VITE_API_BASE_URL;
 	const token = localStorage.getItem('access');
 
@@ -15,6 +15,13 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [customBeehouseId, setCustomBeehouseId] = useState('');
+
+	const [gardenDescription, setGardenDescription] = useState('');
+
+	const [waterNearby, setWaterNearby] = useState(false);
+	const [clayNearby, setClayNearby] = useState(false);
+	const [flowersNearby, setFlowersNearby] = useState(false);
+	const [woodsNearby, setWoodsNearby] = useState(false);
 
 	const HOUSE_TYPES = [
 		{ value: 'block', label: 'Wood Block' },
@@ -130,7 +137,7 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 
 			<div className='form-grid'>
 				<label>
-					Custom Beehouse ID (optional)
+					New Beehouse Name (optional)
 					<input
 						type='text'
 						value={customBeehouseId}
@@ -138,7 +145,15 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 						placeholder='Leave blank to auto‑assign'
 					/>
 				</label>
-
+				<label>
+					Garden Description
+					<input
+						type='text'
+						value={gardenDescription}
+						onChange={(e) => setGardenDescription(e.target.value)}
+						placeholder='e.g., Near the shed, south fence line'
+					/>
+				</label>
 				<label>
 					Bee House Type *
 					<select
@@ -216,9 +231,51 @@ export default function BeehouseEntryForm({ gardenId, onCreated }) {
 				<button type='button' onClick={useCurrentLocation}>
 					Use Current Location
 				</button>
+				<label>Bee Environment (within 100ft)</label>
+
+				<div className='checkbox-group'>
+					<label>
+						<input
+							type='checkbox'
+							checked={waterNearby}
+							onChange={(e) => setWaterNearby(e.target.checked)}
+						/>
+						Water source nearby
+					</label>
+
+					<label>
+						<input
+							type='checkbox'
+							checked={clayNearby}
+							onChange={(e) => setClayNearby(e.target.checked)}
+						/>
+						Exposed natural clay nearby
+					</label>
+
+					<label>
+						<input
+							type='checkbox'
+							checked={flowersNearby}
+							onChange={(e) => setFlowersNearby(e.target.checked)}
+						/>
+						Early-season flowering trees/shrubs nearby
+					</label>
+
+					<label>
+						<input
+							type='checkbox'
+							checked={woodsNearby}
+							onChange={(e) => setWoodsNearby(e.target.checked)}
+						/>
+						Wooded area nearby
+					</label>
+				</div>
 
 				<button type='submit' disabled={loading}>
 					{loading ? 'Saving...' : 'Add Bee House'}
+				</button>
+				<button type='button' className='cancel-button' onClick={onClose}>
+					Cancel
 				</button>
 			</div>
 		</form>

@@ -8,6 +8,7 @@ import GardenMetadata from '../components/GardenMetadata';
 import BeehouseEntryForm from '../components/BeehouseEntryForm';
 import BeeNotesEntryForm from '../components/BeeNotesEntryForm';
 import './ViewOneGardenPage.css';
+import './PageWrapperGlobal.css';
 
 function normalizeCollection(payload) {
 	if (Array.isArray(payload)) return payload;
@@ -247,7 +248,7 @@ export default function ViewOneGardenPage() {
 	// ------------------------------------------------------------
 	if (gardenLoading || isLoading) {
 		return (
-			<div className='page view-one-garden-page'>
+			<div className='page-wrapper view-one-garden-page'>
 				<div className='journal-state-card'>
 					<p>Loading garden details...</p>
 				</div>
@@ -257,7 +258,7 @@ export default function ViewOneGardenPage() {
 
 	if (loadError) {
 		return (
-			<div className='page view-one-garden-page'>
+			<div className='page-wrapper view-one-garden-page'>
 				<p className='journal-feedback error'>{loadError}</p>
 			</div>
 		);
@@ -265,7 +266,7 @@ export default function ViewOneGardenPage() {
 
 	if (!garden) {
 		return (
-			<div className='page view-one-garden-page'>
+			<div className='page-wrapper view-one-garden-page'>
 				<div className='journal-state-card'>
 					<h1 className='journal-title'>Garden not found</h1>
 					<p>This garden could not be loaded.</p>
@@ -278,7 +279,7 @@ export default function ViewOneGardenPage() {
 	// ⭐ Main Render
 	// ------------------------------------------------------------
 	return (
-		<div className='page view-one-garden-page'>
+		<div className='page-wrapper view-one-garden-page'>
 			<header className='view-one-garden-page__header'>
 				<div>
 					<h1>{garden.name || 'Unnamed Garden'}</h1>
@@ -332,7 +333,9 @@ export default function ViewOneGardenPage() {
 						<button
 							className='collapse-toggle'
 							onClick={() => setShowBeehouseList((prev) => !prev)}>
-							{showBeehouseList ? 'Hide Beehouse List' : 'Expand Beehouse List'}
+							{showBeehouseList
+								? 'Hide Beehouses List'
+								: 'Expand My Beehouses List'}
 						</button>
 					</div>
 
@@ -379,6 +382,7 @@ export default function ViewOneGardenPage() {
 				{/* Beehouse Entry Form */}
 				{showBeehouseForm && (
 					<BeehouseEntryForm
+						onClose={() => setShowBeehouseForm(false)}
 						gardenId={id}
 						onCreated={async () => {
 							await loadGardenPage();

@@ -1,0 +1,12 @@
+/* Universal page layout wrapper */
+.page-wrapper {
+	max-width: 900px; /* matches your navbar inner width */
+	margin: 0 auto; /* centers content */
+	padding: 1.5rem 1.25rem; /* consistent spacing on all pages */
+	box-sizing: border-box;
+}
+
+/* Optional: consistent spacing between sections */
+.page-wrapper .section {
+	margin-top: 2rem;
+}

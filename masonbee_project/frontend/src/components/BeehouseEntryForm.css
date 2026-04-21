@@ -1,79 +1,108 @@
 .beehouse-entry-form {
-	margin-top: 1rem;
-	padding: 1rem;
-	background: var(--surface);
-	border: 1px solid var(--border);
+	background: #ffffff;
+	border: 1px solid #e5e7eb;
 	border-radius: 8px;
+	padding: 1.75rem;
+	max-width: 720px;
+	margin: 0 auto;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .beehouse-entry-form h3 {
-	margin-bottom: 1rem;
-	font-size: 1.25rem;
-	color: var(--text-strong);
+	margin-top: 0;
+	margin-bottom: 1.25rem;
+	font-size: 1.4rem;
+	font-weight: 600;
+	color: #1f2937;
 }
 
-/* Grid layout for clean alignment */
+.error-text {
+	background: #fee2e2;
+	color: #b91c1c;
+	padding: 0.75rem 1rem;
+	border-radius: 6px;
+	margin-bottom: 1rem;
+	font-size: 0.95rem;
+}
+
 .form-grid {
 	display: grid;
-	gap: 1rem;
 	grid-template-columns: 1fr 1fr;
+	gap: 1.25rem 1.5rem;
 }
 
-/* Make full-width items span both columns */
-.form-grid button[type='button'],
-.form-grid button[type='submit'],
-.form-grid .checkbox-row {
-	grid-column: span 2;
-}
-
-/* Inputs */
 .form-grid label {
 	display: flex;
 	flex-direction: column;
-	font-size: 0.9rem;
-	color: var(--text);
+	font-weight: 500;
+	color: #374151;
+	font-size: 0.95rem;
 }
 
 .form-grid input,
 .form-grid select {
-	margin-top: 0.25rem;
-	padding: 0.5rem;
-	border: 1px solid var(--border);
+	margin-top: 0.35rem;
+	padding: 0.55rem 0.65rem;
+	border: 1px solid #d1d5db;
 	border-radius: 6px;
-	background: var(--surface-raised);
-	color: var(--text);
 	font-size: 0.95rem;
+	background: #f9fafb;
 }
 
-/* Checkbox row */
-.checkbox-row {
+.form-grid input:focus,
+.form-grid select:focus {
+	outline: none;
+	border-color: #2563eb;
+	background: #ffffff;
+	box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.checkbox-group {
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.75rem 1rem;
+	padding: 0.75rem 1rem;
+	background: #f9fafb;
+	border: 1px solid #e5e7eb;
+	border-radius: 6px;
+}
+
+.checkbox-group label {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
+	font-weight: 400;
+	color: #374151;
 }
 
-/* Error text */
-.error-text {
-	color: var(--danger);
-	margin-bottom: 0.75rem;
-	font-weight: 500;
+.beehouse-entry-form button[type='button'],
+.beehouse-entry-form button[type='submit'] {
+	padding: 0.6rem 1rem;
+	border-radius: 6px;
+	border: none;
+	font-size: 0.95rem;
+	cursor: pointer;
+	transition: background 0.15s ease;
 }
 
-/* Buttons */
-.beehouse-entry-form .button-small {
-	width: fit-content;
-	justify-self: start;
+.beehouse-entry-form button[type='button'] {
+	background: #e5e7eb;
+	color: #374151;
 }
 
-/* Mobile layout */
-@media (max-width: 600px) {
-	.form-grid {
-		grid-template-columns: 1fr;
-	}
-
-	.form-grid button[type='button'],
-	.form-grid button[type='submit'],
-	.form-grid .checkbox-row {
-		grid-column: span 1;
-	}
+.beehouse-entry-form button[type='button']:hover {
+	background: #d1d5db;
 }
+
+.beehouse-entry-form button[type='submit'] {
+	background: #2563eb;
+	color: #ffffff;
+	grid-column: 1 / -1;
+}
+
+.beehouse-entry-form button[type='submit']:hover {
+	background: #1d4ed8;
+}
+
+/* .beehouse-entry-form button[disabled */

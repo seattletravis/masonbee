@@ -58,21 +58,22 @@ class Garden(models.Model):
     # Location fields
     address = models.CharField(max_length=255, blank=True, null=True)
     cross_streets = models.CharField(max_length=255, blank=True, null=True)
+
     latitude = models.DecimalField(
-    max_digits=15,
-    decimal_places=6,
-    blank=True,
-    null=True,
-    help_text="Optional. Used to place public gardens on the map. Private gardens can leave this blank."
-)
+        max_digits=15,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        help_text="Optional. Used to place public gardens on the map. Private gardens can leave this blank."
+    )
 
     longitude = models.DecimalField(
-    max_digits=15,
-    decimal_places=6,
-    blank=True,
-    null=True,
-    help_text="Optional. Private gardens do not need coordinates."
-)
+        max_digits=15,
+        decimal_places=6,
+        blank=True,
+        null=True,
+        help_text="Optional. Private gardens do not need coordinates."
+    )
 
     neighborhood = models.CharField(max_length=255, blank=True, null=True)
 
@@ -82,7 +83,7 @@ class Garden(models.Model):
     num_plots = models.IntegerField(blank=True, null=True)
     size_sqft = models.IntegerField(blank=True, null=True)
 
-    # Ownership (only for private gardens)
+    # Ownership (user-created gardens)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -91,10 +92,11 @@ class Garden(models.Model):
         help_text="User who owns this garden (only for private gardens)."
     )
 
-    # Visibility
+    # Visibility — IMPORTANT:
+    # User-created gardens must ALWAYS remain private.
     is_public = models.BooleanField(
         default=False,
-        help_text="Only check this box if the garden is open to the public."
+        help_text="Only city-verified gardens may be public."
     )
 
     # Timestamps
@@ -103,7 +105,40 @@ class Garden(models.Model):
 
     def __str__(self):
         return self.name
-    
+
+    # -----------------------------
+    # Privacy Enforcement
+    # -----------------------------
+    def clean(self):
+        """
+        Prevent user-owned gardens from ever being public.
+        """
+        if self.owner and self.is_public:
+            raise ValidationError(
+                "User-created gardens cannot be made public. "
+                "Only city-verified gardens may be listed publicly."
+            )
+
+    def save(self, *args, **kwargs):
+        """
+        Enforce privacy at the database level.
+        If a garden has an owner, force is_public=False.
+        """
+        if self.owner:
+            self.is_public = False
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(owner__isnull=True) |
+                    models.Q(is_public=False)
+                ),
+                name="user_gardens_must_be_private"
+            )
+        ]
+
 # ----------------------------------Journal-------------------------
 
 class JournalEntry(models.Model):
@@ -166,38 +201,60 @@ class BeeHouse(models.Model):
         ('West', 'Westward Facing'),
     ]
 
-    garden = models.ForeignKey(Garden, on_delete=models.CASCADE, related_name='beehouses')
+    # Optional link to a city/community garden
+    garden = models.ForeignKey(
+        Garden,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='beehouses'
+    )
 
-    beehouse_id = models.CharField(max_length=50)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
-    class Meta:
-        unique_together = ('garden', 'beehouse_id')
+    # NEW: Human-friendly name
+    name = models.CharField(
+        max_length=100,
+        help_text="A short name for this beehouse (e.g., 'Backyard House')."
+    )
 
+    # NEW: User-provided description of the garden/location
+    garden_description = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Describe the area where this beehouse is located."
+    )
+
+    # NEW: Environmental context checkboxes
+    water_nearby = models.BooleanField(default=False)
+    clay_nearby = models.BooleanField(default=False)
+    flowers_nearby = models.BooleanField(default=False)
+    woods_nearby = models.BooleanField(default=False)
+
+    # Existing ecological fields
     beehouse_type = models.CharField(max_length=20, choices=HOUSE_TYPES)
+    tube_capacity = models.CharField(max_length=10, choices=TUBE_CAPACITY_CHOICES)
+    height_above_ground_inches = models.PositiveIntegerField()
+    orientation = models.CharField(max_length=50, choices=DIRECTIONS, blank=True, null=True)
 
     latitude = models.DecimalField(max_digits=15, decimal_places=6)
     longitude = models.DecimalField(max_digits=15, decimal_places=6)
 
-    # Ecological state
     is_active = models.BooleanField(default=False)
-
-    tube_capacity = models.CharField(max_length=10, choices=TUBE_CAPACITY_CHOICES)
-    height_above_ground_inches = models.PositiveIntegerField()
-
     install_date = models.DateField(blank=True, null=True)
-    orientation = models.CharField(max_length=50, choices=DIRECTIONS, blank=True, null=True)
-
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-
-    # Physical lifecycle
     uninstall_date = models.DateField(
         blank=True,
         null=True,
-        help_text="Enter uninstall date only if this BeeHouse has been permanently removed or otherwise decommissioned."
+        help_text="Enter uninstall date only if this BeeHouse has been permanently removed."
     )
 
     def __str__(self):
-        return f"{self.beehouse_id} ({self.garden.name})"
+        return self.name
 
     def clean(self):
         if self.uninstall_date and self.is_active:
@@ -207,6 +264,8 @@ class BeeHouse(models.Model):
         if self.uninstall_date is not None:
             self.is_active = False
         super().save(*args, **kwargs)
+
+
 
 # -----------------------------BeeHouseEvent-----------------------------------
 

@@ -196,3 +196,9 @@
 		display: none;
 	}
 }
+
+.mobile-menu {
+	z-index: 9999;
+	position: absolute;
+	background-color: #ffffff !important;
+}
