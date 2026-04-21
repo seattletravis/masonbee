@@ -2,14 +2,19 @@ import { useEffect, useState } from 'react';
 import { getMasonBeeForecast } from '../utils/masonBeeForecasting';
 import './MasonBeeForecasting.css';
 import './PageWrapperGlobal.css';
-// UI helper
+
+/* ---------------------------------------------
+   UI Helper
+--------------------------------------------- */
 function isDateInRange(date, start, end) {
 	if (!start || !end) return false;
 	const d = new Date(date);
 	return d >= new Date(start) && d <= new Date(end);
 }
 
-// Forward geocoding (CORS-safe)
+/* ---------------------------------------------
+   Forward Geocoding (Manual Input)
+--------------------------------------------- */
 async function geocode(query) {
 	const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
 		query,
@@ -31,6 +36,38 @@ async function geocode(query) {
 	};
 }
 
+/* ---------------------------------------------
+   Forward Geocoding (Coordinates → Nearest City)
+--------------------------------------------- */
+async function geocodeFromCoords(lat, lon) {
+	const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+
+	const res = await fetch(url, {
+		headers: {
+			'User-Agent': 'MasonBeeForecastingApp/1.0',
+		},
+	});
+
+	const data = await res.json();
+
+	if (!data.address) return 'Your Current Location';
+
+	const city =
+		data.address.city ||
+		data.address.town ||
+		data.address.village ||
+		data.address.hamlet ||
+		data.address.suburb ||
+		data.address.county;
+
+	const state = data.address.state || data.address.region;
+
+	return `${city}, ${state}`;
+}
+
+/* ---------------------------------------------
+   MAIN COMPONENT
+--------------------------------------------- */
 export default function MasonBeeForecasting() {
 	const [loading, setLoading] = useState(true);
 	const [location, setLocation] = useState(null);
@@ -39,19 +76,30 @@ export default function MasonBeeForecasting() {
 	const [forecast, setForecast] = useState(null);
 	const [error, setError] = useState('');
 
-	// Auto-detect user location
+	/* ---------------------------------------------
+     AUTO-DETECT USER LOCATION (FIXED VERSION)
+  --------------------------------------------- */
 	useEffect(() => {
 		navigator.geolocation.getCurrentPosition(
 			async (pos) => {
 				const { latitude, longitude } = pos.coords;
 
-				setLocation({
-					latitude,
-					longitude,
-					name: 'current location',
-				});
+				try {
+					// 1. Get nearest city name FIRST
+					const name = await geocodeFromCoords(latitude, longitude);
 
-				await loadForecast({ latitude, longitude });
+					// 2. Load forecast SECOND
+					const forecastData = await getMasonBeeForecast(latitude, longitude);
+
+					// 3. Update state ONCE (prevents race conditions)
+					setLocation({ latitude, longitude, name });
+					setForecast(forecastData);
+				} catch (err) {
+					console.error(err);
+					setError('Unable to load location or forecast data.');
+				}
+
+				setLoading(false);
 			},
 			() => {
 				setError('Unable to detect your location.');
@@ -60,6 +108,9 @@ export default function MasonBeeForecasting() {
 		);
 	}, []);
 
+	/* ---------------------------------------------
+     LOAD FORECAST FOR MANUAL LOCATION
+  --------------------------------------------- */
 	async function loadForecast(loc) {
 		setLoading(true);
 		setError('');
@@ -75,6 +126,9 @@ export default function MasonBeeForecasting() {
 		setLoading(false);
 	}
 
+	/* ---------------------------------------------
+     MANUAL LOCATION SUBMIT
+  --------------------------------------------- */
 	async function handleManualSubmit(e) {
 		e.preventDefault();
 		if (!manualInput.trim()) return;
@@ -89,13 +143,16 @@ export default function MasonBeeForecasting() {
 		}
 	}
 
+	/* ---------------------------------------------
+     RENDER
+  --------------------------------------------- */
 	return (
 		<div className='page-wrapper masonbee-forecast-page'>
 			<header className='forecast-header'>
 				<h1>Mason Bee Forecasting</h1>
 				<p>
-					Understand when mason bees emerge, become inactive, and when to handle
-					cocoons.
+					Know when your mason bees emerge, become inactive, and when to safely
+					handle cocoons.
 				</p>
 			</header>
 
@@ -130,7 +187,7 @@ export default function MasonBeeForecasting() {
 					</div>
 
 					<section className='forecast-section'>
-						<h3>Last Seasonal Event</h3>
+						<h3>Last Event:</h3>
 						<p>
 							Mason bees in your area last entered{' '}
 							<strong>{forecast.lastEvent.type}</strong> between{' '}
@@ -141,7 +198,7 @@ export default function MasonBeeForecasting() {
 
 					{forecast.currentEvent && (
 						<section className='forecast-section'>
-							<h3>Current Event</h3>
+							<h3>Current Event:</h3>
 							<p>
 								Mason bees are currently in{' '}
 								<strong>{forecast.currentEvent.type}</strong> between{' '}
@@ -153,7 +210,7 @@ export default function MasonBeeForecasting() {
 
 					{!forecast.currentEvent && (
 						<section className='forecast-section'>
-							<h3>Next Expected Event</h3>
+							<h3>Next Expected Event:</h3>
 							<p>
 								Mason bees are expected to enter{' '}
 								<strong>{forecast.nextEvent.type}</strong> between{' '}
@@ -164,7 +221,7 @@ export default function MasonBeeForecasting() {
 					)}
 
 					<section className='forecast-section'>
-						<h3>Cocoon Handling Window</h3>
+						<h3>Cocoon Handling Window:</h3>
 						<p>
 							It is safe to handle, clean, or store cocoons after{' '}
 							<strong>{forecast.cocoonSafeDate}</strong>.
@@ -172,7 +229,7 @@ export default function MasonBeeForecasting() {
 					</section>
 
 					<section className='forecast-section'>
-						<h3>Must‑Have‑Bees‑Out‑By Date</h3>
+						<h3>Must Have Bees Out By:</h3>
 						<p>
 							To ensure proper emergence, place your mason bee cocoons outside
 							by <strong>{forecast.mustPlaceBy}</strong>.
@@ -185,7 +242,7 @@ export default function MasonBeeForecasting() {
 			<button
 				className='forecast-location-button'
 				onClick={() => setManualMode((prev) => !prev)}>
-				{manualMode ? 'Cancel' : 'Use a different location'}
+				{manualMode ? 'Cancel' : 'Check forecast in a different location'}
 			</button>
 
 			{/* Manual location form */}
@@ -205,6 +262,84 @@ export default function MasonBeeForecasting() {
 					</button>
 				</form>
 			)}
+			<div class='learn-more-section'>
+				<details>
+					<summary>Learn More About Mason Bees & Their Seasonal Cycle</summary>
+					<div class='learn-more-content'>
+						<p>
+							Mason bees are gentle, solitary pollinators whose entire year
+							revolves around a short but incredibly productive spring season.
+							Unlike honey bees, they don’t live in hives or produce honey.
+							Instead, each female works independently, visiting thousands of
+							flowers and gathering pollen to provision her nesting tubes.
+							Because they carry pollen loosely on their bodies rather than
+							packing it into pollen baskets, they are exceptionally
+							efficient—often pollinating 50 to 100 times more effectively than
+							honey bees.
+						</p>
+
+						<p>
+							The terms used in this forecast reflect key stages in their
+							natural rhythm.
+							<strong> Emergence</strong> marks the moment adult bees chew their
+							way out of their cocoons in early spring. This happens when
+							temperatures warm consistently, usually when the 14‑day rolling
+							average reaches about 55°F. Once they emerge, mason bees are
+							active for only four to six weeks. During this time, they mate,
+							forage, and fill nesting tubes with pollen and eggs. This short
+							window is their entire adult life.
+						</p>
+
+						<p>
+							After this active period, mason bees enter what we call{' '}
+							<strong>dormancy</strong>, though the term can be a bit
+							misleading. The adult bees don’t hibernate—they simply reach the
+							end of their life cycle. What continues into summer, fall, and
+							winter are their developing offspring inside the cocoons. These
+							cocoons contain the next generation of bees, slowly maturing until
+							the following spring. In this sense, “dormancy” is really a way of
+							describing when the <em>next generation</em> is safely tucked away
+							and the pollination season has ended.
+						</p>
+
+						<p>
+							Because the timing of emergence and dormancy varies slightly by
+							region—shifting by only a matter of weeks depending on growing
+							zone, temperature patterns, and local climate—this forecast helps
+							you understand when mason bees in your area are actively
+							pollinating and when they’ve completed their season. The “Last
+							Dormancy” window represents when last year’s adults finished their
+							life cycle, and the “Next Emergence” window shows when this year’s
+							bees are expected to begin their spring activity.
+						</p>
+
+						<p>
+							One of the most important things to know about mason bees is that
+							they prefer to be left alone during their active season. Once they
+							emerge, they’re busy, focused, and easily disrupted. But when
+							they’re inactive—after the adults have died and only cocoons
+							remain—you can safely handle, clean, move, or store them without
+							harming the bees. This is the ideal time for maintenance: removing
+							parasites, cleaning nesting materials, and preparing cocoons for
+							winter storage. Just follow a few simple rules: keep cocoons cool
+							so they don’t wake prematurely, keep everything clean to prevent
+							mold and mites, and avoid exposing them to fluctuating
+							temperatures.
+						</p>
+
+						<p>
+							This forecasting tool is designed to give you confidence in every
+							part of that cycle. By showing when bees are emerging, when
+							they’re active, and when they’ve completed their season, you can
+							time your beekeeping tasks with accuracy—placing cocoons outside
+							at the right moment, knowing when pollination is happening, and
+							caring for cocoons safely once the season ends. It’s a simple way
+							to stay in sync with the natural rhythm of mason bees and support
+							healthy, thriving pollinator populations in your garden.
+						</p>
+					</div>
+				</details>
+			</div>
 		</div>
 	);
 }

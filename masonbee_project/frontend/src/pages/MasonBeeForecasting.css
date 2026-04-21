@@ -167,3 +167,74 @@
 		font-size: 1.7rem;
 	}
 }
+
+/* ---------------------------------------------
+   Learn More Section (Kindle-style article)
+--------------------------------------------- */
+
+.learn-more-section {
+	margin-top: 2.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid #e5e7eb;
+}
+
+/* Collapsible summary */
+.learn-more-section summary {
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	color: #0f172a;
+	padding: 0.75rem 0;
+	list-style: none;
+}
+
+.learn-more-section summary::-webkit-details-marker {
+	display: none;
+}
+
+.learn-more-section summary::after {
+	content: '▾';
+	float: right;
+	transition: transform 0.2s ease;
+	color: #64748b;
+}
+
+.learn-more-section details[open] summary::after {
+	transform: rotate(180deg);
+}
+
+/* Article content */
+.learn-more-content {
+	margin-top: 1rem;
+	padding: 1rem 0.5rem;
+	background: #faf9f7; /* soft off-white, Kindle-like */
+	border-radius: 8px;
+	border: 1px solid #e2e8f0;
+}
+
+/* Kindle-style typography */
+.learn-more-content p {
+	font-size: 0.9rem; /* smaller, book-like */
+	line-height: 1.65; /* comfortable reading */
+	color: #374151; /* soft charcoal */
+	margin-bottom: 1.1rem;
+	text-align: left;
+	font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* Slight indent for first line of each paragraph */
+.learn-more-content p::first-line {
+	text-indent: 0.75rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+	.learn-more-content {
+		padding: 0.85rem 0.75rem;
+	}
+
+	.learn-more-content p {
+		font-size: 0.92rem;
+		line-height: 1.7;
+	}
+}
