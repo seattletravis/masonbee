@@ -10,6 +10,7 @@ import MyGardensPage from './pages/MyGardensPage';
 import GardenFinderPage from './pages/GardenFinderPage';
 import ViewOneGardenPage from './pages/ViewOneGardenPage';
 import MyProfilePage from './pages/MyProfilePage';
+import MasonBeeForecasting from './pages/MasonBeeForecasting';
 import 'leaflet/dist/leaflet.css';
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
 						<Route path='/my-gardens' element={<MyGardensPage />} />
 
 						<Route path='/profile' element={<MyProfilePage />} />
+						<Route path='/forecasting' element={<MasonBeeForecasting />} />
 
 						<Route
 							path='/garden/:id/journal'

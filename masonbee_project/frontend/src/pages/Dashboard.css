@@ -14,8 +14,6 @@
 }
 
 .dashboard-title {
-	/* font-size: 1.8rem;
-	font-weight: 700; */
 	color: #1f2937;
 	margin: 0;
 }
@@ -70,4 +68,14 @@
 	text-decoration: none;
 	color: inherit;
 	display: block;
+}
+
+.dashboard-card-disabled {
+	opacity: 0.55;
+	cursor: default;
+	pointer-events: none;
+}
+
+.dashboard-card-link:hover {
+	background: #f9fafb;
 }
