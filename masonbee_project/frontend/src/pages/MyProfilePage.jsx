@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import * as api from '../api/client';
 import UserProfileForm from '../components/UserProfileForm';
 import './MyProfilePage.css';
+import './PageWrapperGlobal.css';
 
 function MyProfilePage() {
 	const [profile, setProfile] = useState(null);
@@ -36,7 +37,7 @@ function MyProfilePage() {
 	};
 
 	return (
-		<div className='profile-page'>
+		<div className='page-wrapper profile-page'>
 			<div className='profile-page-header'>
 				<h1>My Profile</h1>
 				<p>Manage your account details and preferences.</p>
@@ -47,38 +48,25 @@ function MyProfilePage() {
 			) : error ? (
 				<p className='profile-page-error'>{error}</p>
 			) : (
-				<div className='profile-page-content'>
-					<div className='profile-summary'>
-						{profile.avatar && (
-							<img
-								src={profile.avatar}
-								alt='Avatar'
-								className='profile-summary-avatar'
-							/>
-						)}
+				<div className='profile-card'>
+					<h2 className='profile-name'>
+						{profile.display_name || 'No display name set'}
+					</h2>
 
-						<h2>
-							<strong>Profile:</strong>{' '}
-							{profile.display_name || 'No display name set'}
-						</h2>
+					<p className='profile-bio'>{profile.bio || 'No bio added yet.'}</p>
 
-						<p className='profile-summary-bio'>
-							<strong>About me:</strong> {profile.bio || 'No bio added yet.'}
+					<div className='profile-details'>
+						<p>
+							<strong>Friend Request Notifications:</strong>{' '}
+							{profile.friend_request_notifications ? 'On' : 'Off'}
 						</p>
-
-						<div className='profile-summary-details'>
-							<p>
-								<strong>Friend Request Notifications:</strong>{' '}
-								{profile.friend_request_notifications ? 'On' : 'Off'}
-							</p>
-						</div>
-
-						<button
-							className='profile-edit-button'
-							onClick={() => setIsFormOpen(true)}>
-							Edit Profile
-						</button>
 					</div>
+
+					<button
+						className='profile-edit-button'
+						onClick={() => setIsFormOpen(true)}>
+						Edit Profile
+					</button>
 				</div>
 			)}
 

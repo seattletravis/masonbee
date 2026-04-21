@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GardenFinderCard from '../components/GardenFinderCard';
 import './GardenFinderPage.css';
+import './PageWrapperGlobal.css';
 import { useAuthContext } from '../auth/AuthProvider';
 import { get } from '../api/client';
 
@@ -234,7 +235,7 @@ function GardenFinderPage() {
 	const isEmpty = !isLoading && displayedGardens.length === 0;
 
 	return (
-		<div className='page garden-finder-page'>
+		<div className='page-wrapper garden-finder-page'>
 			<header className='page-header'>
 				<div>
 					<h1>Garden Finder</h1>

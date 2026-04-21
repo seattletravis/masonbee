@@ -4,6 +4,7 @@ import MyGardenCard from '../components/MyGardenCard';
 import { useAuthContext } from '../auth/AuthProvider';
 import { get } from '../api/client';
 import './MyGardensPage.css';
+import './PageWrapperGlobal.css';
 
 function MyGardensPage() {
 	const navigate = useNavigate();
@@ -91,7 +92,7 @@ function MyGardensPage() {
 	}, [isAuthenticated, navigate]);
 
 	return (
-		<div className='page my-gardens-page'>
+		<div className='page-wrapper my-gardens-page'>
 			<header className='page-header'>
 				<div>
 					<h1>My Gardens</h1>

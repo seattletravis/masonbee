@@ -1,68 +1,101 @@
+/* Page wrapper inherits global spacing */
 .profile-page {
-	max-width: 800px;
-	margin: 2rem auto;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
 }
 
+/* Header */
 .profile-page-header {
-	margin-bottom: 2rem;
+	text-align: center;
+	margin-bottom: 1rem;
 }
 
 .profile-page-header h1 {
 	margin: 0;
-	font-size: 2rem;
+	font-size: 1.9rem;
+	font-weight: 700;
+	color: #1f2937;
 }
 
 .profile-page-header p {
-	color: #555;
-	margin-top: 0.25rem;
+	color: #6b7280;
+	margin-top: 0.35rem;
+	font-size: 1rem;
 }
 
+/* Error */
 .profile-page-error {
-	color: #b00020;
+	color: #b91c1c;
+	background: #fee2e2;
+	padding: 0.75rem 1rem;
+	border-radius: 6px;
+	text-align: center;
 	font-size: 0.95rem;
 }
 
-.profile-page-content {
-	display: flex;
-	justify-content: center;
-}
-
-.profile-summary {
+/* Profile Card */
+.profile-card {
+	background: #ffffff;
+	border: 1px solid #e5e7eb;
+	border-radius: 10px;
+	padding: 2rem 2.5rem;
+	max-width: 480px;
+	margin: 0 auto;
 	text-align: center;
-	max-width: 400px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.profile-summary-avatar {
-	width: 100px;
-	height: 100px;
+/* Avatar */
+/* .profile-avatar {
+	width: 110px;
+	height: 110px;
 	border-radius: 50%;
 	object-fit: cover;
 	margin-bottom: 1rem;
+	border: 3px solid #f3f4f6;
+} */
+
+/* Name */
+.profile-name {
+	font-size: 1.4rem;
+	font-weight: 600;
+	color: #111827;
+	margin-bottom: 0.5rem;
 }
 
-.profile-summary-bio {
-	color: #444;
-	margin: 1rem 0;
+/* Bio */
+.profile-bio {
+	color: #4b5563;
+	margin: 0.75rem 0 1.25rem;
+	font-size: 0.95rem;
 }
 
-.profile-summary-details {
+/* Details */
+.profile-details {
 	text-align: left;
-	margin: 1.5rem auto;
+	margin: 1.25rem auto;
 	max-width: 300px;
-	color: #333;
+	color: #374151;
+	font-size: 0.95rem;
 }
 
+/* Edit Button */
 .profile-edit-button {
-	background: #2d7df4;
+	background: #2563eb;
 	color: white;
 	border: none;
-	padding: 0.6rem 1.2rem;
-	border-radius: 4px;
+	padding: 0.65rem 1.25rem;
+	border-radius: 6px;
 	cursor: pointer;
 	font-size: 1rem;
-	margin-top: 1rem;
+	font-weight: 600;
+	transition:
+		background 0.2s ease,
+		transform 0.2s ease;
 }
 
 .profile-edit-button:hover {
-	background: #1f63c7;
+	background: #1d4ed8;
+	transform: translateY(-1px);
 }
