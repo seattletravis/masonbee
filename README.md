@@ -653,3 +653,68 @@ Standardized padding across breakpoints
 Improved separation of concerns between Finder and My Gardens components
 
 Prepared the architecture for future enhancements (garden stats, beehouse summaries, seasonal insights, etc.)
+
+📅 Weekly Development Update — Mason Bee App
+Week of April 21, 2026
+This week was a major milestone for the Mason Bee application, with substantial progress on both functionality and user experience. The focus was on refining the Mason Bee Forecasting page, improving biological accuracy, enhancing geolocation reliability, and adding educational content to support new and experienced bee keepers.
+
+✔ Accurate Location Detection & City Name Resolution
+Replaced unreliable reverse‑geocoding with a stable, CORS‑safe solution.
+
+Implemented Nominatim (OpenStreetMap) for precise city name lookup based on user coordinates.
+
+Fixed race conditions between forecast loading and location naming.
+
+Ensured the forecast header now correctly displays the user’s nearest city or manually entered location.
+
+✔ Updated Mason Bee Phenology Engine
+Rewrote the forecasting logic to reflect real biological cycles.
+
+Emergence is now calculated using a 14‑day rolling temperature average ≥ 55°F.
+
+Last year’s emergence is derived by subtracting one year from this year’s emergence window.
+
+Dormancy is now correctly modeled as 4–6 weeks after emergence, reflecting the true lifecycle (adults complete their cycle, offspring enter cocoons).
+
+Must‑Place‑By date now calculated as 10 months after last year’s late emergence.
+
+Forecast output is now consistent, intuitive, and biologically accurate across regions.
+
+✔ UI/UX Enhancements
+Added a collapsible “Learn More About Mason Bees” section at the bottom of the Forecasting page.
+
+Wrote a full educational article explaining:
+
+Mason bee lifecycle
+
+What “emergence” and “dormancy” mean
+
+How temperature influences timing
+
+Why mason bees are highly effective pollinators
+
+Safe handling practices during inactive periods
+
+Styled the article with a Kindle‑style reading mode:
+
+Smaller serif font
+
+Soft off‑white background
+
+Comfortable line spacing
+
+Mobile‑friendly layout
+
+Smooth collapsible interaction
+
+✔ General Improvements
+Cleaned up component structure and state management.
+
+Improved loading behavior and error handling for geolocation and forecast data.
+
+Ensured consistent formatting across forecast sections.
+
+Strengthened the foundation for future educational content throughout the app.
+
+🎯 What’s Next
+Tomorrow’s focus will shift to the Mason Bee Finder page — the most visually dynamic and interactive part of the app. This will include UI polish, map integration, and potentially more educational overlays.
