@@ -12,6 +12,12 @@ function isDateInRange(date, start, end) {
 	return d >= new Date(start) && d <= new Date(end);
 }
 
+function getNextEvent(today, emergenceStart, dormancyStart) {
+	if (today < emergenceStart) return 'Emergence';
+	if (today < dormancyStart) return 'Dormancy';
+	return 'Emergence (next year)';
+}
+
 /* ---------------------------------------------
    Forward Geocoding (Manual Input)
 --------------------------------------------- */
@@ -174,18 +180,21 @@ export default function MasonBeeForecasting() {
 						Forecast for {location?.name}
 					</h2>
 
+					{/* Status banner */}
 					<div className='forecast-status-banner'>
-						{forecast.currentEvent ? (
-							<p>
-								You are currently in the{' '}
-								<strong>{forecast.currentEvent.type}</strong> window for mason
-								bees in your area.
-							</p>
-						) : (
-							<p>You are between major seasonal events.</p>
-						)}
+						<p>
+							You are currently in the <strong>{forecast.status.event}</strong>{' '}
+							period for mason bees in your area.
+						</p>
+						<p className='forecast-status-note'>
+							{forecast.status.event === 'Emergence' ||
+							forecast.status.event === 'Active Season'
+								? 'Bee Status: Active — Do not disturb, light interaction only.'
+								: 'Bee Status: Inactive/Dormant — Safe to handle, inspect, and clean.'}
+						</p>
 					</div>
 
+					{/* Last Event */}
 					<section className='forecast-section'>
 						<h3>Last Event:</h3>
 						<p>
@@ -196,30 +205,37 @@ export default function MasonBeeForecasting() {
 						</p>
 					</section>
 
-					{forecast.currentEvent && (
-						<section className='forecast-section'>
-							<h3>Current Event:</h3>
-							<p>
-								Mason bees are currently in{' '}
-								<strong>{forecast.currentEvent.type}</strong> between{' '}
-								<strong>{forecast.currentEvent.early}</strong> and{' '}
-								<strong>{forecast.currentEvent.late}</strong>.
-							</p>
-						</section>
-					)}
+					{/* Current Event (always shown) */}
+					<section className='forecast-section'>
+						<h3>Current Event:</h3>
+						<p>
+							Mason bees are currently in{' '}
+							<strong>{forecast.currentEvent.type}</strong> between{' '}
+							<strong>{forecast.currentEvent.early}</strong> and{' '}
+							<strong>{forecast.currentEvent.late}</strong>.
+						</p>
 
-					{!forecast.currentEvent && (
-						<section className='forecast-section'>
-							<h3>Next Expected Event:</h3>
-							<p>
-								Mason bees are expected to enter{' '}
-								<strong>{forecast.nextEvent.type}</strong> between{' '}
-								<strong>{forecast.nextEvent.early}</strong> and{' '}
-								<strong>{forecast.nextEvent.late}</strong>.
-							</p>
-						</section>
-					)}
+						{/* Status Tag */}
+						<p className='forecast-status-note'>
+							{forecast.status.event === 'Emergence' ||
+							forecast.status.event === 'Active Season'
+								? 'Status: Actively Polinating, enjoy occasional photos.'
+								: 'Status: Inactive/Dormant — Safe to handle, inspect, and clean cocoons.'}
+						</p>
+					</section>
 
+					{/* Next Event */}
+					<section className='forecast-section'>
+						<h3>Next Expected Event:</h3>
+						<p>
+							Mason bees are expected to enter{' '}
+							<strong>{forecast.nextEvent.type}</strong> between{' '}
+							<strong>{forecast.nextEvent.early}</strong> and{' '}
+							<strong>{forecast.nextEvent.late}</strong>.
+						</p>
+					</section>
+
+					{/* Cocoon Handling */}
 					<section className='forecast-section'>
 						<h3>Cocoon Handling Window:</h3>
 						<p>
@@ -228,6 +244,7 @@ export default function MasonBeeForecasting() {
 						</p>
 					</section>
 
+					{/* Must Place By */}
 					<section className='forecast-section'>
 						<h3>Must Have Bees Out By:</h3>
 						<p>
@@ -262,10 +279,10 @@ export default function MasonBeeForecasting() {
 					</button>
 				</form>
 			)}
-			<div class='learn-more-section'>
+			<div className='learn-more-section'>
 				<details>
 					<summary>Learn More About Mason Bees & Their Seasonal Cycle</summary>
-					<div class='learn-more-content'>
+					<div className='learn-more-content'>
 						<p>
 							Mason bees are gentle, solitary pollinators whose entire year
 							revolves around a short but incredibly productive spring season.

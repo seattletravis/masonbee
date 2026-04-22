@@ -718,3 +718,5 @@ Strengthened the foundation for future educational content throughout the app.
 
 🎯 What’s Next
 Tomorrow’s focus will shift to the Mason Bee Finder page — the most visually dynamic and interactive part of the app. This will include UI polish, map integration, and potentially more educational overlays.
+
+IMPORTANT TODO: ADD COMMUNITY GARDEN DATA FOR FEDERAL WAY, SEATAC, KENT, RENTON, LYNNWOOD, AND ISSAQUAH.

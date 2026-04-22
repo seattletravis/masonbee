@@ -1,7 +1,3 @@
-// -------------------------------------------------------------
-// Mason Bee Forecasting Engine (Your Biological Logic Version)
-// -------------------------------------------------------------
-
 export async function getMasonBeeForecast(lat, lon) {
 	const today = new Date();
 
@@ -33,7 +29,7 @@ export async function getMasonBeeForecast(lat, lon) {
 	const emergenceLate = shiftDate(emergenceEarly, 14);
 
 	// -------------------------------------------------------------
-	// LAST YEAR EMERGENCE (your logic: subtract 1 year)
+	// LAST YEAR EMERGENCE
 	// -------------------------------------------------------------
 	const lastEmergenceEarly = new Date(
 		emergenceEarly.getFullYear() - 1,
@@ -48,13 +44,13 @@ export async function getMasonBeeForecast(lat, lon) {
 	);
 
 	// -------------------------------------------------------------
-	// LAST YEAR DORMANCY (4–6 weeks after last-year emergence)
+	// LAST YEAR DORMANCY
 	// -------------------------------------------------------------
 	const lastDormancyEarly = shiftDate(lastEmergenceEarly, 28);
 	const lastDormancyLate = shiftDate(lastEmergenceLate, 42);
 
 	// -------------------------------------------------------------
-	// THIS YEAR DORMANCY (for next event)
+	// THIS YEAR DORMANCY
 	// -------------------------------------------------------------
 	const dormancyEarly = shiftDate(emergenceEarly, 28);
 	const dormancyLate = shiftDate(emergenceLate, 42);
@@ -63,6 +59,7 @@ export async function getMasonBeeForecast(lat, lon) {
 	// CURRENT EVENT DETECTION
 	// -------------------------------------------------------------
 	const isEmergingNow = today >= emergenceEarly && today <= emergenceLate;
+	const isDormantNow = today >= dormancyEarly && today <= dormancyLate;
 
 	// -------------------------------------------------------------
 	// NEXT EVENT
@@ -80,14 +77,25 @@ export async function getMasonBeeForecast(lat, lon) {
 			};
 
 	// -------------------------------------------------------------
-	// MUST-HAVE-BEES-OUT-BY (10 months after last-year late emergence)
+	// MUST-HAVE-BEES-OUT-BY
 	// -------------------------------------------------------------
 	const mustPlaceBy = addMonths(lastEmergenceLate, 10);
 
 	// -------------------------------------------------------------
-	// COCOON HANDLING WINDOW (unchanged)
+	// COCOON HANDLING WINDOW
 	// -------------------------------------------------------------
 	const cocoonSafeDate = shiftDate(dormancyLate, 90);
+
+	// -------------------------------------------------------------
+	// STATUS TAG (fixed variable names)
+	// -------------------------------------------------------------
+	const status = getBeeStatus(
+		today,
+		emergenceEarly,
+		emergenceLate,
+		dormancyEarly,
+		dormancyLate,
+	);
 
 	// -------------------------------------------------------------
 	// RETURN FORECAST OBJECT
@@ -98,14 +106,17 @@ export async function getMasonBeeForecast(lat, lon) {
 			early: formatDate(lastDormancyEarly),
 			late: formatDate(lastDormancyLate),
 		},
-		currentEvent: isEmergingNow
-			? {
-					type: 'Emergence',
-					early: formatDate(emergenceEarly),
-					late: formatDate(emergenceLate),
-				}
-			: null,
+		currentEvent: {
+			type: isEmergingNow
+				? 'Emergence'
+				: isDormantNow
+					? 'Dormancy'
+					: status.event,
+			early: formatDate(emergenceEarly),
+			late: formatDate(emergenceLate),
+		},
 		nextEvent,
+		status,
 		cocoonSafeDate: formatDate(cocoonSafeDate),
 		mustPlaceBy: formatDate(mustPlaceBy),
 	};
@@ -159,4 +170,39 @@ function formatDate(d) {
 		day: 'numeric',
 		year: 'numeric',
 	});
+}
+
+function getBeeStatus(
+	today,
+	emergenceStart,
+	emergenceEnd,
+	dormancyStart,
+	dormancyEnd,
+) {
+	if (today >= emergenceStart && today <= emergenceEnd) {
+		return { event: 'Emergence', status: 'Active — Please do not disturb' };
+	}
+
+	if (today >= dormancyStart && today <= dormancyEnd) {
+		return { event: 'Dormancy', status: 'Dormant — OK to handle' };
+	}
+
+	// Pre‑emergence (late winter)
+	if (today < emergenceStart) {
+		return {
+			event: 'Pre‑Emergence',
+			status: 'Inactive — Bees are still dormant',
+		};
+	}
+
+	// Post‑dormancy (fall)
+	if (today > dormancyEnd) {
+		return {
+			event: 'Post‑Dormancy',
+			status: 'Inactive — Bees are dormant again',
+		};
+	}
+
+	// Mid‑season (after emergence, before dormancy)
+	return { event: 'Active Season', status: 'Active — Bees are foraging' };
 }
