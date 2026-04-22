@@ -226,7 +226,7 @@ export default function MasonBeeForecasting() {
 
 					{/* Next Event */}
 					<section className='forecast-section'>
-						<h3>Next Expected Event:</h3>
+						<h3>Next Event:</h3>
 						<p>
 							Mason bees are expected to enter{' '}
 							<strong>{forecast.nextEvent.type}</strong> between{' '}
