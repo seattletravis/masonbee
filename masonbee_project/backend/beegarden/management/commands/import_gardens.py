@@ -6,8 +6,8 @@ from beegarden.models import Garden
 from beegarden.utils import convert_to_wgs84   # keep your existing converter
 
 # call these commands to use. 
-# python manage.py import_gardens --file P_Patch_Data.csv --city Seattle --source SEA
-# python manage.py import_gardens --file tacoma_gardens.csv --city Tacoma --source TAC
+# python manage.py import_gardens --file Seattle_Data.csv --city Seattle --source SEA
+# python manage.py import_gardens --file Tacoma_Data.csv --city Tacoma --source TAC
 # python manage.py import_gardens --file Bellevue_Data.csv --city Bellevue --source BEL
 
 
