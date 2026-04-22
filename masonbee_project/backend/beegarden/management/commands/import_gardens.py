@@ -8,7 +8,7 @@ from beegarden.utils import convert_to_wgs84   # keep your existing converter
 # call these commands to use. 
 # python manage.py import_gardens --file P_Patch_Data.csv --city Seattle --source SEA
 # python manage.py import_gardens --file tacoma_gardens.csv --city Tacoma --source TAC
-# python manage.py import_gardens --file bellevue_gardens.csv --city Bellevue --source BEL
+# python manage.py import_gardens --file Bellevue_Data.csv --city Bellevue --source BEL
 
 
 def to_decimal(value):
@@ -123,6 +123,7 @@ class Command(BaseCommand):
                     defaults={
                         "name": name,
                         "garden_type": "community",
+                        "habitat_type": row.get("habitat_type") or None,
                         "address": address,
                         "cross_streets": row.get("LOCATION") or None,
                         "latitude": lat,

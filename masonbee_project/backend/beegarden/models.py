@@ -54,10 +54,15 @@ class Garden(models.Model):
         ],
         default='community'
     )
+    habitat_type = models.CharField(max_length=255, null=True, blank=True)
 
     # Location fields
     address = models.CharField(max_length=255, blank=True, null=True)
     cross_streets = models.CharField(max_length=255, blank=True, null=True)
+
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=50, null=True, blank=True)
+
 
     latitude = models.DecimalField(
         max_digits=15,
@@ -82,6 +87,9 @@ class Garden(models.Model):
     url = models.URLField(blank=True, null=True)
     num_plots = models.IntegerField(blank=True, null=True)
     size_sqft = models.IntegerField(blank=True, null=True)
+    source_id = models.CharField(max_length=255, unique=True)
+
+
 
     # Ownership (user-created gardens)
     owner = models.ForeignKey(

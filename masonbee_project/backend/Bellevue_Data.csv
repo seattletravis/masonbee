@@ -1,0 +1,12 @@
+name,address,managed_by,public,habitat_type,description,city,state,zip,latitude,longitude
+Crossroads Community Garden,16000 NE 10th St,City of Bellevue Parks,true,"PPatch;WaterFeature","Community P‑Patch garden with ornamental plantings, flowering shrubs, and a water feature. High early‑season forage potential.",Bellevue,WA,98008,47.61994710658185,-122.12605064956698
+Lake Hills Greenbelt Community Garden,"156th Ave SE & Lake Hills Blvd",Lake Hills Greenbelt Urban Agriculture Program,true,"FarmGarden;BirdingWildlifeViewing","Urban agriculture and demonstration garden with community plots, fruit trees, and pollinator habitat.",Bellevue,WA,98007,47.60067371771814,-122.13637299137226
+Goddard Park,715 100th Ave NE,City of Bellevue Parks,true,"FormalGarden","Rose garden and ornamental plantings. Strong early‑season flowering potential.",Bellevue,WA,98004,47.61653881571822,-122.20745626123848
+Wildwood Park,260 101st Ave SE,City of Bellevue Parks,true,"FormalGarden;Trailhead","Flower garden, wooded trails, and edge habitat ideal for mason bees.",Bellevue,WA,98004,47.608543002044605,-122.20475186967448
+Evergreen Park,15655 Lake Hills Blvd,City of Bellevue Parks,true,"FormalGarden","Flower garden with seasonal blooms and open lawn areas.",Bellevue,WA,98007,47.60330648787694,-122.12859147894501
+Wilburton Hill Community Park,12400 Main St,City of Bellevue Parks,true,"Trailhead","Large upland park with forest edges and trail corridors — prime mason bee habitat.",Bellevue,WA,98005,47.60808622069264,-122.17520490148192
+Weowna Park,1420 168th Ave SE,City of Bellevue Parks,true,"Trailhead","Old‑growth forest remnants, riparian edges, and early‑season flowering understory.",Bellevue,WA,98008,47.59646307094873,-122.11402743335083
+Spiritwood Park,1813 146th Ave SE,City of Bellevue Parks,true,"Trailhead","Wooded trails and edge habitat with diverse flowering shrubs.",Bellevue,WA,98007,47.59404904640197,-122.14608866348577
+Robinsglen Nature Park,16357 SE 16th St,City of Bellevue Parks,true,"ScenicViewpoint;BirdingWildlifeViewing","Wildlife habitat with open viewpoints and flowering native shrubs.",Bellevue,WA,98008,47.595364868826465,-122.12173888106946
+Burrows Landing,"SE 15th St & 100th Ave SE",City of Bellevue Parks,true,"ScenicViewpoint","Lakefront viewpoint with flowering shoreline vegetation.",Bellevue,WA,98004,47.597481398540616,-122.21013650301212
+
