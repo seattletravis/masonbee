@@ -72,3 +72,23 @@
 		grid-column: span 1;
 	}
 }
+
+.form-actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 20px;
+}
+
+.cancel-button {
+	background: #f3f4f6;
+	border: 1px solid #d1d5db;
+	color: #333;
+	padding: 10px 18px;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: 0.2s ease;
+}
+
+.cancel-button:hover {
+	background: #e5e7eb;
+}

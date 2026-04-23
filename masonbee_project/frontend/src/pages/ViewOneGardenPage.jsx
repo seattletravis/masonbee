@@ -65,7 +65,7 @@ function formatBeehouseBiologicalStatus(b) {
 		case 'cocoons':
 			return 'Will be loaded with cocoons';
 		default:
-			return 'Inactive / empty';
+			return 'Inactive';
 	}
 }
 

@@ -1,16 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './BeeNotesEntryForm.css';
 
-export default function BeeNotesEntryForm({
-	gardenId,
-	beehouses = [],
-	onCreated,
-}) {
+export default function BeeNotesEntryForm({ onCreated, onClose }) {
 	const [eventType, setEventType] = useState('');
 	const [beehouseId, setBeehouseId] = useState('');
 	const [notes, setNotes] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
+	const [userBeehouses, setUserBeehouses] = useState([]);
+
+	const API_BASE = import.meta.env.VITE_API_BASE_URL;
+	const token = localStorage.getItem('access');
 
 	const EVENT_TYPES = [
 		{ value: 'emergence', label: 'Emergence Observed' },
@@ -28,6 +28,26 @@ export default function BeeNotesEntryForm({
 		{ value: 'other', label: 'Other' },
 	];
 
+	// Load all user beehouses
+	useEffect(() => {
+		async function loadBeehouses() {
+			try {
+				const res = await fetch(`${API_BASE}/api/beehouses/`, {
+					headers: { Authorization: `Bearer ${token}` },
+				});
+
+				if (!res.ok) return;
+
+				const data = await res.json();
+				setUserBeehouses(data);
+			} catch (err) {
+				console.error('Failed to load beehouses', err);
+			}
+		}
+
+		if (token) loadBeehouses();
+	}, [API_BASE, token]);
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError('');
@@ -37,32 +57,38 @@ export default function BeeNotesEntryForm({
 			return;
 		}
 
+		if (!beehouseId) {
+			setError('Please select a beehouse.');
+			return;
+		}
+
 		setLoading(true);
 
 		const payload = {
 			event_type: eventType,
-			beehouse: beehouseId ? Number(beehouseId) : null,
+			beehouse: Number(beehouseId),
 			notes: notes.trim(),
 		};
 
 		try {
-			const res = await fetch('/api/beehouse-events/', {
+			const res = await fetch(`${API_BASE}/api/beehouse-events/`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
-					Authorization: `Bearer ${localStorage.getItem('access')}`,
+					Authorization: `Bearer ${token}`,
 				},
 				body: JSON.stringify(payload),
 			});
 
+			const data = await res.json();
+
 			if (!res.ok) {
-				const data = await res.json();
 				throw new Error(data.detail || 'Failed to create bee note.');
 			}
 
-			const data = await res.json();
-			onCreated && onCreated(data);
+			onCreated?.(data);
 
+			// Reset form
 			setEventType('');
 			setBeehouseId('');
 			setNotes('');
@@ -96,14 +122,15 @@ export default function BeeNotesEntryForm({
 				</label>
 
 				<label>
-					Associated Beehouse (optional)
+					Associated Beehouse *
 					<select
+						required
 						value={beehouseId}
 						onChange={(e) => setBeehouseId(e.target.value)}>
-						<option value=''>None</option>
-						{beehouses.map((b) => (
+						<option value=''>Select beehouse</option>
+						{userBeehouses.map((b) => (
 							<option key={b.id} value={b.id}>
-								{b.beehouse_id}
+								{b.name || `Beehouse ${b.id}`}
 							</option>
 						))}
 					</select>
@@ -119,9 +146,16 @@ export default function BeeNotesEntryForm({
 					/>
 				</label>
 
-				<button type='submit' disabled={loading}>
-					{loading ? 'Saving...' : 'Add Note'}
-				</button>
+				{/* ⭐ Buttons Row */}
+				<div className='form-actions'>
+					<button type='submit' disabled={loading}>
+						{loading ? 'Saving...' : 'Add Note'}
+					</button>
+
+					<button type='button' className='cancel-button' onClick={onClose}>
+						Cancel
+					</button>
+				</div>
 			</div>
 		</form>
 	);
