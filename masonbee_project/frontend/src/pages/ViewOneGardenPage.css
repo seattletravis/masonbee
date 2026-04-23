@@ -111,3 +111,73 @@
 .view-one-garden-page__beehouses {
 	width: 100%;
 }
+.view-one-garden-page__badges {
+	min-height: 24px; /* or whatever height your badges are */
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.view-one-garden-page__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.view-one-garden-page__right {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 8px;
+}
+
+.view-one-garden-page__badges {
+	min-height: 24px; /* prevents layout shift */
+	display: flex;
+	gap: 8px;
+}
+
+.default-badge,
+.pinned-badge {
+	background: var(--primary-color);
+	color: white;
+	padding: 4px 8px;
+	border-radius: 6px;
+	font-size: 0.8rem;
+}
+.view-one-garden-page__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 2rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid #ddd;
+}
+
+.view-one-garden-page__left {
+	flex: 1;
+}
+
+.view-one-garden-page__right {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.75rem;
+	min-width: 240px; /* prevents layout shift */
+}
+
+.view-one-garden-page__badges {
+	display: flex;
+	gap: 0.5rem;
+	min-height: 24px; /* reserves space so layout doesn't jump */
+}
+
+.view-one-garden-page__actions {
+	display: flex;
+	flex-direction: row; /* horizontal */
+	flex-wrap: wrap; /* allows wrapping on small screens */
+	gap: 0.75rem;
+	align-items: center; /* keeps them aligned nicely */
+	justify-content: flex-start;
+}

@@ -8,8 +8,6 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 	const location = useLocation();
 	const [isOpen, setIsOpen] = useState(false);
 
-	const showMyGardens = defaultGarden || hasPinnedGardens;
-
 	useEffect(() => {
 		setIsOpen(false);
 	}, [location.pathname]);
@@ -31,11 +29,9 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 				</div>
 
 				<div className='nav-right desktop-links'>
-					{showMyGardens && (
-						<Link to='/my-gardens' className='nav-link'>
-							My Gardens
-						</Link>
-					)}
+					<Link to='/my-gardens' className='nav-link'>
+						My Gardens
+					</Link>
 
 					{authenticated && (
 						<>

@@ -1,7 +1,6 @@
 // src/auth/AuthProvider.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
 import useAuth from './useAuth';
-import { getUserDefaultGarden } from '../api/gardens';
 import { get } from '../api/client';
 
 const AuthContext = createContext(null);
@@ -22,34 +21,39 @@ export default function AuthProvider({ children }) {
 		error,
 	} = useAuth();
 
-	const [defaultGarden, setDefaultGarden] = useState(null);
-	const [gardenLoading, setGardenLoading] = useState(true);
+	// ----------------------------------------
+	// Persistent State
+	// ----------------------------------------
+	const [hydrating, setHydrating] = useState(true);
 
-	// 🔹 Global pinned gardens
-	const [pinned, setPinned] = useState({});
+	const [defaultGarden, setDefaultGarden] = useState(
+		JSON.parse(localStorage.getItem('defaultGarden')) || null,
+	);
+
+	const [pinned, setPinned] = useState(
+		JSON.parse(localStorage.getItem('pinnedGardens')) || {},
+	);
+
 	const hasPinnedGardens = Object.keys(pinned).length > 0;
 
-	// Load default garden when authenticated
+	// ----------------------------------------
+	// Persist to localStorage whenever changed
+	// ----------------------------------------
 	useEffect(() => {
-		async function loadGarden() {
-			if (!isAuthenticated) {
-				setDefaultGarden(null);
-				setGardenLoading(false);
-				return;
-			}
-
-			const garden = await getUserDefaultGarden();
-			setDefaultGarden(garden);
-			setGardenLoading(false);
-		}
-
-		loadGarden();
-	}, [isAuthenticated]);
+		localStorage.setItem('defaultGarden', JSON.stringify(defaultGarden));
+	}, [defaultGarden]);
 
 	useEffect(() => {
-		async function loadPinnedAndDefault() {
+		localStorage.setItem('pinnedGardens', JSON.stringify(pinned));
+	}, [pinned]);
+
+	// ----------------------------------------
+	// Hydrate from backend ONCE after login
+	// ----------------------------------------
+	useEffect(() => {
+		async function hydrateFromBackend() {
 			if (!isAuthenticated || !access) {
-				setPinned({});
+				setHydrating(false);
 				return;
 			}
 
@@ -59,6 +63,7 @@ export default function AuthProvider({ children }) {
 					get('/api/gardens/default/'),
 				]);
 
+				// Normalize pinned gardens
 				let watchedList = [];
 				if (Array.isArray(watched)) watchedList = watched;
 				else if (watched?.results) watchedList = watched.results;
@@ -72,21 +77,26 @@ export default function AuthProvider({ children }) {
 				setPinned(lookup);
 				setDefaultGarden(def || null);
 			} catch (err) {
-				// ⭐ Ignore 401s silently
 				if (err?.response?.status !== 401) {
 					console.error('Unable to load saved garden preferences', err);
 				}
 			}
+
+			setHydrating(false);
 		}
 
-		loadPinnedAndDefault();
+		hydrateFromBackend();
 	}, [isAuthenticated, access]);
 
-	// 🔹 Wrap logout so pinned + default garden reset properly
+	// ----------------------------------------
+	// Wrapped logout clears everything
+	// ----------------------------------------
 	const wrappedLogout = () => {
 		logout();
 		setPinned({});
 		setDefaultGarden(null);
+		localStorage.removeItem('pinnedGardens');
+		localStorage.removeItem('defaultGarden');
 	};
 
 	const value = {
@@ -98,9 +108,9 @@ export default function AuthProvider({ children }) {
 		isAuthenticated,
 		loading,
 		error,
+		hydrating,
 		defaultGarden,
 		setDefaultGarden,
-		gardenLoading,
 		pinned,
 		setPinned,
 		hasPinnedGardens,

@@ -36,3 +36,17 @@ export function updateGarden(id, data) {
 export function deleteGarden(id) {
 	return del(`/gardens/${id}/`);
 }
+
+// --- PIN / UNPIN / SET DEFAULT ---
+
+export async function pinGarden(id) {
+	return post(`/api/gardens/${id}/pin/`);
+}
+
+export async function unpinGarden(id) {
+	return del(`/api/gardens/${id}/unpin/`);
+}
+
+export async function setDefaultGardenAPI(id) {
+	return post('/api/gardens/default/', { garden_id: id });
+}

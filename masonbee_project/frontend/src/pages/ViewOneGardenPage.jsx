@@ -88,8 +88,9 @@ export default function ViewOneGardenPage() {
 	const [garden, setGarden] = useState(null);
 	const [beehouses, setBeehouses] = useState([]);
 	const [journalEntries, setJournalEntries] = useState([]);
-	const [isPinned, setIsPinned] = useState(false);
-	const [isDefault, setIsDefault] = useState(false);
+	const isDefault = defaultGarden?.id === Number(id);
+	const isPinned = Boolean(pinned[String(id)]);
+
 	const [isSavingDefault, setIsSavingDefault] = useState(false);
 	const [isSavingPin, setIsSavingPin] = useState(false);
 	const [actionError, setActionError] = useState('');
@@ -116,13 +117,6 @@ export default function ViewOneGardenPage() {
 			setGarden(gardenData || null);
 			setJournalEntries(normalizeCollection(journalData));
 			setBeehouses(normalizeCollection(beehouseData));
-
-			// ⭐ Compute default from AuthProvider
-			setIsDefault(defaultGarden?.id === Number(id));
-
-			// ⭐ Compute pinned from AuthProvider
-			const pinnedRecord = pinned[String(id)];
-			setIsPinned(Boolean(pinnedRecord));
 		} catch (error) {
 			setLoadError(
 				getErrorMessage(error, 'Unable to load this garden right now.'),
@@ -184,31 +178,25 @@ export default function ViewOneGardenPage() {
 
 		try {
 			if (!isPinned) {
-				// ⭐ PIN
 				const result = await api.post(`/api/gardens/${id}/pin/`, {});
-				if (result?.id) {
-					setPinned({
-						...pinned,
-						[String(result.garden.id)]: result,
-					});
-				}
+				setPinned({
+					...pinned,
+					[String(result.garden.id)]: result,
+				});
 			} else {
-				// ⭐ UNPIN
 				await api.del(`/api/gardens/${id}/unpin/`);
 				const updated = { ...pinned };
 				delete updated[String(id)];
 				setPinned(updated);
 			}
-
-			await loadGardenPage();
 		} catch (error) {
 			setActionError(
-				getErrorMessage(error, 'Unable to update the pinned state right now.'),
+				getErrorMessage(error, 'Unable to update the pinned state.'),
 			);
 		} finally {
 			setIsSavingPin(false);
 		}
-	}, [id, isPinned, pinned, setPinned, loadGardenPage]);
+	}, [id, isPinned, pinned, setPinned]);
 
 	// ------------------------------------------------------------
 	// ⭐ Set Default Garden (Option B)
@@ -218,25 +206,17 @@ export default function ViewOneGardenPage() {
 		setActionError('');
 
 		try {
-			// ⭐ Step 1 — backend update
-			await api.post('/api/gardens/default/', {
-				garden_id: Number(id),
-			});
-
-			// ⭐ Step 2 — fetch full garden
-			const fullGarden = await api.get(`/api/gardens/${id}/`);
-
-			// ⭐ Step 3 — update global context
-			setDefaultGarden(fullGarden);
-
-			// ⭐ Step 4 — refresh UI
-			await loadGardenPage();
+			if (isDefault) {
+				await api.post('/api/gardens/default/', { garden_id: null });
+				setDefaultGarden(null);
+			} else {
+				await api.post('/api/gardens/default/', { garden_id: Number(id) });
+				const fullGarden = await api.get(`/api/gardens/${id}/`);
+				setDefaultGarden(fullGarden);
+			}
 		} catch (error) {
 			setActionError(
-				getErrorMessage(
-					error,
-					'Unable to set this as the default garden right now.',
-				),
+				getErrorMessage(error, 'Unable to update default garden.'),
 			);
 		} finally {
 			setIsSavingDefault(false);
@@ -281,41 +261,64 @@ export default function ViewOneGardenPage() {
 	return (
 		<div className='page-wrapper view-one-garden-page'>
 			<header className='view-one-garden-page__header'>
-				<div>
+				<div className='view-one-garden-page__left'>
 					<h1>{garden.name || 'Unnamed Garden'}</h1>
+
 					<p className='view-one-garden-page__location'>
 						{formatLocation(garden)}
 					</p>
+
 					<p className='view-one-garden-page__timestamps'>
 						Created {formatTimestamp(garden.created_at)} | Updated{' '}
 						{formatTimestamp(garden.updated_at)}
 					</p>
-				</div>
 
-				<div className='view-one-garden-page__actions'>
-					<button className='button button-primary' onClick={handleLogJournal}>
-						Log Journal Entry
-					</button>
+					{/* BUTTONS STAY ON THE LEFT */}
+					<div className='view-one-garden-page__actions'>
+						<button
+							className='button button-primary'
+							onClick={handleLogJournal}>
+							Log Journal Entry
+						</button>
 
-					{!isDefault && (
 						<button
 							className='button button-secondary'
 							onClick={handleSetDefault}
 							disabled={isSavingDefault}>
-							{isSavingDefault ? 'Saving...' : 'Set as Default Garden'}
+							{isSavingDefault
+								? 'Saving...'
+								: isDefault
+									? 'Clear Default'
+									: 'Set as Default Garden'}
 						</button>
-					)}
 
-					<button
-						className='button button-secondary'
-						onClick={handleTogglePin}
-						disabled={isSavingPin}>
-						{isSavingPin
-							? 'Saving...'
-							: isPinned
-								? 'Unpin Garden'
-								: 'Pin Garden'}
-					</button>
+						<button
+							className='button button-secondary'
+							onClick={handleTogglePin}
+							disabled={isSavingPin}>
+							{isSavingPin
+								? 'Saving...'
+								: isPinned
+									? 'Unpin Garden'
+									: 'Pin Garden'}
+						</button>
+					</div>
+				</div>
+
+				<div className='view-one-garden-page__right'>
+					<div className='view-one-garden-page__badges'>
+						{isDefault && (
+							<span className='my-garden-card__badge my-garden-card__badge--default'>
+								Default
+							</span>
+						)}
+
+						{isPinned && (
+							<span className='my-garden-card__badge my-garden-card__badge--pinned'>
+								Pinned
+							</span>
+						)}
+					</div>
 				</div>
 			</header>
 

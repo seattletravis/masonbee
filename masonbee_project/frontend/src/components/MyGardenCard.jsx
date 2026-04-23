@@ -87,7 +87,14 @@ function MyGardenCard({
 					Log Journal Entry
 				</button>
 
-				{!isDefault && (
+				{isDefault ? (
+					<button
+						type='button'
+						className='button button-secondary'
+						onClick={() => onSetDefault(null)}>
+						Clear Default
+					</button>
+				) : (
 					<button
 						type='button'
 						className='button button-secondary'

@@ -5,8 +5,6 @@ import { useAuthContext } from '../auth/AuthProvider';
 function Dashboard() {
 	const { defaultGarden, hasPinnedGardens } = useAuthContext();
 
-	const showMyGardensCard = Boolean(defaultGarden) || Boolean(hasPinnedGardens);
-
 	return (
 		<div className='dashboard page-wrapper'>
 			<header className='dashboard-header'>
@@ -18,14 +16,12 @@ function Dashboard() {
 
 			<div className='dashboard-grid'>
 				{/* My Gardens */}
-				{showMyGardensCard && (
-					<Link to='/my-gardens' className='dashboard-card dashboard-card-link'>
-						<h2 className='card-title'>My Gardens</h2>
-						<p className='card-text'>
-							View and manage your mason bee gardens, houses, and locations.
-						</p>
-					</Link>
-				)}
+				<Link to='/my-gardens' className='dashboard-card dashboard-card-link'>
+					<h2 className='card-title'>My Gardens</h2>
+					<p className='card-text'>
+						View and manage your mason bee gardens, houses, and locations.
+					</p>
+				</Link>
 
 				{/* My Journal */}
 				<Link to='/journal' className='dashboard-card dashboard-card-link'>
@@ -36,10 +32,11 @@ function Dashboard() {
 				</Link>
 
 				{/* Recent Activity */}
-				<div className='dashboard-card'>
+				<div className='dashboard-card dashboard-card-disabled'>
 					<h2 className='card-title'>Recent Activity</h2>
 					<p className='card-text'>
-						Your latest garden updates, journal entries, and beehouse changes.
+						Coming Soon - Your latest garden updates, journal entries, and
+						beehouse changes.
 					</p>
 				</div>
 
@@ -65,10 +62,10 @@ function Dashboard() {
 				{/* Bee Resources */}
 				<Link
 					to='/bee-resources'
-					className='dashboard-card dashboard-card-link'>
+					className='dashboard-card dashboard-card-link dashboard-card-disabled'>
 					<h2 className='card-title'>Bee Resources</h2>
 					<p className='card-text'>
-						Guides, tips, and trusted sources for mason bee care.
+						Coming Soon - Guides, tips, and trusted sources for mason bee care.
 					</p>
 				</Link>
 

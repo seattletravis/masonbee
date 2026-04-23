@@ -5,6 +5,7 @@ import { useAuthContext } from '../auth/AuthProvider';
 import { get } from '../api/client';
 import './MyGardensPage.css';
 import './PageWrapperGlobal.css';
+import { pinGarden, unpinGarden, setDefaultGardenAPI } from '../api/gardens';
 
 function MyGardensPage() {
 	const navigate = useNavigate();
@@ -19,6 +20,7 @@ function MyGardensPage() {
 		setPinned,
 		hasPinnedGardens,
 		isAuthenticated,
+		hydrating,
 	} = useAuthContext();
 
 	// Normalize pinned gardens (AuthProvider ensures clean shape)
@@ -47,15 +49,40 @@ function MyGardensPage() {
 		navigate(`/beehouse-notes/new?gardenId=${garden.id}`);
 	};
 
-	const handleSetDefault = (garden) => {
+	const handleSetDefault = async (garden) => {
+		// CLEAR DEFAULT
+		if (garden === null) {
+			await setDefaultGardenAPI(null);
+			setDefaultGarden(null);
+			return;
+		}
+
+		// SET DEFAULT
+		await setDefaultGardenAPI(garden.id);
 		setDefaultGarden(garden);
+
+		// Ensure default is pinned locally
+		const updated = { ...pinned };
+		if (!updated[garden.id]) {
+			updated[garden.id] = { garden };
+		}
+		setPinned(updated);
 	};
 
-	const handleTogglePin = (garden) => {
+	const handleTogglePin = async (garden) => {
 		const id = String(garden.id);
-		const updated = { ...pinned };
-		delete updated[id];
-		setPinned(updated);
+
+		if (pinned[id]) {
+			await unpinGarden(id);
+
+			const updated = { ...pinned };
+			delete updated[id];
+			setPinned(updated);
+			return;
+		}
+
+		const record = await pinGarden(id);
+		setPinned({ ...pinned, [id]: record });
 	};
 
 	useEffect(() => {
@@ -86,10 +113,10 @@ function MyGardensPage() {
 	}, [defaultGarden?.id, Object.keys(pinned).length]);
 
 	useEffect(() => {
-		if (!isAuthenticated) {
+		if (!hydrating && !isAuthenticated) {
 			navigate('/login');
 		}
-	}, [isAuthenticated, navigate]);
+	}, [hydrating, isAuthenticated, navigate]);
 
 	return (
 		<div className='page-wrapper my-gardens-page'>
@@ -102,67 +129,67 @@ function MyGardensPage() {
 					</p>
 				</div>
 			</header>
+			{hydrating && <p className='my-gardens-loading'>Loading your gardens…</p>}
 
-			{/* Default Garden */}
-			{defaultGarden && (
-				<section className='my-gardens-page__hero'>
-					<h2 className='section-title'>My Default Garden</h2>
-					<MyGardenCard
-						garden={defaultGarden}
-						isDefault
-						isPinned={Boolean(pinned[defaultGardenId])}
-						onViewGarden={handleViewGarden}
-						onLogJournal={handleLogJournal}
-						onAddBeeNotes={handleAddBeeNotes}
-						onSetDefault={handleSetDefault}
-						onTogglePin={handleTogglePin}
-					/>
-				</section>
-			)}
-
-			{/* Pinned Gardens */}
-			{pinnedGardensWithoutDefault.length > 0 && (
-				<section className='my-gardens-page__pinned'>
-					<h2 className='section-title'>My Pinned Gardens</h2>
-					<div className='my-gardens-page__grid'>
-						{pinnedGardensWithoutDefault.map((garden) => (
+			{!hydrating && (
+				<>
+					{/* Default Garden */}
+					{defaultGarden && (
+						<section className='my-gardens-page__hero'>
+							<h2 className='section-title'>My Default Garden</h2>
 							<MyGardenCard
-								key={garden.id}
-								garden={garden}
-								isDefault={false}
-								isPinned
+								garden={defaultGarden}
+								isDefault
+								isPinned={Boolean(pinned[defaultGardenId])}
 								onViewGarden={handleViewGarden}
 								onLogJournal={handleLogJournal}
 								onAddBeeNotes={handleAddBeeNotes}
 								onSetDefault={handleSetDefault}
 								onTogglePin={handleTogglePin}
 							/>
-						))}
-					</div>
-				</section>
-			)}
+						</section>
+					)}
 
-			{/* Empty State */}
-			{showEmptyState && (
-				<section className='my-gardens-page__empty'>
-					<h2 className='section-title'>No saved gardens yet</h2>
-					<p>
-						{isAuthenticated
-							? 'Browse gardens to pin your favorites or choose a default garden.'
-							: 'Sign in and browse gardens to start building your garden list.'}
-					</p>
-					<Link to='/garden-finder' className='button button-primary'>
-						Find a Garden
-					</Link>
-				</section>
-			)}
+					{/* Pinned Gardens */}
+					{pinnedGardensWithoutDefault.length > 0 && (
+						<section className='my-gardens-page__pinned'>
+							<h2 className='section-title'>My Pinned Gardens</h2>
+							<div className='my-gardens-page__grid'>
+								{pinnedGardensWithoutDefault.map((garden) => (
+									<MyGardenCard
+										key={garden.id}
+										garden={garden}
+										isDefault={false}
+										isPinned
+										onViewGarden={handleViewGarden}
+										onLogJournal={handleLogJournal}
+										onAddBeeNotes={handleAddBeeNotes}
+										onSetDefault={handleSetDefault}
+										onTogglePin={handleTogglePin}
+									/>
+								))}
+							</div>
+						</section>
+					)}
 
-			{/* Browse More */}
-			<div className='my-gardens-page__browse'>
-				<Link to='/garden-finder' className='my-gardens-page__browse-link'>
-					<span className='button button-secondary'>Browse More Gardens</span>
-				</Link>
-			</div>
+					{/* Empty State */}
+					{showEmptyState && (
+						<section className='my-gardens-empty-state'>
+							<h2 className='section-title'>No saved gardens yet</h2>
+							<p>
+								{isAuthenticated
+									? 'Browse gardens to pin your favorites or choose a default garden.'
+									: 'Sign in and browse gardens to start building your garden list.'}
+							</p>
+							<Link
+								to='/garden-finder'
+								className='button button-primary find-garden-button'>
+								Find a Garden
+							</Link>
+						</section>
+					)}
+				</>
+			)}
 		</div>
 	);
 }

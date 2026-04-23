@@ -1,10 +1,6 @@
 import { useMemo } from 'react';
 import './GardenFinderCard.css';
-
-function formatAccessLabel(isPublic) {
-	if (isPublic == null) return 'Unknown Access';
-	return isPublic ? 'Public' : 'Private';
-}
+import { pinGarden, unpinGarden, setDefaultGardenAPI } from '../api/gardens';
 
 function formatManagerName(garden) {
 	return garden.managed_by || 'Not listed';
@@ -49,6 +45,29 @@ function GardenFinderCard({
 		[distanceMiles],
 	);
 
+	const handleTogglePin = async () => {
+		const id = String(garden.id);
+
+		if (isPinned) {
+			await unpinGarden(id);
+			onTogglePin(garden); // parent updates local state
+			return;
+		}
+
+		const record = await pinGarden(id);
+		onTogglePin({ ...garden, record });
+	};
+	const handleSetDefault = async () => {
+		if (isDefault) {
+			await setDefaultGardenAPI(null); // clear default
+			onSetDefault(null);
+			return;
+		}
+
+		await setDefaultGardenAPI(garden.id); // set default
+		onSetDefault(garden);
+	};
+
 	return (
 		<article className='section garden-card'>
 			<div className='garden-card__header'>
@@ -58,9 +77,9 @@ function GardenFinderCard({
 				</div>
 
 				<div className='garden-card__badges'>
-					<span className='button button-secondary'>
+					{/* <span className='button button-secondary'>
 						{formatAccessLabel(garden.is_public)}
-					</span>
+					</span> */}
 					{isDefault && (
 						<span className='button button-primary'>Default Garden</span>
 					)}
@@ -109,13 +128,7 @@ function GardenFinderCard({
 				<button
 					type='button'
 					className='button button-secondary'
-					onClick={() => {
-						if (isDefault) {
-							onSetDefault(null); // clear default
-						} else {
-							onSetDefault(garden); // set default
-						}
-					}}
+					onClick={handleSetDefault}
 					disabled={defaultBusy}>
 					{defaultBusy
 						? 'Saving...'
