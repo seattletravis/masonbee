@@ -146,33 +146,8 @@ class BeeHouseViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     def perform_create(self, serializer):
-        print("DEBUG incoming beehouse_id:", repr(serializer.validated_data.get("beehouse_id")))
+        serializer.save(created_by=self.request.user)
 
-        garden = serializer.validated_data["garden"]
-        provided_id = serializer.validated_data.get("beehouse_id")
-
-        if not provided_id or provided_id.strip() == "":
-            existing_ids = (
-                BeeHouse.objects
-                .filter(garden=garden)
-                .values_list("beehouse_id", flat=True)
-            )
-
-            numbers = []
-            for hid in existing_ids:
-                if hid and hid.startswith("House "):
-                    try:
-                        num = int(hid.split("House ")[1])
-                        numbers.append(num)
-                    except (ValueError, IndexError):
-                        pass
-
-            next_number = max(numbers) + 1 if numbers else 1
-            auto_id = f"House {next_number}"
-
-            serializer.save(created_by=self.request.user, beehouse_id=auto_id)
-        else:
-            serializer.save(created_by=self.request.user, beehouse_id=provided_id)
 
 
 class BeeHouseEventViewSet(viewsets.ModelViewSet):

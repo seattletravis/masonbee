@@ -54,8 +54,19 @@ function formatBeehouseType(b) {
 	return b?.type || b?.beehouse_type || b?.house_type || 'Not listed';
 }
 
-function formatBeehouseStatus(b) {
-	return b?.status || b?.state || 'Not listed';
+// function formatBeehouseStatus(b) {
+// 	return b?.status || b?.state || 'Not listed';
+// }
+
+function formatBeehouseBiologicalStatus(b) {
+	switch (b.beehouse_status) {
+		case 'active':
+			return 'Active bees present';
+		case 'cocoons':
+			return 'Will be loaded with cocoons';
+		default:
+			return 'Inactive / empty';
+	}
 }
 
 function formatInspectionDate(b) {
@@ -99,6 +110,7 @@ export default function ViewOneGardenPage() {
 	const [showBeehouseForm, setShowBeehouseForm] = useState(false);
 	const [showBeeNotesForm, setShowBeeNotesForm] = useState(false);
 	const [showBeehouseList, setShowBeehouseList] = useState(false);
+	const [editingBeehouse, setEditingBeehouse] = useState(null);
 
 	// ------------------------------------------------------------
 	// ⭐ Load all data for this garden
@@ -168,6 +180,11 @@ export default function ViewOneGardenPage() {
 		},
 		[id, navigate],
 	);
+
+	const handleEditBeehouse = useCallback((beehouse) => {
+		setEditingBeehouse(beehouse); // load existing data
+		setShowBeehouseForm(true); // open the form
+	}, []);
 
 	// ------------------------------------------------------------
 	// ⭐ Pin / Unpin
@@ -387,6 +404,7 @@ export default function ViewOneGardenPage() {
 					<BeehouseEntryForm
 						onClose={() => setShowBeehouseForm(false)}
 						gardenId={id}
+						editingBeehouse={editingBeehouse} // ⭐ NEW
 						onCreated={async () => {
 							await loadGardenPage();
 							setShowBeehouseForm(false);
@@ -406,12 +424,12 @@ export default function ViewOneGardenPage() {
 								<article key={b.id} className='journal-card'>
 									<div className='journal-card-top'>
 										<div>
-											<h3 className='journal-card-title'>
-												{garden?.name} – {b.beehouse_id}
-											</h3>
-											<p className='journal-card-date'>
-												Last inspection: {formatInspectionDate(b)}
-											</p>
+											<h3 className='journal-card-title'>{b.name}</h3>
+											{b.garden_description && (
+												<p className='journal-card-subtitle'>
+													{b.garden_description}
+												</p>
+											)}
 										</div>
 									</div>
 
@@ -419,14 +437,15 @@ export default function ViewOneGardenPage() {
 										<strong>Type:</strong> {formatBeehouseType(b)}
 									</p>
 									<p>
-										<strong>Status:</strong> {formatBeehouseStatus(b)}
+										<strong>Bee Status:</strong>{' '}
+										{formatBeehouseBiologicalStatus(b)}
 									</p>
 
 									<div className='journal-card-actions'>
 										<button
 											className='journal-button journal-button-secondary'
-											onClick={() => setShowBeeNotesForm(true)}>
-											Add Bee Note
+											onClick={() => handleEditBeehouse(b)}>
+											Edit
 										</button>
 									</div>
 								</article>

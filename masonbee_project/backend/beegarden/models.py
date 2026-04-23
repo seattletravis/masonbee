@@ -209,6 +209,20 @@ class BeeHouse(models.Model):
         ('West', 'Westward Facing'),
     ]
 
+    BEEHOUSE_STATUS = [
+        ('active', 'Active bees present'),
+        ('cocoons', 'Will be loaded with cocoons'),
+        ('inactive', 'Inactive / empty'),
+    ]
+
+
+    beehouse_status = models.CharField(
+        max_length=20,
+        choices=BEEHOUSE_STATUS,
+        default='inactive',
+        help_text="Biological status of the beehouse."
+    )
+
     # Optional link to a city/community garden
     garden = models.ForeignKey(
         Garden,

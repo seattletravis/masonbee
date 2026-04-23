@@ -17,13 +17,13 @@ export default function AuthProvider({ children }) {
 		access,
 		refreshToken,
 		isAuthenticated,
-		loading,
+		loading, // ⭐ from useAuth — tells us when auth is ready
 		error,
 	} = useAuth();
 
-	// ----------------------------------------
-	// Persistent State
-	// ----------------------------------------
+	// ------------------------------------------------------------
+	// Persistent state
+	// ------------------------------------------------------------
 	const [hydrating, setHydrating] = useState(true);
 
 	const [defaultGarden, setDefaultGarden] = useState(
@@ -36,9 +36,9 @@ export default function AuthProvider({ children }) {
 
 	const hasPinnedGardens = Object.keys(pinned).length > 0;
 
-	// ----------------------------------------
-	// Persist to localStorage whenever changed
-	// ----------------------------------------
+	// ------------------------------------------------------------
+	// Persist to localStorage
+	// ------------------------------------------------------------
 	useEffect(() => {
 		localStorage.setItem('defaultGarden', JSON.stringify(defaultGarden));
 	}, [defaultGarden]);
@@ -47,12 +47,18 @@ export default function AuthProvider({ children }) {
 		localStorage.setItem('pinnedGardens', JSON.stringify(pinned));
 	}, [pinned]);
 
-	// ----------------------------------------
-	// Hydrate from backend ONCE after login
-	// ----------------------------------------
+	// ------------------------------------------------------------
+	// Hydrate from backend AFTER authentication is fully ready
+	// ------------------------------------------------------------
 	useEffect(() => {
 		async function hydrateFromBackend() {
-			if (!isAuthenticated || !access) {
+			// ⭐ DO NOT HYDRATE until auth is fully initialized
+			if (loading) return;
+			if (!isAuthenticated) {
+				setHydrating(false);
+				return;
+			}
+			if (!access || !refreshToken) {
 				setHydrating(false);
 				return;
 			}
@@ -63,7 +69,7 @@ export default function AuthProvider({ children }) {
 					get('/api/gardens/default/'),
 				]);
 
-				// Normalize pinned gardens
+				// ⭐ Normalize pinned gardens
 				let watchedList = [];
 				if (Array.isArray(watched)) watchedList = watched;
 				else if (watched?.results) watchedList = watched.results;
@@ -77,7 +83,8 @@ export default function AuthProvider({ children }) {
 				setPinned(lookup);
 				setDefaultGarden(def || null);
 			} catch (err) {
-				if (err?.response?.status !== 401) {
+				// Ignore 401 — happens if token expired before refresh
+				if (err?.status !== 401) {
 					console.error('Unable to load saved garden preferences', err);
 				}
 			}
@@ -86,11 +93,11 @@ export default function AuthProvider({ children }) {
 		}
 
 		hydrateFromBackend();
-	}, [isAuthenticated, access]);
+	}, [loading, isAuthenticated, access, refreshToken]);
 
-	// ----------------------------------------
+	// ------------------------------------------------------------
 	// Wrapped logout clears everything
-	// ----------------------------------------
+	// ------------------------------------------------------------
 	const wrappedLogout = () => {
 		logout();
 		setPinned({});
@@ -99,6 +106,9 @@ export default function AuthProvider({ children }) {
 		localStorage.removeItem('defaultGarden');
 	};
 
+	// ------------------------------------------------------------
+	// Context value
+	// ------------------------------------------------------------
 	const value = {
 		login,
 		logout: wrappedLogout,

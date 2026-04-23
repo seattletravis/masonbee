@@ -1,20 +1,27 @@
 import { useState, useEffect } from 'react';
 import './BeehouseEntryForm.css';
 
-export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
+export default function BeehouseEntryForm({
+	gardenId,
+	onCreated,
+	onClose,
+	editingBeehouse,
+}) {
 	const API_BASE = import.meta.env.VITE_API_BASE_URL;
 	const token = localStorage.getItem('access');
 
+	// -----------------------------
+	// Form State
+	// -----------------------------
+	const [name, setName] = useState('');
 	const [beehouseType, setBeehouseType] = useState('');
 	const [tubeCapacity, setTubeCapacity] = useState('');
 	const [heightInches, setHeightInches] = useState('');
 	const [orientation, setOrientation] = useState('');
+	const [beehouseStatus, setBeehouseStatus] = useState('inactive');
+
 	const [latitude, setLatitude] = useState('');
 	const [longitude, setLongitude] = useState('');
-
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState('');
-	const [customBeehouseId, setCustomBeehouseId] = useState('');
 
 	const [gardenDescription, setGardenDescription] = useState('');
 
@@ -23,6 +30,12 @@ export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 	const [flowersNearby, setFlowersNearby] = useState(false);
 	const [woodsNearby, setWoodsNearby] = useState(false);
 
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState('');
+
+	// -----------------------------
+	// Constants
+	// -----------------------------
 	const HOUSE_TYPES = [
 		{ value: 'block', label: 'Wood Block' },
 		{ value: 'straw', label: 'Straw Bundle / Container' },
@@ -39,6 +52,30 @@ export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 
 	const ORIENTATIONS = ['North', 'South', 'East', 'West'];
 
+	// -----------------------------
+	// Preload form when editing
+	// -----------------------------
+	useEffect(() => {
+		if (editingBeehouse) {
+			setName(editingBeehouse.name || '');
+			setGardenDescription(editingBeehouse.garden_description || '');
+			setBeehouseType(editingBeehouse.beehouse_type || '');
+			setTubeCapacity(editingBeehouse.tube_capacity || '');
+			setHeightInches(editingBeehouse.height_above_ground_inches || '');
+			setOrientation(editingBeehouse.orientation || '');
+			setLatitude(editingBeehouse.latitude || '');
+			setLongitude(editingBeehouse.longitude || '');
+			setWaterNearby(editingBeehouse.water_nearby || false);
+			setClayNearby(editingBeehouse.clay_nearby || false);
+			setFlowersNearby(editingBeehouse.flowers_nearby || false);
+			setWoodsNearby(editingBeehouse.woods_nearby || false);
+			setBeehouseStatus(editingBeehouse.beehouse_status || 'inactive');
+		}
+	}, [editingBeehouse]);
+
+	// -----------------------------
+	// Use current location
+	// -----------------------------
 	const useCurrentLocation = () => {
 		if (!navigator.geolocation) {
 			setError('Geolocation not supported.');
@@ -54,49 +91,61 @@ export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 		);
 	};
 
+	// -----------------------------
+	// Submit Handler
+	// -----------------------------
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError('');
 		setLoading(true);
 
-		// Validate required fields
-		if (!beehouseType || !tubeCapacity || !heightInches) {
-			setError('Please fill all required fields.');
-			setLoading(false);
-			return;
-		}
-
 		const latNum = Number(latitude);
 		const lonNum = Number(longitude);
 
-		if (isNaN(latNum) || isNaN(lonNum)) {
-			setError('Latitude and longitude must be valid numbers.');
-			setLoading(false);
-			return;
-		}
+		const finalName = name.trim() || `Beehouse ${Date.now()}`;
 
-		// Log payload AFTER validation
 		const payload = {
+			name: finalName,
 			garden: Number(gardenId),
-			beehouse_id: customBeehouseId || null,
+			garden_description: gardenDescription || '',
 			beehouse_type: beehouseType,
 			tube_capacity: tubeCapacity,
 			height_above_ground_inches: Number(heightInches),
 			latitude: latNum,
 			longitude: lonNum,
 			orientation: orientation || null,
+			water_nearby: waterNearby,
+			clay_nearby: clayNearby,
+			flowers_nearby: flowersNearby,
+			woods_nearby: woodsNearby,
+			beehouse_status: beehouseStatus,
 			is_active: false,
 		};
 
 		try {
-			const res = await fetch(`${API_BASE}/api/beehouses/`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify(payload),
-			});
+			let res;
+
+			if (editingBeehouse) {
+				// EDIT MODE — PUT
+				res = await fetch(`${API_BASE}/api/beehouses/${editingBeehouse.id}/`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify(payload),
+				});
+			} else {
+				// CREATE MODE — POST
+				res = await fetch(`${API_BASE}/api/beehouses/`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify(payload),
+				});
+			}
 
 			const data = await res.json();
 
@@ -105,23 +154,13 @@ export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 					data?.detail ||
 						data?.message ||
 						JSON.stringify(data) ||
-						'Failed to create beehouse.',
+						'Failed to save beehouse.',
 				);
 				setLoading(false);
 				return;
 			}
 
-			// Notify parent
 			onCreated?.(data);
-
-			// Reset form
-			setBeehouseType('');
-			setTubeCapacity('');
-			setHeightInches('');
-			setOrientation('');
-			setLatitude('');
-			setLongitude('');
-
 			setLoading(false);
 		} catch (err) {
 			setError('Network error.');
@@ -129,9 +168,12 @@ export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 		}
 	};
 
+	// -----------------------------
+	// Render
+	// -----------------------------
 	return (
 		<form className='beehouse-entry-form' onSubmit={handleSubmit}>
-			<h3>Add Beehouse</h3>
+			<h3>{editingBeehouse ? 'Edit Beehouse' : 'Add Beehouse'}</h3>
 
 			{error && <div className='error-text'>{error}</div>}
 
@@ -140,11 +182,12 @@ export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 					New Beehouse Name (optional)
 					<input
 						type='text'
-						value={customBeehouseId}
-						onChange={(e) => setCustomBeehouseId(e.target.value)}
+						value={name}
+						onChange={(e) => setName(e.target.value)}
 						placeholder='Leave blank to auto‑assign'
 					/>
 				</label>
+
 				<label>
 					Garden Description
 					<input
@@ -154,6 +197,7 @@ export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 						placeholder='e.g., Near the shed, south fence line'
 					/>
 				</label>
+
 				<label>
 					Bee House Type *
 					<select
@@ -231,8 +275,8 @@ export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 				<button type='button' onClick={useCurrentLocation}>
 					Use Current Location
 				</button>
-				<label>Bee Environment (within 100ft)</label>
 
+				<label>Bee Environment (within 100ft)</label>
 				<div className='checkbox-group'>
 					<label>
 						<input
@@ -272,8 +316,13 @@ export default function BeehouseEntryForm({ gardenId, onCreated, onClose }) {
 				</div>
 
 				<button type='submit' disabled={loading}>
-					{loading ? 'Saving...' : 'Add Bee House'}
+					{loading
+						? 'Saving...'
+						: editingBeehouse
+							? 'Save Changes'
+							: 'Add Beehouse'}
 				</button>
+
 				<button type='button' className='cancel-button' onClick={onClose}>
 					Cancel
 				</button>
