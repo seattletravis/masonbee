@@ -87,6 +87,12 @@ function truncateNotes(notes) {
 }
 
 export default function ViewOneGardenPage() {
+	const [editingNote, setEditingNote] = useState(null);
+	const handleEditNote = (note) => {
+		setEditingNote(note);
+		setShowBeeNotesForm(true);
+	};
+
 	const [openNotesFor, setOpenNotesFor] = useState(null);
 
 	const toggleNotes = (id) => {
@@ -423,9 +429,11 @@ export default function ViewOneGardenPage() {
 					<BeeNotesEntryForm
 						gardenId={id}
 						beehouses={beehouses}
+						editingNote={editingNote}
 						onCreated={async () => {
 							await loadGardenPage();
 							setShowBeeNotesForm(false);
+							setEditingNote(null);
 						}}
 					/>
 				)}
@@ -515,7 +523,10 @@ export default function ViewOneGardenPage() {
 
 									{/* ⭐ Collapsible Notes Section */}
 									{openNotesFor === b.id && (
-										<BeehouseNotesList beehouseId={b.id} />
+										<BeehouseNotesList
+											beehouseId={b.id}
+											onEditNote={handleEditNote}
+										/>
 									)}
 								</article>
 							))}

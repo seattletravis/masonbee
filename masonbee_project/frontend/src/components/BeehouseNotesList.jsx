@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import './BeehouseNotesList.css';
-export default function BeehouseNotesList({ beehouseId }) {
+export default function BeehouseNotesList({ beehouseId, onEditNote }) {
 	const [notes, setNotes] = useState([]);
 	const [loading, setLoading] = useState(true);
 
@@ -40,10 +40,18 @@ export default function BeehouseNotesList({ beehouseId }) {
 					<p>
 						<strong>{n.event_type.replace('_', ' ')}</strong>
 					</p>
+
 					{n.notes && <p>{n.notes}</p>}
+
 					<p className='note-date'>
 						{new Date(n.created_at).toLocaleDateString()}
 					</p>
+
+					<button
+						className='journal-button journal-button-small'
+						onClick={() => onEditNote(n)}>
+						Edit
+					</button>
 				</div>
 			))}
 		</div>

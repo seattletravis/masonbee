@@ -1,10 +1,19 @@
 import { useState, useEffect } from 'react';
 import './BeeNotesEntryForm.css';
 
-export default function BeeNotesEntryForm({ onCreated, onClose }) {
-	const [eventType, setEventType] = useState('');
-	const [beehouseId, setBeehouseId] = useState('');
-	const [notes, setNotes] = useState('');
+export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
+	const isEditing = Boolean(editingNote);
+
+	// const [eventType, setEventType] = useState('');
+	const [eventType, setEventType] = useState(
+		editingNote ? editingNote.event_type : '',
+	);
+	// const [beehouseId, setBeehouseId] = useState('');
+	const [beehouseId, setBeehouseId] = useState(
+		editingNote ? editingNote.beehouse : defaultBeehouseId,
+	);
+	// const [notes, setNotes] = useState('');
+	const [notes, setNotes] = useState(editingNote ? editingNote.notes : '');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [userBeehouses, setUserBeehouses] = useState([]);
@@ -27,6 +36,14 @@ export default function BeeNotesEntryForm({ onCreated, onClose }) {
 		{ value: 'destroyed', label: 'Destroyed' },
 		{ value: 'other', label: 'Other' },
 	];
+
+	useEffect(() => {
+		if (editingNote) {
+			setEventType(editingNote.event_type);
+			setBeehouseId(editingNote.beehouse);
+			setNotes(editingNote.notes || '');
+		}
+	}, [editingNote]);
 
 	// Load all user beehouses
 	useEffect(() => {
@@ -71,27 +88,47 @@ export default function BeeNotesEntryForm({ onCreated, onClose }) {
 		};
 
 		try {
-			const res = await fetch(`${API_BASE}/api/beehouse-events/`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify(payload),
-			});
+			let res;
+
+			if (isEditing) {
+				// ⭐ UPDATE EXISTING NOTE
+				res = await fetch(
+					`${API_BASE}/api/beehouse-events/${editingNote.id}/`,
+					{
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							Authorization: `Bearer ${token}`,
+						},
+						body: JSON.stringify(payload),
+					},
+				);
+			} else {
+				// ⭐ CREATE NEW NOTE
+				res = await fetch(`${API_BASE}/api/beehouse-events/`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify(payload),
+				});
+			}
 
 			const data = await res.json();
 
 			if (!res.ok) {
-				throw new Error(data.detail || 'Failed to create bee note.');
+				throw new Error(data.detail || 'Failed to save bee note.');
 			}
 
 			onCreated?.(data);
 
-			// Reset form
-			setEventType('');
-			setBeehouseId('');
-			setNotes('');
+			// ⭐ Reset form only after creating
+			if (!isEditing) {
+				setEventType('');
+				setBeehouseId('');
+				setNotes('');
+			}
 		} catch (err) {
 			setError(err.message);
 		} finally {
@@ -149,7 +186,7 @@ export default function BeeNotesEntryForm({ onCreated, onClose }) {
 				{/* ⭐ Buttons Row */}
 				<div className='form-actions'>
 					<button type='submit' disabled={loading}>
-						{loading ? 'Saving...' : 'Add Note'}
+						{loading ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Note'}
 					</button>
 
 					<button type='button' className='cancel-button' onClick={onClose}>
