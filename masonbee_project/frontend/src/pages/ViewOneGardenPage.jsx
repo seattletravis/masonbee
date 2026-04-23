@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as api from '../api/client';
 import { useAuthContext } from '../auth/AuthProvider';
@@ -86,8 +86,11 @@ function truncateNotes(notes) {
 }
 
 export default function ViewOneGardenPage() {
+	const lastScrollYRef = useRef(0);
+
 	const { id } = useParams();
 	const navigate = useNavigate();
+	const formRef = useRef(null);
 
 	// ⭐ AuthProvider global state
 	const { defaultGarden, setDefaultGarden, pinned, setPinned, gardenLoading } =
@@ -181,9 +184,30 @@ export default function ViewOneGardenPage() {
 		[id, navigate],
 	);
 
+	const handleAddBeehouse = () => {
+		lastScrollYRef.current = window.scrollY; // ⭐ remember where user was
+		setEditingBeehouse(null);
+		setShowBeehouseForm(true);
+
+		setTimeout(() => {
+			formRef.current?.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start',
+			});
+		}, 50);
+	};
+
 	const handleEditBeehouse = useCallback((beehouse) => {
+		lastScrollYRef.current = window.scrollY; // ⭐ remember where user was
 		setEditingBeehouse(beehouse); // load existing data
 		setShowBeehouseForm(true); // open the form
+		// ⭐ Scroll to the form anchor
+		setTimeout(() => {
+			formRef.current?.scrollIntoView({
+				behavior: 'smooth',
+				block: 'start',
+			});
+		}, 50);
 	}, []);
 
 	// ------------------------------------------------------------
@@ -360,21 +384,21 @@ export default function ViewOneGardenPage() {
 					</div>
 
 					<div className='section-header-actions'>
-						{/* Add Beehouse button (hidden when Bee Notes form is open) */}
-						{!showBeeNotesForm && (
+						{/* Add Beehouse button — hidden when ANY form is open */}
+						{!showBeehouseForm && !showBeeNotesForm && (
 							<button
 								className='button button-small'
-								onClick={() => setShowBeehouseForm((prev) => !prev)}>
-								{showBeehouseForm ? 'Cancel' : 'Add Beehouse'}
+								onClick={handleAddBeehouse}>
+								Add Beehouse
 							</button>
 						)}
 
-						{/* Add Bee Notes button (hidden when Beehouse form is open) */}
-						{!showBeehouseForm && (
+						{/* Add Bee Note button — hidden when ANY form is open */}
+						{!showBeehouseForm && !showBeeNotesForm && (
 							<button
 								className='button button-small'
-								onClick={() => setShowBeeNotesForm((prev) => !prev)}>
-								{showBeeNotesForm ? 'Cancel' : 'Add Bee Note'}
+								onClick={() => setShowBeeNotesForm(true)}>
+								Add Bee Note
 							</button>
 						)}
 					</div>
@@ -400,17 +424,39 @@ export default function ViewOneGardenPage() {
 				)}
 
 				{/* Beehouse Entry Form */}
-				{showBeehouseForm && (
-					<BeehouseEntryForm
-						onClose={() => setShowBeehouseForm(false)}
-						gardenId={id}
-						editingBeehouse={editingBeehouse} // ⭐ NEW
-						onCreated={async () => {
-							await loadGardenPage();
-							setShowBeehouseForm(false);
-						}}
-					/>
-				)}
+				<div ref={formRef}>
+					{showBeehouseForm && (
+						<BeehouseEntryForm
+							onClose={() => {
+								setShowBeehouseForm(false);
+								setEditingBeehouse(null);
+
+								// ⭐ Scroll back to the anchor
+								setTimeout(() => {
+									window.scrollTo({
+										top: lastScrollYRef.current || 0,
+										behavior: 'smooth',
+									});
+								}, 50);
+							}}
+							gardenId={id}
+							editingBeehouse={editingBeehouse}
+							onCreated={async () => {
+								await loadGardenPage();
+								setShowBeehouseForm(false);
+								setEditingBeehouse(null);
+
+								// ⭐ Scroll back to the anchor
+								setTimeout(() => {
+									window.scrollTo({
+										top: lastScrollYRef.current || 0,
+										behavior: 'smooth',
+									});
+								}, 50);
+							}}
+						/>
+					)}
+				</div>
 
 				{/* Collapsible Beehouse List */}
 				{showBeehouseList &&

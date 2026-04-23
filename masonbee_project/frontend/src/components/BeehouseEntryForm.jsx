@@ -314,18 +314,19 @@ export default function BeehouseEntryForm({
 						Wooded area nearby
 					</label>
 				</div>
+				<div className='form-actions'>
+					<button type='submit' disabled={loading}>
+						{loading
+							? 'Saving...'
+							: editingBeehouse
+								? 'Save Changes'
+								: 'Add Beehouse'}
+					</button>
 
-				<button type='submit' disabled={loading}>
-					{loading
-						? 'Saving...'
-						: editingBeehouse
-							? 'Save Changes'
-							: 'Add Beehouse'}
-				</button>
-
-				<button type='button' className='cancel-button' onClick={onClose}>
-					Cancel
-				</button>
+					<button type='button' className='cancel-button' onClick={onClose}>
+						Cancel
+					</button>
+				</div>
 			</div>
 		</form>
 	);
