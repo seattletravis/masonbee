@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+from django.db.models import Count
 import os
 print("DEBUG: LOADED VIEWS FILE:", os.path.abspath(__file__))
 
@@ -124,9 +125,20 @@ class GardenViewSet(viewsets.ModelViewSet):
 # ----------------BeeHouseEventViewSet--------------------
 
 class BeeHouseViewSet(viewsets.ModelViewSet):
-    queryset = BeeHouse.objects.all()
     serializer_class = BeeHouseSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # Return ALL beehouses created by this user
+        qs = BeeHouse.objects.filter(created_by=user)
+
+        # Annotate event_count using related_name="events"
+        qs = qs.annotate(event_count=Count("events"))
+
+        return qs
+
 
     @action(detail=True, methods=["get"], url_path="events")
     def events(self, request, pk=None):

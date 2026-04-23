@@ -1,0 +1,21 @@
+.beehouse-notes-list {
+	margin-top: 10px;
+	padding: 10px;
+	border-left: 3px solid #4a90e2;
+	background: #f9fafb;
+	border-radius: 6px;
+}
+
+.note-card {
+	padding: 8px 0;
+	border-bottom: 1px solid #e5e7eb;
+}
+
+.note-card:last-child {
+	border-bottom: none;
+}
+
+.note-date {
+	font-size: 0.8rem;
+	color: #6b7280;
+}

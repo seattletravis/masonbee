@@ -9,6 +9,7 @@ import BeehouseEntryForm from '../components/BeehouseEntryForm';
 import BeeNotesEntryForm from '../components/BeeNotesEntryForm';
 import './ViewOneGardenPage.css';
 import './PageWrapperGlobal.css';
+import BeehouseNotesList from '../components/BeehouseNotesList';
 
 function normalizeCollection(payload) {
 	if (Array.isArray(payload)) return payload;
@@ -86,6 +87,12 @@ function truncateNotes(notes) {
 }
 
 export default function ViewOneGardenPage() {
+	const [openNotesFor, setOpenNotesFor] = useState(null);
+
+	const toggleNotes = (id) => {
+		setOpenNotesFor(openNotesFor === id ? null : id);
+	};
+
 	const lastScrollYRef = useRef(0);
 
 	const { id } = useParams();
@@ -458,7 +465,7 @@ export default function ViewOneGardenPage() {
 					)}
 				</div>
 
-				{/* Collapsible Beehouse List */}
+				{/* Collapsible Beehouse List - BEEHOUSE CARD HERE */}
 				{showBeehouseList &&
 					(sortedBeehouses.length === 0 ? (
 						<div className='journal-state-card'>
@@ -493,7 +500,23 @@ export default function ViewOneGardenPage() {
 											onClick={() => handleEditBeehouse(b)}>
 											Edit
 										</button>
+
+										{/* ⭐ Show Notes button — only if this beehouse has notes */}
+										{b.event_count > 0 && (
+											<button
+												className='journal-button journal-button-secondary'
+												onClick={() => toggleNotes(b.id)}>
+												{openNotesFor === b.id
+													? `Hide Notes (${b.event_count})`
+													: `Show Notes (${b.event_count})`}
+											</button>
+										)}
 									</div>
+
+									{/* ⭐ Collapsible Notes Section */}
+									{openNotesFor === b.id && (
+										<BeehouseNotesList beehouseId={b.id} />
+									)}
 								</article>
 							))}
 						</div>
@@ -549,7 +572,7 @@ export default function ViewOneGardenPage() {
 									<button
 										className='journal-button journal-button-secondary'
 										onClick={() => handleEditEntry(entry.id)}>
-										Edit Entry
+										Edit
 									</button>
 								</div>
 							</article>
