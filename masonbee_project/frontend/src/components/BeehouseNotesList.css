@@ -19,3 +19,7 @@
 	font-size: 0.8rem;
 	color: #6b7280;
 }
+button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}

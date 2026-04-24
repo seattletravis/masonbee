@@ -128,6 +128,7 @@ export default function ViewOneGardenPage() {
 	const [showBeeNotesForm, setShowBeeNotesForm] = useState(false);
 	const [showBeehouseList, setShowBeehouseList] = useState(false);
 	const [editingBeehouse, setEditingBeehouse] = useState(null);
+	const formIsOpen = showBeehouseForm || showBeeNotesForm;
 
 	useEffect(() => {
 		if ((showBeehouseForm || showBeeNotesForm) && formRef.current) {
@@ -530,7 +531,8 @@ export default function ViewOneGardenPage() {
 									<div className='journal-card-actions'>
 										<button
 											className='journal-button journal-button-secondary'
-											onClick={() => handleEditBeehouse(b)}>
+											disabled={formIsOpen}
+											onClick={() => !formIsOpen && handleEditBeehouse(b)}>
 											Edit
 										</button>
 
@@ -538,7 +540,8 @@ export default function ViewOneGardenPage() {
 										{b.event_count > 0 && (
 											<button
 												className='journal-button journal-button-secondary'
-												onClick={() => toggleNotes(b.id)}>
+												disabled={formIsOpen}
+												onClick={() => !formIsOpen && toggleNotes(b.id)}>
 												{openNotesFor === b.id
 													? `Hide Notes (${b.event_count})`
 													: `Show Notes (${b.event_count})`}
@@ -551,6 +554,7 @@ export default function ViewOneGardenPage() {
 										<BeehouseNotesList
 											beehouseId={b.id}
 											onEditNote={handleEditNote}
+											formIsOpen={formIsOpen}
 										/>
 									)}
 								</article>

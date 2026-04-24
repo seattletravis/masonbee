@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import './BeehouseNotesList.css';
-export default function BeehouseNotesList({ beehouseId, onEditNote }) {
+export default function BeehouseNotesList({
+	beehouseId,
+	onEditNote,
+	formIsOpen,
+}) {
 	const [notes, setNotes] = useState([]);
 	const [loading, setLoading] = useState(true);
 
@@ -49,7 +53,8 @@ export default function BeehouseNotesList({ beehouseId, onEditNote }) {
 
 					<button
 						className='journal-button journal-button-small'
-						onClick={() => onEditNote(n)}>
+						disabled={formIsOpen}
+						onClick={() => !formIsOpen && onEditNote(n)}>
 						Edit
 					</button>
 				</div>

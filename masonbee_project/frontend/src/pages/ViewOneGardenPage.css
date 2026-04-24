@@ -220,3 +220,7 @@
 .journal-grid {
 	align-items: start;
 }
+button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
