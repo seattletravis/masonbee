@@ -1,0 +1,104 @@
+/* Mason Bee Finder Page Layout */
+.mason-bee-finder-page {
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 1rem;
+}
+
+/* Card styling (matches your existing UI) */
+.card {
+	background: #ffffff;
+	border-radius: 8px;
+	padding: 1rem 1.25rem;
+	margin-bottom: 1rem;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Checkbox group */
+.checkbox-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.checkbox-label {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+/* Error text */
+.error-text {
+	color: #c0392b;
+	font-size: 0.9rem;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 5000;
+}
+
+/* Modal container */
+.modal {
+	background: #ffffff;
+	width: 90%;
+	max-width: 500px;
+	padding: 1.25rem;
+	border-radius: 10px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+	animation: fadeIn 0.2s ease-out;
+}
+
+/* Modal actions */
+.modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+/* Input styling */
+.input {
+	width: 100%;
+	padding: 0.45rem 0.6rem;
+	border-radius: 6px;
+	border: 1px solid #ccc;
+	margin-top: 0.25rem;
+}
+
+/* Buttons (inherits your existing classes) */
+.button {
+	cursor: pointer;
+}
+
+.button-small {
+	padding: 0.35rem 0.75rem;
+	font-size: 0.9rem;
+}
+
+.button-secondary {
+	background: #e0e0e0;
+}
+
+/* Fade animation */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: scale(0.97);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+.map-instruction {
+	font-size: 0.85rem;
+	color: #555;
+	margin-bottom: 0.5rem;
+}

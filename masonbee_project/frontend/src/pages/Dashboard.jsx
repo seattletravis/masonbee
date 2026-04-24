@@ -50,12 +50,11 @@ function Dashboard() {
 				</Link>
 
 				{/* Mason Bee Finder */}
-				<Link
-					to='/masonbee-finder'
-					className='dashboard-card dashboard-card-link'>
+				<Link to='/finder' className='dashboard-card dashboard-card-link'>
 					<h2 className='card-title'>Mason Bee Finder</h2>
 					<p className='card-text'>
-						Check your location’s likelihood of supporting mason bees.
+						Check your location’s likelihood of finding and supporting mason
+						bees.
 					</p>
 				</Link>
 

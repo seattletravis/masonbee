@@ -5,13 +5,13 @@ import MainLayout from './layout/MainLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Journal from './pages/Journal';
-// import JournalEntryForm from './components/JournalEntryForm';
 import MyGardensPage from './pages/MyGardensPage';
 import GardenFinderPage from './pages/GardenFinderPage';
 import ViewOneGardenPage from './pages/ViewOneGardenPage';
 import MyProfilePage from './pages/MyProfilePage';
 import MasonBeeForecasting from './pages/MasonBeeForecasting';
 import 'leaflet/dist/leaflet.css';
+import MasonBeeFinder from './pages/MasonBeeFinder';
 
 export default function App() {
 	return (
@@ -45,6 +45,7 @@ export default function App() {
 
 						<Route path='/profile' element={<MyProfilePage />} />
 						<Route path='/forecasting' element={<MasonBeeForecasting />} />
+						<Route path='/finder' element={<MasonBeeFinder />} />
 
 						<Route
 							path='/garden/:id/journal'
