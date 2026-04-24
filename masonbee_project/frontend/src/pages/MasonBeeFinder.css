@@ -232,3 +232,114 @@
 		flex-direction: column;
 	}
 }
+/* Intro header */
+.finder-intro {
+	margin-bottom: 1.5rem;
+}
+.finder-intro h2 {
+	margin-bottom: 0.5rem;
+	font-size: 1.4rem;
+}
+.finder-intro p {
+	margin-bottom: 0.5rem;
+	color: #444;
+}
+
+/* Feature checklist */
+.feature-checklist {
+	display: grid;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+}
+.feature-item label {
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+.feature-desc {
+	margin: 0.25rem 0 0;
+	font-size: 0.85rem;
+	color: #555;
+}
+.auto-locked {
+	opacity: 0.55;
+	pointer-events: none;
+}
+
+/* Yes/No indicators */
+.yesno-section {
+	margin: 1rem 0;
+	display: grid;
+	gap: 0.5rem;
+}
+.yesno-item span {
+	margin-left: 0.5rem;
+	padding: 0.15rem 0.5rem;
+	border-radius: 4px;
+	font-weight: 600;
+}
+.yes {
+	background: #c8f7c5;
+	color: #1a7f1a;
+}
+.no {
+	background: #f7c5c5;
+	color: #8a1a1a;
+}
+
+/* Likelihood card container */
+.likelihood-card {
+  margin: 1.5rem auto;        /* centers the card */
+  padding: 1.25rem 1rem;
+  max-width: 420px;           /* keeps it tidy */
+  text-align: center;         /* centers all text */
+  border-radius: 12px;
+  border: 2px solid rgba(0,0,0,0.15); /* subtle border */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* Title */
+.likelihood-card h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+/* The label itself */
+.likelihood-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+/* Explanation text */
+.likelihood-explanation {
+  font-size: 0.95rem;
+  color: #333;
+  margin-top: 0.5rem;
+}
+
+/* Color states */
+.likelihood-card.low {
+  background: lightblue; /* orange */
+  border-color: blue;
+}
+
+.likelihood-card.moderate {
+  background: #fff59d; /* yellow */
+  border-color: #fbc02d;
+}
+
+.likelihood-card.high {
+  background: #c8e6c9; /* light green */
+  border-color: #66bb6a;
+}
+
+.likelihood-card.excellent {
+  background: #2e7d32; /* dark green */
+  border-color: #1b5e20;
+  color: white;
+}
+
+}

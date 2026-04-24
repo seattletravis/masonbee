@@ -231,14 +231,20 @@ out center;
 	}, []);
 
 	// Beehouse proximity check (placeholder – wire to real API when ready)
-	const fetchNearbyBeehouses = useCallback(async (lat, lon) => {
-		// Example shape if you later add /api/beehouses/:
-		// const houses = await get('/api/beehouses/');
-		// return houses.filter(h =>
-		//   distanceMeters(lat, lon, h.latitude, h.longitude) <= SEARCH_RADIUS_METERS
-		// ).length;
-		return 0;
-	}, []);
+	const fetchNearbyBeehouses = useCallback(
+		async (lat, lon) => {
+			const houses = await get('/api/beehouses/');
+
+			return houses.filter(
+				(h) =>
+					h.latitude &&
+					h.longitude &&
+					distanceMeters(lat, lon, h.latitude, h.longitude) <=
+						SEARCH_RADIUS_METERS,
+			).length;
+		},
+		[distanceMeters],
+	);
 
 	// Community garden proximity check (using loaded publicGardens)
 	const computeNearbyCommunityGardens = useCallback(
@@ -589,47 +595,94 @@ out center;
 			</div>
 
 			<div className='toggles'>
-				<label className={waterAutoDetected ? 'disabled-toggle' : ''}>
-					<input
-						type='checkbox'
-						checked={hasWater}
-						disabled={waterAutoDetected}
-						onChange={(e) => setHasWater(e.target.checked)}
-					/>
-					Water source nearby
-					{waterAutoDetected && <span className='auto-tag'>auto</span>}
-				</label>
+				<div className='finder-intro'>
+					<h2>Mason Bee Habitat Check</h2>
+					<p>
+						Mason bees thrive when they have access to key resources in their
+						environment, especially early‑blooming trees, shrubs, and flowers.
+						If these blooms line up with the mason bee emergence period in early
+						spring, there’s a good chance bees are already visiting your area.
+					</p>
+					<p>
+						<strong>
+							Please check the box for the features within 100 feet of your
+							location:
+						</strong>
+					</p>
+				</div>
 
-				<label className={clayAutoDetected ? 'disabled-toggle' : ''}>
-					<input
-						type='checkbox'
-						checked={hasClay}
-						disabled={clayAutoDetected}
-						onChange={(e) => setHasClay(e.target.checked)}
-					/>
-					Clay / exposed soil
-					{clayAutoDetected && <span className='auto-tag'>auto</span>}
-				</label>
+				<div className='feature-checklist'>
+					<div
+						className={`feature-item ${waterAutoDetected ? 'auto-locked' : ''}`}>
+						<label>
+							<input
+								type='checkbox'
+								checked={hasWater}
+								disabled={waterAutoDetected}
+								onChange={(e) => setHasWater(e.target.checked)}
+							/>
+							Water / lake, pond, river or creek
+							{waterAutoDetected && (
+								<span className='auto-tag'>
+									Map data shows this key resource is nearby.
+								</span>
+							)}
+						</label>
+						<p className='feature-desc'>
+							Mason bees use moisture to regulate nest humidity and soften mud.
+						</p>
+					</div>
 
-				<label className={woodsAutoDetected ? 'disabled-toggle' : ''}>
-					<input
-						type='checkbox'
-						checked={hasWoods}
-						disabled={woodsAutoDetected}
-						onChange={(e) => setHasWoods(e.target.checked)}
-					/>
-					Nearby trees / woods
-					{woodsAutoDetected && <span className='auto-tag'>auto</span>}
-				</label>
+					<div
+						className={`feature-item ${clayAutoDetected ? 'auto-locked' : ''}`}>
+						<label>
+							<input
+								type='checkbox'
+								checked={hasClay}
+								disabled={clayAutoDetected}
+								onChange={(e) => setHasClay(e.target.checked)}
+							/>
+							Clay / exposed soil
+							{clayAutoDetected && <span className='auto-tag'>auto</span>}
+						</label>
+						<p className='feature-desc'>
+							Clay is essential for nest construction — bees use it to build and
+							seal brood chambers.
+						</p>
+					</div>
 
-				<label>
-					<input
-						type='checkbox'
-						checked={hasPollinators}
-						onChange={(e) => setHasPollinators(e.target.checked)}
-					/>
-					Nearby flowering plants / pollinator habitat
-				</label>
+					<div
+						className={`feature-item ${woodsAutoDetected ? 'auto-locked' : ''}`}>
+						<label>
+							<input
+								type='checkbox'
+								checked={hasWoods}
+								disabled={woodsAutoDetected}
+								onChange={(e) => setHasWoods(e.target.checked)}
+							/>
+							Nearby woods / woodlands
+							{woodsAutoDetected && <span className='auto-tag'>auto</span>}
+						</label>
+						<p className='feature-desc'>
+							Woodlands provide habitats, nesting materials, reeds, and wood
+							material with boreholes.
+						</p>
+					</div>
+
+					<div className='feature-item'>
+						<label>
+							<input
+								type='checkbox'
+								checked={hasPollinators}
+								onChange={(e) => setHasPollinators(e.target.checked)}
+							/>
+							Nearby early season flowers / pollinator habitat
+						</label>
+						<p className='feature-desc'>
+							Without flowers, the passing bee won't stop to visit.
+						</p>
+					</div>
+				</div>
 			</div>
 
 			<div className='actions'>
@@ -641,22 +694,29 @@ out center;
 				</button>
 			</div>
 
-			<div className='summary'>
-				<div>
-					<strong>Nearby beehouses:</strong> {nearbyBeehouses}
+			<div className='yesno-section'>
+				<div className='yesno-item'>
+					<strong>Nearby beehouses:</strong>
+					<span className={nearbyBeehouses > 0 ? 'yes' : 'no'}>
+						{nearbyBeehouses > 0 ? 'Yes' : 'No'}
+					</span>
 				</div>
-				<div>
-					<strong>Nearby community gardens:</strong> {nearbyCommunityGardens}
+
+				<div className='yesno-item'>
+					<strong>Nearby community gardens:</strong>
+					<span className={nearbyCommunityGardens > 0 ? 'yes' : 'no'}>
+						{nearbyCommunityGardens > 0 ? 'Yes' : 'No'}
+					</span>
 				</div>
 			</div>
 
 			{prediction && (
-				<div className='prediction'>
-					<h2>Mason Bee Likelihood</h2>
-					<div className='prediction-score'>
-						{prediction.scoreLabel} ({Math.round(prediction.score * 100)}%)
-					</div>
-					<div className='prediction-explanation'>{prediction.explanation}</div>
+				<div className={`likelihood-card ${prediction.label.toLowerCase()}`}>
+					<h3>Mason Bee Likelihood</h3>
+					<div className='likelihood-value'>{prediction.label}</div>
+					<p className='likelihood-explanation'>
+						{prediction.explanation.join(' ')}
+					</p>
 				</div>
 			)}
 
