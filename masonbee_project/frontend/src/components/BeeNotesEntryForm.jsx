@@ -10,7 +10,7 @@ export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
 	);
 	// const [beehouseId, setBeehouseId] = useState('');
 	const [beehouseId, setBeehouseId] = useState(
-		editingNote ? editingNote.beehouse : defaultBeehouseId,
+		editingNote ? editingNote.beehouse : '',
 	);
 	// const [notes, setNotes] = useState('');
 	const [notes, setNotes] = useState(editingNote ? editingNote.notes : '');

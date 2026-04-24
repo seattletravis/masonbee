@@ -89,6 +89,7 @@ function truncateNotes(notes) {
 export default function ViewOneGardenPage() {
 	const [editingNote, setEditingNote] = useState(null);
 	const handleEditNote = (note) => {
+		lastScrollYRef.current = window.scrollY; // ⭐ capture scroll position
 		setEditingNote(note);
 		setShowBeeNotesForm(true);
 	};
@@ -127,6 +128,15 @@ export default function ViewOneGardenPage() {
 	const [showBeeNotesForm, setShowBeeNotesForm] = useState(false);
 	const [showBeehouseList, setShowBeehouseList] = useState(false);
 	const [editingBeehouse, setEditingBeehouse] = useState(null);
+
+	useEffect(() => {
+		if ((showBeehouseForm || showBeeNotesForm) && formRef.current) {
+			const y =
+				formRef.current.getBoundingClientRect().top + window.scrollY - 20;
+
+			window.scrollTo({ top: y, behavior: 'smooth' });
+		}
+	}, [showBeehouseForm, showBeeNotesForm]);
 
 	// ------------------------------------------------------------
 	// ⭐ Load all data for this garden
@@ -410,7 +420,11 @@ export default function ViewOneGardenPage() {
 						{!showBeehouseForm && !showBeeNotesForm && (
 							<button
 								className='button button-small'
-								onClick={() => setShowBeeNotesForm(true)}>
+								onClick={() => {
+									lastScrollYRef.current = window.scrollY; // ⭐ capture scroll position
+									setEditingNote(null); // ensure fresh note
+									setShowBeeNotesForm(true); // open the form
+								}}>
 								Add Bee Note
 							</button>
 						)}
@@ -425,21 +439,32 @@ export default function ViewOneGardenPage() {
 				</p>
 
 				{/* Bee Notes Entry Form */}
-				{showBeeNotesForm && (
-					<BeeNotesEntryForm
-						gardenId={id}
-						beehouses={beehouses}
-						editingNote={editingNote}
-						onCreated={async () => {
-							await loadGardenPage();
-							setShowBeeNotesForm(false);
-							setEditingNote(null);
-						}}
-					/>
-				)}
-
-				{/* Beehouse Entry Form */}
 				<div ref={formRef}>
+					{showBeeNotesForm && (
+						<BeeNotesEntryForm
+							gardenId={id}
+							beehouses={beehouses}
+							editingNote={editingNote}
+							onCreated={async () => {
+								await loadGardenPage();
+								setShowBeeNotesForm(false);
+								setEditingNote(null);
+							}}
+							onClose={() => {
+								setShowBeeNotesForm(false);
+								setEditingNote(null);
+
+								setTimeout(() => {
+									window.scrollTo({
+										top: lastScrollYRef.current || 0,
+										behavior: 'smooth',
+									});
+								}, 50);
+							}}
+						/>
+					)}
+
+					{/* Beehouse Entry Form */}
 					{showBeehouseForm && (
 						<BeehouseEntryForm
 							onClose={() => {
