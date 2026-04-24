@@ -1,4 +1,3 @@
-// src/pages/MasonBeeFinder.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { calculateMasonBeeLikelihood } from '../utils/masonBeePrediction';
 import L from 'leaflet';
@@ -28,9 +27,33 @@ const BeeIcon = L.icon({
 });
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
-const SEARCH_RADIUS_METERS = 90; // ~100 ft
+const SEARCH_RADIUS_METERS = 90; // ~300 ft
+
+// Simple Haversine helper
+function distanceMeters(lat1, lon1, lat2, lon2) {
+	const R = 6371000;
+	const toRad = (v) => (v * Math.PI) / 180;
+	const dLat = toRad(lat2 - lat1);
+	const dLon = toRad(lon2 - lon1);
+	const a =
+		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+		Math.cos(toRad(lat1)) *
+			Math.cos(toRad(lat2)) *
+			Math.sin(dLon / 2) *
+			Math.sin(dLon / 2);
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+	return R * c;
+}
+
+// Cache for Overpass results (persists across renders)
+const overpassCache = new Map();
+function cacheKey(lat, lon) {
+	return `${lat.toFixed(4)},${lon.toFixed(4)}`;
+}
 
 function MasonBeeFinder() {
+	const [hasRunPrediction, setHasRunPrediction] = useState(false);
+
 	const [publicGardens, setPublicGardens] = useState([]);
 
 	const [userLocation, setUserLocation] = useState(null); // { lat, lon }
@@ -101,33 +124,10 @@ function MasonBeeFinder() {
 		);
 	}, []);
 
-	// Distance helper (Haversine)
-	const distanceMeters = (lat1, lon1, lat2, lon2) => {
-		const R = 6371000;
-		const toRad = (v) => (v * Math.PI) / 180;
-		const dLat = toRad(lat2 - lat1);
-		const dLon = toRad(lon2 - lon1);
-		const a =
-			Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-			Math.cos(toRad(lat1)) *
-				Math.cos(toRad(lat2)) *
-				Math.sin(dLon / 2) *
-				Math.sin(dLon / 2);
-		const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		return R * c;
-	};
-
-	const overpassCache = new Map();
-
-	function cacheKey(lat, lon) {
-		return `${lat.toFixed(4)},${lon.toFixed(4)}`;
-	}
-
 	// Overpass query for water / woods / clay (inferred)
 	const runOverpassDetection = useCallback(async (lat, lon) => {
 		const key = cacheKey(lat, lon);
 
-		// 1. Return cached result if available
 		if (overpassCache.has(key)) {
 			return overpassCache.get(key);
 		}
@@ -223,34 +223,36 @@ out center;
 		}
 
 		const result = { waterDetected, woodsDetected, clayDetected };
-
-		// 2. Store in cache
 		overpassCache.set(key, result);
-
 		return result;
 	}, []);
 
-	// Beehouse proximity check (placeholder – wire to real API when ready)
-	const fetchNearbyBeehouses = useCallback(
-		async (lat, lon) => {
-			const houses = await get('/api/beehouses/');
+	// Beehouse proximity check
+	const fetchNearbyBeehouses = useCallback(async (lat, lon) => {
+		const houses = await get('/api/beehouses/');
 
-			return houses.filter(
-				(h) =>
-					h.latitude &&
-					h.longitude &&
-					distanceMeters(lat, lon, h.latitude, h.longitude) <=
-						SEARCH_RADIUS_METERS,
-			).length;
-		},
-		[distanceMeters],
-	);
+		return houses.filter((h) => {
+			if (!h.latitude || !h.longitude) return false;
+			const d = distanceMeters(
+				lat,
+				lon,
+				parseFloat(h.latitude),
+				parseFloat(h.longitude),
+			);
+			return d <= SEARCH_RADIUS_METERS;
+		}).length;
+	}, []);
 
-	// Community garden proximity check (using loaded publicGardens)
+	// Community garden proximity check
 	const computeNearbyCommunityGardens = useCallback(
 		(lat, lon) => {
 			return publicGardens.filter((g) => {
-				const d = distanceMeters(lat, lon, g.latitude, g.longitude);
+				const d = distanceMeters(
+					lat,
+					lon,
+					parseFloat(g.latitude),
+					parseFloat(g.longitude),
+				);
 				return d <= SEARCH_RADIUS_METERS;
 			}).length;
 		},
@@ -273,31 +275,33 @@ out center;
 
 			const gardenCount = computeNearbyCommunityGardens(lat, lon);
 
+			// Update all state
 			setNearbyBeehouses(beehouseCount);
 			setNearbyCommunityGardens(gardenCount);
 
-			if (overpassResult.waterDetected) {
-				setHasWater(true);
-				setWaterAutoDetected(true);
-			} else {
-				setWaterAutoDetected(false);
-			}
+			setWaterAutoDetected(overpassResult.waterDetected);
+			setHasWater(overpassResult.waterDetected);
 
 			const clayFromOverpass =
 				overpassResult.clayDetected || overpassResult.waterDetected;
-			if (clayFromOverpass) {
-				setHasClay(true);
-				setClayAutoDetected(true);
-			} else {
-				setClayAutoDetected(false);
-			}
+			setClayAutoDetected(clayFromOverpass);
+			setHasClay(clayFromOverpass);
 
-			if (overpassResult.woodsDetected) {
-				setHasWoods(true);
-				setWoodsAutoDetected(true);
-			} else {
-				setWoodsAutoDetected(false);
-			}
+			setWoodsAutoDetected(overpassResult.woodsDetected);
+			setHasWoods(overpassResult.woodsDetected);
+
+			// ⭐ RUN PREDICTION HERE — AFTER all state updates
+			const result = calculateMasonBeeLikelihood({
+				hasPollinators,
+				hasWater: overpassResult.waterDetected,
+				hasClay: clayFromOverpass,
+				hasWoods: overpassResult.woodsDetected,
+				nearbyBeehouses: beehouseCount,
+				nearbyCommunityGardens: gardenCount,
+			});
+
+			setPrediction(result);
+			setHasRunPrediction(true);
 		} catch (err) {
 			console.error(err);
 			setAddressError('There was a problem checking this location.');
@@ -309,34 +313,26 @@ out center;
 		runOverpassDetection,
 		fetchNearbyBeehouses,
 		computeNearbyCommunityGardens,
+		hasPollinators,
 	]);
 
-	// Run prediction whenever inputs change
-	useEffect(() => {
-		if (!selectedLocation) {
-			setPrediction(null);
-			return;
-		}
+	// Run prediction ONLY when user clicks the checker
+	function runChecker() {
+		if (!selectedLocation) return;
 
+		// ⭐ Compute prediction using the freshly computed values, NOT state
 		const result = calculateMasonBeeLikelihood({
 			hasPollinators,
-			hasWater,
-			hasClay,
-			hasWoods,
-			nearbyBeehouses,
-			nearbyCommunityGardens,
+			hasWater: overpassResult.waterDetected,
+			hasClay: clayFromOverpass,
+			hasWoods: overpassResult.woodsDetected,
+			nearbyBeehouses: beehouseCount,
+			nearbyCommunityGardens: gardenCount,
 		});
 
 		setPrediction(result);
-	}, [
-		selectedLocation,
-		hasPollinators,
-		hasWater,
-		hasClay,
-		hasWoods,
-		nearbyBeehouses,
-		nearbyCommunityGardens,
-	]);
+		setHasRunPrediction(true);
+	}
 
 	// Address geocoding via Nominatim
 	const handleAddressSubmit = async (e) => {
@@ -387,28 +383,26 @@ out center;
 		}
 	};
 
-	// Map modal component
-	const MapModal = React.memo(() => {
+	// Map modal component (purely for picking a location)
+	const MapModal = React.memo(function MapModal() {
 		const mapContainerRef = React.useRef(null);
-		const mapInstanceRef = React.useRef(null);
+		const mapRef = React.useRef(null);
 		const markerRef = React.useRef(null);
 
-		// Add public garden markers
+		// Add public garden markers when map + gardens are ready
 		useEffect(() => {
-			if (!mapInstanceRef.current || publicGardens.length === 0) return;
+			if (!mapRef.current || publicGardens.length === 0) return;
 
 			publicGardens.forEach((garden) => {
-				L.marker([garden.latitude, garden.longitude], {
-					icon: GardenIcon,
-				})
-					.addTo(mapInstanceRef.current)
+				L.marker([garden.latitude, garden.longitude], { icon: GardenIcon })
+					.addTo(mapRef.current)
 					.bindPopup(`<strong>${garden.name}</strong>`);
 			});
 		}, [publicGardens]);
 
 		// Initialize map once
 		useEffect(() => {
-			if (!mapContainerRef.current || mapInstanceRef.current) return;
+			if (!mapContainerRef.current || mapRef.current) return;
 
 			const startLat = selectedLocation?.lat || 47.6062;
 			const startLon = selectedLocation?.lon || -122.3321;
@@ -423,7 +417,7 @@ out center;
 				attribution: '&copy; OpenStreetMap contributors',
 			}).addTo(map);
 
-			mapInstanceRef.current = map;
+			mapRef.current = map;
 
 			map.on('click', (e) => {
 				const { lat, lng } = e.latlng;
@@ -448,7 +442,7 @@ out center;
 
 		// Update marker when selectedLocation changes
 		useEffect(() => {
-			if (!selectedLocation || !mapInstanceRef.current) return;
+			if (!selectedLocation || !mapRef.current) return;
 
 			const { lat, lon } = selectedLocation;
 
@@ -456,7 +450,7 @@ out center;
 				markerRef.current = L.marker([lat, lon], {
 					icon: BeeIcon,
 					draggable: true,
-				}).addTo(mapInstanceRef.current);
+				}).addTo(mapRef.current);
 
 				markerRef.current.on('dragend', () => {
 					const pos = markerRef.current.getLatLng();
@@ -468,16 +462,16 @@ out center;
 		}, [selectedLocation]);
 
 		const centerOnUser = () => {
-			if (!userLocation || !mapInstanceRef.current) return;
+			if (!userLocation || !mapRef.current) return;
 
 			const { lat, lon } = userLocation;
-			mapInstanceRef.current.setView([lat, lon], 15);
+			mapRef.current.setView([lat, lon], 15);
 
 			if (!markerRef.current) {
 				markerRef.current = L.marker([lat, lon], {
 					icon: BeeIcon,
 					draggable: true,
-				}).addTo(mapInstanceRef.current);
+				}).addTo(mapRef.current);
 
 				markerRef.current.on('dragend', () => {
 					const pos = markerRef.current.getLatLng();
@@ -494,11 +488,8 @@ out center;
 			if (!markerRef.current) return;
 
 			const pos = markerRef.current.getLatLng();
-			const loc = { lat: pos.lat, lon: pos.lng };
-
-			setSelectedLocation(loc);
+			setSelectedLocation({ lat: pos.lat, lon: pos.lng });
 			setShowMapModal(false);
-			handleCheckLocation();
 		};
 
 		return (
@@ -643,7 +634,11 @@ out center;
 								onChange={(e) => setHasClay(e.target.checked)}
 							/>
 							Clay / exposed soil
-							{clayAutoDetected && <span className='auto-tag'>auto</span>}
+							{clayAutoDetected && (
+								<span className='auto-tag'>
+									Map data shows this key resource is nearby.
+								</span>
+							)}
 						</label>
 						<p className='feature-desc'>
 							Clay is essential for nest construction — bees use it to build and
@@ -660,12 +655,17 @@ out center;
 								disabled={woodsAutoDetected}
 								onChange={(e) => setHasWoods(e.target.checked)}
 							/>
-							Nearby woods / woodlands
-							{woodsAutoDetected && <span className='auto-tag'>auto</span>}
+							Nearby woods / wooded land, greenways, lots
+							{woodsAutoDetected && (
+								<span className='auto-tag'>
+									Map data shows this key resource is nearby.
+								</span>
+							)}
 						</label>
 						<p className='feature-desc'>
 							Woodlands provide habitats, nesting materials, reeds, and wood
-							material with boreholes.
+							material with boreholes. Undeveloped lots, greenways, & alleys can
+							also serve as mason bee habitats.
 						</p>
 					</div>
 
@@ -688,9 +688,14 @@ out center;
 			<div className='actions'>
 				<button
 					className='button'
-					onClick={handleCheckLocation}
+					onClick={async () => {
+						await handleCheckLocation();
+						runChecker();
+					}}
 					disabled={!selectedLocation || isCheckingLocation}>
-					{isCheckingLocation ? 'Checking location…' : 'Re-check location'}
+					{isCheckingLocation
+						? 'Checking location…'
+						: 'Run Checker for this Location'}
 				</button>
 			</div>
 
@@ -709,15 +714,32 @@ out center;
 					</span>
 				</div>
 			</div>
+			{nearbyBeehouses > 0 && (
+				<div className='beehouse-footer'>
+					There are active mason bee keepers in your area that contribute to the
+					mason bee population density. You can increase your chances of
+					attracting mason bees by putting out a beehouse, providing water and
+					clay, and planting early‑season flowers.
+				</div>
+			)}
 
-			{prediction && (
-				<div className={`likelihood-card ${prediction.label.toLowerCase()}`}>
-					<h3>Mason Bee Likelihood</h3>
-					<div className='likelihood-value'>{prediction.label}</div>
-					<p className='likelihood-explanation'>
-						{prediction.explanation.join(' ')}
+			{!hasRunPrediction ? (
+				<div className='start-message'>
+					<p>
+						Please check the mason bee resources at your location to get
+						started.
 					</p>
 				</div>
+			) : (
+				prediction && (
+					<div className={`likelihood-card ${prediction.label.toLowerCase()}`}>
+						<h3>Mason Bee Likelihood</h3>
+						<div className='likelihood-value'>{prediction.label}</div>
+						<p className='likelihood-explanation'>
+							{prediction.explanation.join(' ')}
+						</p>
+					</div>
+				)
 			)}
 
 			{showMapModal && <MapModal />}
