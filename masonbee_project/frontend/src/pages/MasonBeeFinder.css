@@ -1,104 +1,234 @@
-/* Mason Bee Finder Page Layout */
-.mason-bee-finder-page {
-	max-width: 800px;
+/* Mason Bee Finder – Clean, tactile UI */
+
+.mason-bee-finder {
+	max-width: 720px;
 	margin: 0 auto;
-	padding: 1rem;
+	padding: 1.5rem;
+	font-family: system-ui, sans-serif;
+	color: #1a1a1a;
 }
 
-/* Card styling (matches your existing UI) */
-.card {
-	background: #ffffff;
-	border-radius: 8px;
-	padding: 1rem 1.25rem;
+.mason-bee-finder h1 {
+	font-size: 1.9rem;
 	margin-bottom: 1rem;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+	text-align: center;
+	font-weight: 700;
 }
 
-/* Checkbox group */
-.checkbox-group {
-	display: flex;
-	flex-direction: column;
-	gap: 0.5rem;
+/* ------------------------------
+   Controls + Location Summary
+--------------------------------*/
+.controls {
+	margin-bottom: 1.5rem;
+	text-align: center;
 }
 
-.checkbox-label {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
+.location-summary {
+	margin-top: 0.5rem;
+	font-size: 0.95rem;
+	color: #444;
 }
 
-/* Error text */
-.error-text {
-	color: #c0392b;
-	font-size: 0.9rem;
-}
-
-/* Modal backdrop */
-.modal-backdrop {
-	position: fixed;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.55);
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	z-index: 5000;
-}
-
-/* Modal container */
-.modal {
-	background: #ffffff;
-	width: 90%;
-	max-width: 500px;
-	padding: 1.25rem;
-	border-radius: 10px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-	animation: fadeIn 0.2s ease-out;
-}
-
-/* Modal actions */
-.modal-actions {
-	display: flex;
-	justify-content: flex-end;
-	gap: 0.5rem;
-	margin-top: 1rem;
-}
-
-/* Input styling */
-.input {
-	width: 100%;
-	padding: 0.45rem 0.6rem;
-	border-radius: 6px;
-	border: 1px solid #ccc;
-	margin-top: 0.25rem;
-}
-
-/* Buttons (inherits your existing classes) */
+/* ------------------------------
+   Buttons
+--------------------------------*/
 .button {
+	background: #2d7df4;
+	color: white;
+	border: none;
+	padding: 0.65rem 1.2rem;
+	border-radius: 6px;
+	font-size: 0.95rem;
 	cursor: pointer;
+	transition:
+		background 0.15s ease,
+		transform 0.1s ease;
+}
+
+.button:hover {
+	background: #1f63c9;
+}
+
+.button:active {
+	transform: scale(0.97);
 }
 
 .button-small {
-	padding: 0.35rem 0.75rem;
-	font-size: 0.9rem;
+	padding: 0.45rem 0.9rem;
+	font-size: 0.85rem;
 }
 
 .button-secondary {
 	background: #e0e0e0;
+	color: #333;
 }
 
-/* Fade animation */
-@keyframes fadeIn {
+.button-secondary:hover {
+	background: #d5d5d5;
+}
+
+/* ------------------------------
+   Toggles
+--------------------------------*/
+.toggles {
+	margin: 1.5rem 0;
+	display: grid;
+	gap: 0.75rem;
+}
+
+.toggles label {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.95rem;
+}
+
+.auto-tag {
+	background: #2d7df4;
+	color: white;
+	padding: 0.1rem 0.4rem;
+	border-radius: 4px;
+	font-size: 0.7rem;
+	margin-left: 0.4rem;
+}
+
+/* ------------------------------
+   Summary
+--------------------------------*/
+.summary {
+	margin-top: 1rem;
+	padding: 0.75rem 1rem;
+	background: #f7f9fc;
+	border-radius: 6px;
+	border: 1px solid #e3e7ef;
+	font-size: 0.95rem;
+	display: grid;
+	gap: 0.4rem;
+}
+
+/* ------------------------------
+   Prediction Box
+--------------------------------*/
+.prediction {
+	margin-top: 1.5rem;
+	padding: 1rem;
+	background: #f0f7ff;
+	border: 1px solid #cfe1ff;
+	border-radius: 8px;
+}
+
+.prediction h2 {
+	margin-bottom: 0.5rem;
+	font-size: 1.3rem;
+}
+
+.prediction-score {
+	font-size: 1.4rem;
+	font-weight: 700;
+	margin-bottom: 0.5rem;
+}
+
+.prediction-explanation {
+	font-size: 0.95rem;
+	color: #333;
+}
+
+/* ------------------------------
+   Modal
+--------------------------------*/
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 5000;
+	padding: 1rem;
+}
+
+.modal {
+	background: white;
+	width: 100%;
+	max-width: 480px;
+	padding: 1.25rem;
+	border-radius: 10px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+	animation: modalFadeIn 0.18s ease-out;
+}
+
+@keyframes modalFadeIn {
 	from {
 		opacity: 0;
-		transform: scale(0.97);
+		transform: translateY(8px);
 	}
 	to {
 		opacity: 1;
-		transform: scale(1);
+		transform: translateY(0);
 	}
 }
+
 .map-instruction {
+	font-size: 0.9rem;
+	color: #444;
+	margin-bottom: 0.75rem;
+}
+
+/* ------------------------------
+   Form inside modal
+--------------------------------*/
+.form-label {
+	display: block;
+	font-size: 0.9rem;
+	margin-bottom: 0.25rem;
+}
+
+.input {
+	width: 100%;
+	padding: 0.45rem 0.6rem;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	font-size: 0.9rem;
+}
+
+.input:focus {
+	outline: none;
+	border-color: #2d7df4;
+	box-shadow: 0 0 0 2px rgba(45, 125, 244, 0.25);
+}
+
+.error-text {
+	color: #c62828;
 	font-size: 0.85rem;
-	color: #555;
-	margin-bottom: 0.5rem;
+}
+
+/* ------------------------------
+   Modal Actions
+--------------------------------*/
+.modal-actions {
+	margin-top: 1rem;
+	display: flex;
+	justify-content: space-between;
+	gap: 0.75rem;
+}
+
+/* ------------------------------
+   Responsive
+--------------------------------*/
+@media (max-width: 480px) {
+	.mason-bee-finder {
+		padding: 1rem;
+	}
+
+	.modal {
+		padding: 1rem;
+	}
+
+	.button {
+		width: 100%;
+	}
+
+	.modal-actions {
+		flex-direction: column;
+	}
 }

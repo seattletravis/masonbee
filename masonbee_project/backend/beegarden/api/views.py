@@ -50,9 +50,13 @@ class JournalEntryViewSet(viewsets.ModelViewSet):
 
 from django.db.models import Q
 from rest_framework import filters
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 class GardenViewSet(viewsets.ModelViewSet):
-    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = Garden.objects.all()
+    serializer_class = GardenSerializer
+
     """
     Core garden endpoints:
     - list / retrieve (respecting visibility)

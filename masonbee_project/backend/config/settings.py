@@ -151,13 +151,14 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
 }
+
 
 
 from datetime import timedelta
@@ -174,9 +175,18 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
 
 CORS_ALLOW_HEADERS = [
     "authorization",
@@ -186,3 +196,8 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-csrftoken",
 ]
+
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = False  # ok for local dev
+CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = False
