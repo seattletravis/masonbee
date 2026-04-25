@@ -87,6 +87,9 @@ export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
 			notes: notes.trim(),
 		};
 
+		// ⭐ FIX: Only edit if an ID exists
+		const isEditing = Boolean(editingNote?.id);
+
 		try {
 			let res;
 
@@ -123,7 +126,6 @@ export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
 
 			onCreated?.(data);
 
-			// ⭐ Reset form only after creating
 			if (!isEditing) {
 				setEventType('');
 				setBeehouseId('');

@@ -85,3 +85,142 @@
 	font-weight: 600;
 	margin-top: -0.25rem;
 }
+/* --------------------------------------------- */
+/* BEEHOUSE CARD — CONTAINER                     */
+/* --------------------------------------------- */
+
+.beehouse-card {
+	background: #ffffff;
+	border: 1px solid #dfe4e6;
+	border-radius: 12px;
+	padding: 1.1rem 1.25rem;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+	transition:
+		box-shadow 0.2s ease,
+		transform 0.15s ease;
+}
+
+.beehouse-card:hover {
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+	transform: translateY(-2px);
+}
+
+/* --------------------------------------------- */
+/* TITLE + BADGES                                */
+/* --------------------------------------------- */
+
+.journal-card-top {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 0.75rem;
+}
+
+.journal-card-title {
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: #2d3a3f;
+	margin: 0;
+}
+
+.beehouse-card__badges {
+	display: flex;
+	gap: 0.5rem;
+	align-items: center;
+}
+
+.journal-category-badge {
+	background: #e8f5e9;
+	color: #2e7d32;
+	padding: 0.25rem 0.55rem;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+}
+
+.beehouse-card__notes-badge {
+	background: #eef2f5;
+	color: #37474f;
+	padding: 0.25rem 0.55rem;
+	border-radius: 6px;
+	font-size: 0.8rem;
+	font-weight: 600;
+	border: none;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.beehouse-card__notes-badge:hover {
+	background: #e2e8ec;
+}
+
+/* --------------------------------------------- */
+/* ACTION BUTTONS                                */
+/* --------------------------------------------- */
+
+.journal-card-actions {
+	display: flex;
+	gap: 0.6rem;
+	margin-bottom: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.journal-button {
+	padding: 0.45rem 0.75rem;
+	border-radius: 6px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	border: none;
+	transition:
+		background 0.15s ease,
+		transform 0.1s ease;
+}
+
+.journal-button:active {
+	transform: scale(0.97);
+}
+
+.journal-button-secondary {
+	background: #f4f6f7;
+	color: #37474f;
+}
+
+.journal-button-secondary:hover {
+	background: #e8ecef;
+}
+
+.journal-button-danger {
+	background: #ffe8e8;
+	color: #c62828;
+}
+
+.journal-button-danger:hover {
+	background: #ffd6d6;
+}
+
+/* --------------------------------------------- */
+/* NOTES SECTION                                 */
+/* --------------------------------------------- */
+
+.beehouse-card__notes {
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid #e3e7ea;
+}
+
+/* --------------------------------------------- */
+/* RESPONSIVE                                     */
+/* --------------------------------------------- */
+
+@media (max-width: 600px) {
+	.journal-card-actions {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.journal-button {
+		width: 100%;
+		text-align: center;
+	}
+}

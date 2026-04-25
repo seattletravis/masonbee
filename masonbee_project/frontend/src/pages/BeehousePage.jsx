@@ -24,9 +24,6 @@ function getErrorMessage(error, fallbackMessage) {
 }
 
 export default function BeehousePage() {
-	// ------------------------------------------------------------
-	// State
-	// ------------------------------------------------------------
 	const [beehouses, setBeehouses] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [loadError, setLoadError] = useState('');
@@ -45,15 +42,9 @@ export default function BeehousePage() {
 	const lastScrollYRef = useRef(0);
 	const formRef = useRef(null);
 
-	// ------------------------------------------------------------
-	// Form open logic
-	// ------------------------------------------------------------
 	const formIsOpen =
 		(showBeehouseForm && !isBeehouseFormCollapsed) || showBeeNotesForm;
 
-	// ------------------------------------------------------------
-	// Load beehouses
-	// ------------------------------------------------------------
 	const loadBeehouses = useCallback(async () => {
 		setIsLoading(true);
 		setLoadError('');
@@ -74,9 +65,6 @@ export default function BeehousePage() {
 		loadBeehouses();
 	}, [loadBeehouses]);
 
-	// ------------------------------------------------------------
-	// Sorted list
-	// ------------------------------------------------------------
 	const sortedBeehouses = useMemo(
 		() =>
 			[...beehouses].sort((a, b) =>
@@ -85,9 +73,6 @@ export default function BeehousePage() {
 		[beehouses],
 	);
 
-	// ------------------------------------------------------------
-	// Notes logic
-	// ------------------------------------------------------------
 	const toggleNotes = (id) => {
 		setOpenNotesFor((prev) => (prev === id ? null : id));
 	};
@@ -102,9 +87,6 @@ export default function BeehousePage() {
 		}, 50);
 	};
 
-	// ------------------------------------------------------------
-	// Beehouse form logic
-	// ------------------------------------------------------------
 	const handleAddBeehouse = () => {
 		lastScrollYRef.current = window.scrollY;
 		setEditingBeehouse(null);
@@ -127,9 +109,23 @@ export default function BeehousePage() {
 		}, 50);
 	}, []);
 
-	// ------------------------------------------------------------
-	// Map Picker
-	// ------------------------------------------------------------
+	// ⭐ NEW — Remove Beehouse
+	function handleRemoveBeehouse(beehouse) {
+		lastScrollYRef.current = window.scrollY;
+
+		setEditingNote({
+			beehouse: beehouse.id,
+			event_type: 'destroyed',
+			notes: '',
+		});
+
+		setShowBeeNotesForm(true);
+
+		setTimeout(() => {
+			formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}, 50);
+	}
+
 	const openMapPicker = (setLatLon) => {
 		setPendingLatLonSetter(() => setLatLon);
 		setShowMapModal(true);
@@ -140,9 +136,6 @@ export default function BeehousePage() {
 		setShowMapModal(false);
 	};
 
-	// ------------------------------------------------------------
-	// Loading / Error states
-	// ------------------------------------------------------------
 	if (isLoading) {
 		return (
 			<div className='page-wrapper beehouse-page'>
@@ -161,9 +154,6 @@ export default function BeehousePage() {
 		);
 	}
 
-	// ------------------------------------------------------------
-	// MAIN RENDER
-	// ------------------------------------------------------------
 	return (
 		<div className='page-wrapper beehouse-page'>
 			<header className='beehouse-page__header'>
@@ -176,7 +166,6 @@ export default function BeehousePage() {
 				</div>
 			</header>
 
-			{/* FORMS SECTION */}
 			<section className='section beehouse-page__forms' ref={formRef}>
 				<div className='beehouse-page__forms-inner'>
 					<BeehouseEntryForm
@@ -212,13 +201,24 @@ export default function BeehousePage() {
 					{showBeeNotesForm && (
 						<div className='beehouse-page__form-card'>
 							<h2 className='section-title'>
-								{editingNote ? 'Edit Bee Note' : 'Add Bee Note'}
+								{editingNote?.event_type === 'destroyed'
+									? 'Remove Beehouse'
+									: editingNote
+										? 'Edit Bee Note'
+										: 'Add Bee Note'}
 							</h2>
 
 							<BeeNotesEntryForm
 								beehouses={beehouses}
 								editingNote={editingNote}
 								onCreated={async () => {
+									// ⭐ If this was a destroy event, soft-delete the beehouse
+									if (editingNote?.event_type === 'destroyed') {
+										await api.patch(`/api/beehouses/${editingNote.beehouse}/`, {
+											uninstall_date: new Date().toISOString().split('T')[0],
+										});
+									}
+
 									await loadBeehouses();
 									setShowBeeNotesForm(false);
 									setEditingNote(null);
@@ -247,7 +247,6 @@ export default function BeehousePage() {
 				</div>
 			</section>
 
-			{/* BEEHOUSE LIST */}
 			<section className='section beehouse-page__list'>
 				<div className='section-header'>
 					<h2 className='section-title'>Your Beehouses</h2>
@@ -312,6 +311,14 @@ export default function BeehousePage() {
 										}}>
 										Add Bee Note
 									</button>
+
+									{/* ⭐ NEW — Remove Beehouse */}
+									<button
+										className='journal-button journal-button-danger'
+										disabled={formIsOpen}
+										onClick={() => handleRemoveBeehouse(b)}>
+										Remove Beehouse
+									</button>
 								</div>
 
 								{openNotesFor === b.id && (
@@ -329,7 +336,6 @@ export default function BeehousePage() {
 				)}
 			</section>
 
-			{/* MAP PICKER MODAL */}
 			<MapPinModal
 				isOpen={showMapModal}
 				onClose={() => setShowMapModal(false)}

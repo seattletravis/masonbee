@@ -134,14 +134,15 @@ class BeeHouseViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        # Return ALL beehouses created by this user
-        qs = BeeHouse.objects.filter(created_by=user)
-
-        # Annotate event_count using related_name="events"
-        qs = qs.annotate(event_count=Count("events"))
-
-        return qs
-
+        return (
+            BeeHouse.objects
+            .filter(
+                created_by=user,
+                uninstall_date__isnull=True  # ⭐ hide removed beehouses
+            )
+            .annotate(event_count=Count("events"))
+            .order_by("name")
+        )
 
     @action(detail=True, methods=["get"], url_path="events")
     def events(self, request, pk=None):

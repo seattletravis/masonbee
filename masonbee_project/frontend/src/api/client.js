@@ -192,6 +192,10 @@ export function put(url, data) {
 	return request('PUT', url, data);
 }
 
+export function patch(url, data) {
+	return request('PATCH', url, data);
+}
+
 export function del(url) {
 	return request('DELETE', url);
 }
