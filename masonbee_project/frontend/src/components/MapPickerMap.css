@@ -57,3 +57,7 @@
 	cursor: pointer;
 	border: 2px solid #eee;
 }
+
+.center-button {
+	pointer-events: none;
+}

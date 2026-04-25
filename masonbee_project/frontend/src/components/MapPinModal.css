@@ -63,3 +63,31 @@
 		opacity: 1;
 	}
 }
+.map-container {
+	position: relative;
+}
+
+.map-picker-container,
+.map-picker-map,
+.leaflet-container {
+	position: relative;
+	z-index: 1;
+}
+
+.modal * {
+	pointer-events: auto;
+}
+
+.modal .map-container,
+.modal .map-picker-container,
+.modal .leaflet-container {
+	pointer-events: auto;
+}
+
+.modal {
+	pointer-events: auto;
+}
+
+.modal-backdrop {
+	pointer-events: auto;
+}

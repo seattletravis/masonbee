@@ -1,36 +1,26 @@
-/* Expanded form container */
+/* Wrap the entire expanded form in a clean card */
 .beehouse-form {
 	display: flex;
 	flex-direction: column;
-	gap: 1.1rem;
+	gap: 1.25rem;
 	padding: 1.25rem;
 	border: 1px solid #dcdcdc;
 	border-radius: 10px;
 	background: #ffffff;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-	margin-top: 0.75rem;
-}
-
-/* Form header/title */
-.beehouse-form-header {
-	font-size: 1.3rem;
-	font-weight: 700;
-	margin: 0 0 0.25rem 0;
-	padding-bottom: 0.25rem;
-	border-bottom: 1px solid #e5e5e5;
-	color: #333;
+	margin-top: 0.75rem; /* reduced space above form */
 }
 
 /* Collapsed button spacing tightened */
 .beehouse-form-collapsed {
-	margin-top: 0.5rem;
+	margin-top: 0.5rem; /* reduced from ~1.5rem */
 }
 
 /* Section titles */
 .form-section-title {
 	font-size: 1.05rem;
 	font-weight: 700;
-	margin: 0.15rem 0 0.4rem 0;
+	margin: 0.25rem 0 0.5rem 0; /* tighter spacing */
 	color: #333;
 }
 
@@ -38,14 +28,14 @@
 .form-section {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 0.65rem 1.25rem;
+	gap: 0.75rem 1.5rem; /* tighter spacing */
 	padding: 0.75rem;
 	background: #fafafa;
 	border-radius: 8px;
 	border: 1px solid #e5e5e5;
 }
 
-/* Environment section: single column */
+/* Environment section: single column but aligned checkboxes */
 .environment-section {
 	grid-template-columns: 1fr;
 	padding: 0.75rem 1rem;
@@ -57,7 +47,6 @@
 	align-items: center;
 	gap: 0.5rem;
 	font-weight: 600;
-	line-height: 1.2;
 }
 
 /* Inputs */
@@ -80,14 +69,14 @@
 .location-buttons {
 	display: flex;
 	gap: 0.75rem;
-	margin-top: 0.25rem;
+	margin-top: 0.25rem; /* tighter */
 }
 
 /* Actions */
 .form-actions {
 	display: flex;
 	gap: 1rem;
-	margin-top: 0.5rem;
+	margin-top: 0.5rem; /* tighter */
 }
 
 /* Error text */

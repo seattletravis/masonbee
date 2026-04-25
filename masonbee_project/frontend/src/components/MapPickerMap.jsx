@@ -1,26 +1,21 @@
+// src/components/MapPickerMap.jsx
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import {
+	MapContainer,
+	TileLayer,
+	Marker,
+	useMap,
+	useMapEvents,
+} from 'react-leaflet';
 import L from 'leaflet';
 import './MapPickerMap.css';
 
-// --------------------------------------
-// Bee Pin Icon
-// --------------------------------------
 const beeIcon = new L.Icon({
 	iconUrl: new URL('../assets/leaflet/bee-marker.png', import.meta.url).href,
 	iconSize: [40, 40],
 	iconAnchor: [20, 40],
 });
-const gpsIcon = (
-	<svg width='22' height='22' viewBox='0 0 24 24' fill='none'>
-		<circle cx='12' cy='12' r='3' stroke='#333' strokeWidth='2' />
-		<path d='M12 2v3M12 19v3M2 12h3M19 12h3' stroke='#333' strokeWidth='2' />
-	</svg>
-);
 
-// --------------------------------------
-// Auto-resize when modal opens (runs once)
-// --------------------------------------
 function ResizeOnMount({ initialPosition }) {
 	const map = useMap();
 
@@ -31,16 +26,13 @@ function ResizeOnMount({ initialPosition }) {
 			map.invalidateSize();
 			map.setView(initialPosition, 17, { animate: false });
 		}, 300);
-	}, [initialPosition]); // <-- only run when initialPosition becomes available
+	}, [initialPosition]);
 
 	return null;
 }
 
-// --------------------------------------
-// MAIN COMPONENT
-// --------------------------------------
-export default function MapPickerMap({ onSelect }) {
-	const defaultCenter = [47.6062, -122.3321]; // Seattle fallback
+export default function MapPickerMap({ onTempChange }) {
+	const defaultCenter = [47.6062, -122.3321];
 
 	const [position, setPosition] = useState(defaultCenter);
 	const [initialPosition, setInitialPosition] = useState(null);
@@ -48,7 +40,10 @@ export default function MapPickerMap({ onSelect }) {
 
 	// Get user location ONCE
 	useEffect(() => {
-		if (!navigator.geolocation) return;
+		if (!navigator.geolocation) {
+			setInitialPosition(defaultCenter);
+			return;
+		}
 
 		navigator.geolocation.getCurrentPosition(
 			(pos) => {
@@ -59,14 +54,13 @@ export default function MapPickerMap({ onSelect }) {
 
 				setPosition(userPos);
 				setInitialPosition(userPos);
-				onSelect?.(lat, lon);
 
 				if (mapInstance) {
 					mapInstance.setView(userPos, 17, { animate: false });
 				}
 			},
 			() => {
-				// If denied, fallback to Seattle
+				setInitialPosition(defaultCenter);
 			},
 		);
 	}, [mapInstance]);
@@ -102,20 +96,30 @@ export default function MapPickerMap({ onSelect }) {
 		};
 	}, [mapInstance]);
 
-	// When user drags the pin
+	function MapClickHandler({ onTempChange, setPosition }) {
+		useMapEvents({
+			click(e) {
+				const lat = e.latlng.lat;
+				const lon = e.latlng.lng;
+				setPosition([lat, lon]);
+				onTempChange?.(lat, lon);
+			},
+		});
+		return null;
+	}
+
 	function handleDragEnd(e) {
 		const lat = e.target.getLatLng().lat;
 		const lon = e.target.getLatLng().lng;
 		setPosition([lat, lon]);
-		onSelect?.(lat, lon);
+		onTempChange?.(lat, lon);
 	}
 
-	// When user clicks the map
 	function handleMapClick(e) {
 		const lat = e.latlng.lat;
 		const lon = e.latlng.lng;
 		setPosition([lat, lon]);
-		onSelect?.(lat, lon);
+		onTempChange?.(lat, lon);
 	}
 
 	return (
@@ -126,16 +130,17 @@ export default function MapPickerMap({ onSelect }) {
 					zoom={17}
 					scrollWheelZoom={true}
 					className='map-picker-map'
-					whenCreated={(map) => {
-						setMapInstance(map);
-					}}>
+					whenCreated={(map) => setMapInstance(map)}>
 					<ResizeOnMount initialPosition={initialPosition} />
 
 					<TileLayer
 						attribution='&copy; OpenStreetMap contributors'
 						url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 					/>
-
+					<MapClickHandler
+						onTempChange={onTempChange}
+						setPosition={setPosition}
+					/>
 					<Marker
 						position={position}
 						icon={beeIcon}
@@ -144,9 +149,6 @@ export default function MapPickerMap({ onSelect }) {
 							dragend: handleDragEnd,
 						}}
 					/>
-
-					{/* ⭐ Floating button goes HERE */}
-					<div className='center-button'>📍</div>
 				</MapContainer>
 			)}
 		</div>

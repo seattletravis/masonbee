@@ -5,11 +5,8 @@ import { useAuthContext } from '../auth/AuthProvider';
 import SingleGardenMap from '../components/SingleGardenMap';
 import useUserLocation from '../hooks/useUserLocation';
 import GardenMetadata from '../components/GardenMetadata';
-import BeehouseEntryForm from '../components/BeehouseEntryForm';
-import BeeNotesEntryForm from '../components/BeeNotesEntryForm';
 import './ViewOneGardenPage.css';
 import './PageWrapperGlobal.css';
-import BeehouseNotesList from '../components/BeehouseNotesList';
 
 function normalizeCollection(payload) {
 	if (Array.isArray(payload)) return payload;
@@ -46,36 +43,6 @@ function formatLocation(garden) {
 	return formatCoordinates(garden?.latitude, garden?.longitude);
 }
 
-function formatBeehouseDisplayName(b, garden) {
-	if (!b || !garden) return 'Beehouse';
-	return `${garden.name} – ${b.beehouse_id}`;
-}
-
-function formatBeehouseType(b) {
-	return b?.type || b?.beehouse_type || b?.house_type || 'Not listed';
-}
-
-// function formatBeehouseStatus(b) {
-// 	return b?.status || b?.state || 'Not listed';
-// }
-
-function formatBeehouseBiologicalStatus(b) {
-	switch (b.beehouse_status) {
-		case 'active':
-			return 'Active bees present';
-		case 'cocoons':
-			return 'Will be loaded with cocoons';
-		default:
-			return 'Inactive';
-	}
-}
-
-function formatInspectionDate(b) {
-	return formatTimestamp(
-		b?.last_inspection_date || b?.last_inspection || b?.inspected_at,
-	);
-}
-
 function getJournalDate(entry) {
 	return entry?.date || entry?.created_at || entry?.updated_at || '';
 }
@@ -87,35 +54,17 @@ function truncateNotes(notes) {
 }
 
 export default function ViewOneGardenPage() {
-	const [editingNote, setEditingNote] = useState(null);
-	const handleEditNote = (note) => {
-		lastScrollYRef.current = window.scrollY; // ⭐ capture scroll position
-		setEditingNote(note);
-		setShowBeeNotesForm(true);
-	};
-
-	const [openNotesFor, setOpenNotesFor] = useState(null);
-
-	const toggleNotes = (id) => {
-		setOpenNotesFor(openNotesFor === id ? null : id);
-	};
-
-	const lastScrollYRef = useRef(0);
-
 	const { id } = useParams();
 	const navigate = useNavigate();
-	const formRef = useRef(null);
 
-	// ⭐ AuthProvider global state
 	const { defaultGarden, setDefaultGarden, pinned, setPinned, gardenLoading } =
 		useAuthContext();
 
-	// ⭐ Local UI state
 	const [isLoading, setIsLoading] = useState(true);
 	const [loadError, setLoadError] = useState('');
 	const [garden, setGarden] = useState(null);
-	const [beehouses, setBeehouses] = useState([]);
 	const [journalEntries, setJournalEntries] = useState([]);
+
 	const isDefault = defaultGarden?.id === Number(id);
 	const isPinned = Boolean(pinned[String(id)]);
 
@@ -124,38 +73,22 @@ export default function ViewOneGardenPage() {
 	const [actionError, setActionError] = useState('');
 
 	const { location: userLocation } = useUserLocation(true);
-	const [showBeehouseForm, setShowBeehouseForm] = useState(false);
-	const [showBeeNotesForm, setShowBeeNotesForm] = useState(false);
-	const [showBeehouseList, setShowBeehouseList] = useState(false);
-	const [editingBeehouse, setEditingBeehouse] = useState(null);
-	const formIsOpen = showBeehouseForm || showBeeNotesForm;
-
-	useEffect(() => {
-		if ((showBeehouseForm || showBeeNotesForm) && formRef.current) {
-			const y =
-				formRef.current.getBoundingClientRect().top + window.scrollY - 20;
-
-			window.scrollTo({ top: y, behavior: 'smooth' });
-		}
-	}, [showBeehouseForm, showBeeNotesForm]);
 
 	// ------------------------------------------------------------
-	// ⭐ Load all data for this garden
+	// Load garden + journal entries
 	// ------------------------------------------------------------
 	const loadGardenPage = useCallback(async () => {
 		setIsLoading(true);
 		setLoadError('');
 
 		try {
-			const [gardenData, journalData, beehouseData] = await Promise.all([
+			const [gardenData, journalData] = await Promise.all([
 				api.get(`/api/gardens/${id}/`),
 				api.get(`/api/journal/?garden=${id}`),
-				api.get(`/api/beehouses/?garden=${id}`),
 			]);
 
 			setGarden(gardenData || null);
 			setJournalEntries(normalizeCollection(journalData));
-			setBeehouses(normalizeCollection(beehouseData));
 		} catch (error) {
 			setLoadError(
 				getErrorMessage(error, 'Unable to load this garden right now.'),
@@ -163,23 +96,15 @@ export default function ViewOneGardenPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	}, [id, defaultGarden, pinned]);
+	}, [id]);
 
 	useEffect(() => {
 		if (!gardenLoading) loadGardenPage();
 	}, [id, gardenLoading]);
 
 	// ------------------------------------------------------------
-	// ⭐ Sorted lists
+	// Sorted journal entries
 	// ------------------------------------------------------------
-	const sortedBeehouses = useMemo(
-		() =>
-			[...beehouses].sort((a, b) =>
-				String(a?.name || '').localeCompare(String(b?.name || '')),
-			),
-		[beehouses],
-	);
-
 	const sortedJournalEntries = useMemo(
 		() =>
 			[...journalEntries].sort((a, b) => {
@@ -191,51 +116,14 @@ export default function ViewOneGardenPage() {
 	);
 
 	// ------------------------------------------------------------
-	// ⭐ Navigation handlers
+	// Navigation handlers
 	// ------------------------------------------------------------
 	const handleLogJournal = useCallback(() => {
 		navigate(`/journal?gardenId=${id}&returnTo=/gardens/${id}`);
 	}, [id, navigate]);
 
-	const handleAddBeeNotes = useCallback(() => {
-		navigate(`/beehouses/new?gardenId=${id}`);
-	}, [id, navigate]);
-
-	const handleEditEntry = useCallback(
-		(entryId) => {
-			navigate(`/journal?gardenId=${id}&editEntryId=${entryId}`);
-		},
-		[id, navigate],
-	);
-
-	const handleAddBeehouse = () => {
-		lastScrollYRef.current = window.scrollY; // ⭐ remember where user was
-		setEditingBeehouse(null);
-		setShowBeehouseForm(true);
-
-		setTimeout(() => {
-			formRef.current?.scrollIntoView({
-				behavior: 'smooth',
-				block: 'start',
-			});
-		}, 50);
-	};
-
-	const handleEditBeehouse = useCallback((beehouse) => {
-		lastScrollYRef.current = window.scrollY; // ⭐ remember where user was
-		setEditingBeehouse(beehouse); // load existing data
-		setShowBeehouseForm(true); // open the form
-		// ⭐ Scroll to the form anchor
-		setTimeout(() => {
-			formRef.current?.scrollIntoView({
-				behavior: 'smooth',
-				block: 'start',
-			});
-		}, 50);
-	}, []);
-
 	// ------------------------------------------------------------
-	// ⭐ Pin / Unpin
+	// Pin / Unpin
 	// ------------------------------------------------------------
 	const handleTogglePin = useCallback(async () => {
 		setIsSavingPin(true);
@@ -264,7 +152,7 @@ export default function ViewOneGardenPage() {
 	}, [id, isPinned, pinned, setPinned]);
 
 	// ------------------------------------------------------------
-	// ⭐ Set Default Garden (Option B)
+	// Set Default Garden
 	// ------------------------------------------------------------
 	async function handleSetDefault() {
 		setIsSavingDefault(true);
@@ -289,7 +177,7 @@ export default function ViewOneGardenPage() {
 	}
 
 	// ------------------------------------------------------------
-	// ⭐ Render states
+	// Render states
 	// ------------------------------------------------------------
 	if (gardenLoading || isLoading) {
 		return (
@@ -321,7 +209,7 @@ export default function ViewOneGardenPage() {
 	}
 
 	// ------------------------------------------------------------
-	// ⭐ Main Render
+	// MAIN RENDER — CLEAN VERSION (NO BEEHOUSES)
 	// ------------------------------------------------------------
 	return (
 		<div className='page-wrapper view-one-garden-page'>
@@ -338,7 +226,6 @@ export default function ViewOneGardenPage() {
 						{formatTimestamp(garden.updated_at)}
 					</p>
 
-					{/* BUTTONS STAY ON THE LEFT */}
 					<div className='view-one-garden-page__actions'>
 						<button
 							className='button button-primary'
@@ -388,179 +275,10 @@ export default function ViewOneGardenPage() {
 			</header>
 
 			{actionError && <p className='journal-feedback error'>{actionError}</p>}
+
 			<section className='section view-one-garden-page__map'>
 				<h2 className='section-title'>Map</h2>
 				<SingleGardenMap garden={garden} userLocation={userLocation} />
-			</section>
-			<section className='section view-one-garden-page__beehouses'>
-				{/* Header */}
-				<div className='section-header'>
-					<div className='section-header-left'>
-						<h2 className='section-title'>Beehouses</h2>
-
-						<button
-							className='collapse-toggle'
-							onClick={() => setShowBeehouseList((prev) => !prev)}>
-							{showBeehouseList
-								? 'Hide Beehouses List'
-								: 'Expand My Beehouses List'}
-						</button>
-					</div>
-
-					<div className='section-header-actions'>
-						{/* Add Beehouse button — hidden when ANY form is open */}
-						{!showBeehouseForm && !showBeeNotesForm && (
-							<button
-								className='button button-small'
-								onClick={handleAddBeehouse}>
-								Add Beehouse
-							</button>
-						)}
-
-						{/* Add Bee Note button — hidden when ANY form is open */}
-						{!showBeehouseForm && !showBeeNotesForm && (
-							<button
-								className='button button-small'
-								onClick={() => {
-									lastScrollYRef.current = window.scrollY; // ⭐ capture scroll position
-									setEditingNote(null); // ensure fresh note
-									setShowBeeNotesForm(true); // open the form
-								}}>
-								Add Bee Note
-							</button>
-						)}
-					</div>
-				</div>
-
-				{/* Description (moved OUT of header for proper layout) */}
-				<p className='section-description'>
-					All beehouse locations entered here are private and only you can see
-					them. The data is used to predict mason bee scores for the "Mason Bee
-					Finder" page.
-				</p>
-
-				{/* Bee Notes Entry Form */}
-				<div ref={formRef}>
-					{showBeeNotesForm && (
-						<BeeNotesEntryForm
-							gardenId={id}
-							beehouses={beehouses}
-							editingNote={editingNote}
-							onCreated={async () => {
-								await loadGardenPage();
-								setShowBeeNotesForm(false);
-								setEditingNote(null);
-							}}
-							onClose={() => {
-								setShowBeeNotesForm(false);
-								setEditingNote(null);
-
-								setTimeout(() => {
-									window.scrollTo({
-										top: lastScrollYRef.current || 0,
-										behavior: 'smooth',
-									});
-								}, 50);
-							}}
-						/>
-					)}
-
-					{/* Beehouse Entry Form */}
-					{showBeehouseForm && (
-						<BeehouseEntryForm
-							onClose={() => {
-								setShowBeehouseForm(false);
-								setEditingBeehouse(null);
-
-								// ⭐ Scroll back to the anchor
-								setTimeout(() => {
-									window.scrollTo({
-										top: lastScrollYRef.current || 0,
-										behavior: 'smooth',
-									});
-								}, 50);
-							}}
-							gardenId={id}
-							editingBeehouse={editingBeehouse}
-							onCreated={async () => {
-								await loadGardenPage();
-								setShowBeehouseForm(false);
-								setEditingBeehouse(null);
-
-								// ⭐ Scroll back to the anchor
-								setTimeout(() => {
-									window.scrollTo({
-										top: lastScrollYRef.current || 0,
-										behavior: 'smooth',
-									});
-								}, 50);
-							}}
-						/>
-					)}
-				</div>
-
-				{/* Collapsible Beehouse List - BEEHOUSE CARD HERE */}
-				{showBeehouseList &&
-					(sortedBeehouses.length === 0 ? (
-						<div className='journal-state-card'>
-							<p>No beehouses have been added to this garden yet.</p>
-						</div>
-					) : (
-						<div className='journal-grid'>
-							{sortedBeehouses.map((b) => (
-								<article key={b.id} className='journal-card'>
-									<div className='journal-card-top'>
-										<div>
-											<h3 className='journal-card-title'>{b.name}</h3>
-											{b.garden_description && (
-												<p className='journal-card-subtitle'>
-													{b.garden_description}
-												</p>
-											)}
-										</div>
-									</div>
-
-									<p>
-										<strong>Type:</strong> {formatBeehouseType(b)}
-									</p>
-									<p>
-										<strong>Bee Status:</strong>{' '}
-										{formatBeehouseBiologicalStatus(b)}
-									</p>
-
-									<div className='journal-card-actions'>
-										<button
-											className='journal-button journal-button-secondary'
-											disabled={formIsOpen}
-											onClick={() => !formIsOpen && handleEditBeehouse(b)}>
-											Edit
-										</button>
-
-										{/* ⭐ Show Notes button — only if this beehouse has notes */}
-										{b.event_count > 0 && (
-											<button
-												className='journal-button journal-button-secondary'
-												disabled={formIsOpen}
-												onClick={() => !formIsOpen && toggleNotes(b.id)}>
-												{openNotesFor === b.id
-													? `Hide Notes (${b.event_count})`
-													: `Show Notes (${b.event_count})`}
-											</button>
-										)}
-									</div>
-
-									{/* ⭐ Collapsible Notes Section */}
-									{openNotesFor === b.id && (
-										<BeehouseNotesList
-											beehouseId={b.id}
-											onEditNote={handleEditNote}
-											formIsOpen={formIsOpen}
-										/>
-									)}
-								</article>
-							))}
-						</div>
-					))}
 			</section>
 
 			<section className='section view-one-garden-page__metadata'>
@@ -611,7 +329,11 @@ export default function ViewOneGardenPage() {
 								<div className='journal-card-actions'>
 									<button
 										className='journal-button journal-button-secondary'
-										onClick={() => handleEditEntry(entry.id)}>
+										onClick={() =>
+											navigate(
+												`/journal?gardenId=${id}&editEntryId=${entry.id}`,
+											)
+										}>
 										Edit
 									</button>
 								</div>

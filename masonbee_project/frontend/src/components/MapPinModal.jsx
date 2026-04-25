@@ -1,13 +1,21 @@
+// src/components/MapPinModal.jsx
 import { useState } from 'react';
-// import SingleGardenMap from './SingleGardenMap';
 import MapPickerMap from './MapPickerMap';
 import './MapPinModal.css';
 
-export default function MapPinModal({ onSelect, onClose }) {
+export default function MapPinModal({ isOpen, onSelect, onClose }) {
+	if (!isOpen) return null; // ⭐ THE FIX — modal only renders when open
+
 	const [tempCoords, setTempCoords] = useState(null);
 
-	function handleMapClick(lat, lon) {
+	function handleTempChange(lat, lon) {
 		setTempCoords({ lat, lon });
+	}
+
+	function handleUseLocation() {
+		if (!tempCoords) return;
+		onSelect(tempCoords.lat, tempCoords.lon);
+		onClose();
 	}
 
 	return (
@@ -16,13 +24,12 @@ export default function MapPinModal({ onSelect, onClose }) {
 				<h2>Select Location</h2>
 
 				<p>
-					Click anywhere on the map to drop your bee or click the bee to drag it
-					to a new place. The beestinger is the pinpoint for where the beehouse
-					is located.
+					Click anywhere on the map to drop your bee or drag the bee to adjust
+					the location.
 				</p>
 
 				<div className='map-container'>
-					<MapPickerMap onSelect={handleMapClick} />
+					<MapPickerMap onTempChange={handleTempChange} />
 				</div>
 
 				<div className='modal-actions'>
@@ -33,7 +40,7 @@ export default function MapPinModal({ onSelect, onClose }) {
 					<button
 						className='button button-primary'
 						disabled={!tempCoords}
-						onClick={() => onSelect(tempCoords.lat, tempCoords.lon)}>
+						onClick={handleUseLocation}>
 						Use This Location
 					</button>
 				</div>

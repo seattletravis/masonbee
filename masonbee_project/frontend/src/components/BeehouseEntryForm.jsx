@@ -1,253 +1,206 @@
-import { useState, useEffect } from 'react';
+// src/components/BeehouseEntryForm.jsx
+import { useEffect, useState } from 'react';
+import * as api from '../api/client';
 import './BeehouseEntryForm.css';
 
 export default function BeehouseEntryForm({
-	gardenId,
+	editingBeehouse,
 	onCreated,
 	onClose,
-	editingBeehouse,
-	// NEW OPTIONAL PROPS
-	mode = 'garden', // 'garden' | 'standalone'
-	latitude: externalLat,
-	longitude: externalLon,
-	onOpenMap, // callback to open map modal
+	onOpenMapPicker,
+	isCollapsed,
+	setIsCollapsed,
 }) {
-	const API_BASE = import.meta.env.VITE_API_BASE_URL;
-	const token = localStorage.getItem('access');
-
-	// -----------------------------
-	// Form State
-	// -----------------------------
 	const [name, setName] = useState('');
-	const [beehouseType, setBeehouseType] = useState('');
-	const [tubeCapacity, setTubeCapacity] = useState('');
-	const [heightInches, setHeightInches] = useState('');
+	const [description, setDescription] = useState('');
+	const [type, setType] = useState('');
+	const [capacity, setCapacity] = useState('');
+	const [height, setHeight] = useState('');
 	const [orientation, setOrientation] = useState('');
-	const [beehouseStatus, setBeehouseStatus] = useState('inactive');
-
 	const [latitude, setLatitude] = useState('');
 	const [longitude, setLongitude] = useState('');
-
-	const [gardenDescription, setGardenDescription] = useState('');
 
 	const [waterNearby, setWaterNearby] = useState(false);
 	const [clayNearby, setClayNearby] = useState(false);
 	const [flowersNearby, setFlowersNearby] = useState(false);
 	const [woodsNearby, setWoodsNearby] = useState(false);
 
-	const [loading, setLoading] = useState(false);
+	const [isSaving, setIsSaving] = useState(false);
 	const [error, setError] = useState('');
 
-	// -----------------------------
-	// Constants
-	// -----------------------------
-	const HOUSE_TYPES = [
-		{ value: 'block', label: 'Wood Block' },
-		{ value: 'straw', label: 'Straw Bundle / Container' },
-		{ value: 'drilled', label: 'Drilled Wood' },
-		{ value: 'other', label: 'Other' },
-	];
-
-	const TUBE_CAPACITY = [
-		{ value: '<100', label: 'Less than 100 tubes' },
-		{ value: '<200', label: 'Less than 200 tubes' },
-		{ value: '<300', label: 'Less than 300 tubes' },
-		{ value: '>300', label: 'More than 300 tubes' },
-	];
-
-	const ORIENTATIONS = ['North', 'South', 'East', 'West'];
-
-	// -----------------------------
-	// Preload form when editing
-	// -----------------------------
+	// ------------------------------------------------------------
+	// Load editing data
+	// ------------------------------------------------------------
 	useEffect(() => {
 		if (editingBeehouse) {
+			setIsCollapsed(false);
+
 			setName(editingBeehouse.name || '');
-			setGardenDescription(editingBeehouse.garden_description || '');
-			setBeehouseType(editingBeehouse.beehouse_type || '');
-			setTubeCapacity(editingBeehouse.tube_capacity || '');
-			setHeightInches(editingBeehouse.height_above_ground_inches || '');
+			setDescription(editingBeehouse.garden_description || '');
+			setType(editingBeehouse.type || '');
+			setCapacity(editingBeehouse.tube_capacity || '');
+			setHeight(editingBeehouse.height_inches || '');
 			setOrientation(editingBeehouse.orientation || '');
 			setLatitude(editingBeehouse.latitude || '');
 			setLongitude(editingBeehouse.longitude || '');
+
 			setWaterNearby(editingBeehouse.water_nearby || false);
 			setClayNearby(editingBeehouse.clay_nearby || false);
 			setFlowersNearby(editingBeehouse.flowers_nearby || false);
 			setWoodsNearby(editingBeehouse.woods_nearby || false);
-			setBeehouseStatus(editingBeehouse.beehouse_status || 'inactive');
 		}
-	}, [editingBeehouse]);
+	}, [editingBeehouse, setIsCollapsed]);
 
-	// Sync external coordinates (from map modal)
-	useEffect(() => {
-		if (externalLat != null) setLatitude(externalLat);
-		if (externalLon != null) setLongitude(externalLon);
-	}, [externalLat, externalLon]);
+	// ------------------------------------------------------------
+	// Map Picker Integration
+	// ------------------------------------------------------------
+	const handleOpenMapPicker = () => {
+		onOpenMapPicker((lat, lon) => {
+			setLatitude(lat);
+			setLongitude(lon);
+		});
+	};
 
-	// -----------------------------
-	// Use current location
-	// -----------------------------
-	const useCurrentLocation = () => {
-		if (!navigator.geolocation) {
-			setError('Geolocation not supported.');
-			return;
-		}
+	// ------------------------------------------------------------
+	// Use Current Location
+	// ------------------------------------------------------------
+	const handleUseCurrentLocation = () => {
+		if (!navigator.geolocation) return;
 
 		navigator.geolocation.getCurrentPosition(
 			(pos) => {
 				setLatitude(pos.coords.latitude.toFixed(6));
 				setLongitude(pos.coords.longitude.toFixed(6));
 			},
-			() => setError('Unable to retrieve location.'),
+			() => setError('Unable to retrieve your location.'),
 		);
 	};
 
-	// -----------------------------
-	// Submit Handler
-	// -----------------------------
+	// ------------------------------------------------------------
+	// Save Beehouse
+	// ------------------------------------------------------------
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+		setIsSaving(true);
 		setError('');
-		setLoading(true);
-
-		const latNum = Number(latitude);
-		const lonNum = Number(longitude);
-
-		const finalName = name.trim() || `Beehouse ${Date.now()}`;
 
 		const payload = {
-			name: finalName,
-			garden: mode === 'garden' ? Number(gardenId) : null,
-			garden_description: gardenDescription || '',
-			beehouse_type: beehouseType,
-			tube_capacity: tubeCapacity,
-			height_above_ground_inches: Number(heightInches),
-			latitude: latNum,
-			longitude: lonNum,
-			orientation: orientation || null,
+			name,
+			garden_description: description,
+			beehouse_type: type, // FIXED
+			tube_capacity: capacity, // FIXED
+			height_above_ground_inches: height, // FIXED
+			orientation,
+			latitude: Number(latitude).toFixed(6), // FIXED
+			longitude: Number(longitude).toFixed(6), // FIXED
 			water_nearby: waterNearby,
 			clay_nearby: clayNearby,
 			flowers_nearby: flowersNearby,
 			woods_nearby: woodsNearby,
-			beehouse_status: beehouseStatus,
-			is_active: false,
 		};
 
 		try {
-			let res;
-
 			if (editingBeehouse) {
-				// EDIT MODE — PUT
-				res = await fetch(`${API_BASE}/api/beehouses/${editingBeehouse.id}/`, {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify(payload),
-				});
+				await api.patch(`/api/beehouses/${editingBeehouse.id}/`, payload);
 			} else {
-				// CREATE MODE — POST
-				res = await fetch(`${API_BASE}/api/beehouses/`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify(payload),
-				});
+				await api.post('/api/beehouses/', payload);
 			}
 
-			const data = await res.json();
-
-			if (!res.ok) {
-				setError(
-					data?.detail ||
-						data?.message ||
-						JSON.stringify(data) ||
-						'Failed to save beehouse.',
-				);
-				setLoading(false);
-				return;
-			}
-
-			onCreated?.(data);
-			setLoading(false);
+			onCreated();
+			setIsCollapsed(true);
 		} catch (err) {
-			setError('Network error.');
-			setLoading(false);
+			setError(
+				err?.response?.data?.detail ||
+					err?.response?.data?.message ||
+					err?.message ||
+					'Unable to save beehouse.',
+			);
+		} finally {
+			setIsSaving(false);
 		}
 	};
 
-	// -----------------------------
-	// Render
-	// -----------------------------
+	// ------------------------------------------------------------
+	// Collapsed state
+	// ------------------------------------------------------------
+	if (isCollapsed) {
+		return (
+			<div className='beehouse-form-collapsed'>
+				<button
+					className='button button-primary'
+					onClick={() => setIsCollapsed(false)}>
+					+ Add Beehouse
+				</button>
+			</div>
+		);
+	}
+
+	// ------------------------------------------------------------
+	// RENDER FULL FORM
+	// ------------------------------------------------------------
 	return (
-		<form className='beehouse-entry-form' onSubmit={handleSubmit}>
-			<h3>{editingBeehouse ? 'Edit Beehouse' : 'Add Beehouse'}</h3>
-
-			{error && <div className='error-text'>{error}</div>}
-
-			<div className='form-grid'>
+		<form className='beehouse-form' onSubmit={handleSubmit}>
+			<h2 className='beehouse-form-header'>
+				{editingBeehouse ? 'Edit Beehouse' : 'Add Beehouse'}
+			</h2>
+			{/* BASIC INFO */}
+			<h3 className='form-section-title'>Basic Information</h3>
+			<div className='form-section'>
 				<label>
-					New Beehouse Name (optional)
+					Name (optional)
 					<input
 						type='text'
 						value={name}
 						onChange={(e) => setName(e.target.value)}
-						placeholder='Leave blank to auto‑assign'
+						placeholder='Leave blank to auto-assign'
 					/>
 				</label>
 
-				{mode === 'garden' && (
-					<label>
-						Garden Description
-						<input
-							type='text'
-							value={gardenDescription}
-							onChange={(e) => setGardenDescription(e.target.value)}
-							placeholder='e.g., Near the shed, south fence line'
-						/>
-					</label>
-				)}
+				<label>
+					Description
+					<input
+						type='text'
+						value={description}
+						onChange={(e) => setDescription(e.target.value)}
+						placeholder='e.g., Near the shed, south fence'
+					/>
+				</label>
 
 				<label>
 					Bee House Type *
 					<select
-						required
-						value={beehouseType}
-						onChange={(e) => setBeehouseType(e.target.value)}>
+						value={type}
+						onChange={(e) => setType(e.target.value)}
+						required>
 						<option value=''>Select type</option>
-						{HOUSE_TYPES.map((t) => (
-							<option key={t.value} value={t.value}>
-								{t.label}
-							</option>
-						))}
+						<option value='block'>Wood Block</option>
+						<option value='straw'>Straw Bundle or Container</option>
+						<option value='drilled'>Drilled Wood</option>
+						<option value='other'>Other</option>
 					</select>
 				</label>
 
 				<label>
 					Tube Capacity *
 					<select
-						required
-						value={tubeCapacity}
-						onChange={(e) => setTubeCapacity(e.target.value)}>
+						value={capacity}
+						onChange={(e) => setCapacity(e.target.value)}
+						required>
 						<option value=''>Select capacity</option>
-						{TUBE_CAPACITY.map((t) => (
-							<option key={t.value} value={t.value}>
-								{t.label}
-							</option>
-						))}
+						<option value='<100'>Less than 100 tubes</option>
+						<option value='<200'>Less than 200 tubes</option>
+						<option value='<300'>Less than 300 tubes</option>
+						<option value='>300'>More than 300 tubes</option>
 					</select>
 				</label>
 
 				<label>
 					Height Above Ground (inches) *
 					<input
-						required
 						type='number'
-						value={heightInches}
-						onChange={(e) => setHeightInches(e.target.value)}
+						value={height}
+						onChange={(e) => setHeight(e.target.value)}
+						required
 					/>
 				</label>
 
@@ -257,109 +210,120 @@ export default function BeehouseEntryForm({
 						value={orientation}
 						onChange={(e) => setOrientation(e.target.value)}>
 						<option value=''>None</option>
-						{ORIENTATIONS.map((o) => (
-							<option key={o} value={o}>
-								{o}
-							</option>
-						))}
+						<option value='North'>North</option>
+						<option value='South'>South</option>
+						<option value='East'>East</option>
+						<option value='West'>West</option>
 					</select>
 				</label>
+			</div>
 
-				<div className='location-section'>
-					<div className='latlon-grid'>
-						<label>
-							Latitude *
-							<input
-								required
-								type='text'
-								value={latitude}
-								onChange={(e) => setLatitude(e.target.value)}
-							/>
-						</label>
-
-						<label>
-							Longitude *
-							<input
-								required
-								type='text'
-								value={longitude}
-								onChange={(e) => setLongitude(e.target.value)}
-							/>
-						</label>
-					</div>
-
-					<div className='location-buttons'>
-						<button
-							type='button'
-							className='location-button'
-							onClick={useCurrentLocation}>
-							Use Current Location
-						</button>
-
-						{onOpenMap && (
-							<button
-								type='button'
-								className='location-button'
-								onClick={onOpenMap}>
-								Select Location on Map
-							</button>
-						)}
-					</div>
-				</div>
-
-				<label className='env-label'>
-					Bee Environment (Check the items within 100ft)
+			{/* ENVIRONMENT */}
+			<h3 className='form-section-title'>Bee Environment</h3>
+			<div className='form-section environment-section'>
+				<label>
+					<input
+						type='checkbox'
+						checked={waterNearby}
+						onChange={(e) => setWaterNearby(e.target.checked)}
+					/>
+					Water source nearby - Check box if there's a nearby lake, creek, river
+					or pond.
 				</label>
-				<div className='checkbox-group'>
-					<label>
-						<input
-							type='checkbox'
-							checked={waterNearby}
-							onChange={(e) => setWaterNearby(e.target.checked)}
-						/>
-						Water source nearby
-					</label>
 
-					<label>
-						<input
-							type='checkbox'
-							checked={clayNearby}
-							onChange={(e) => setClayNearby(e.target.checked)}
-						/>
-						Exposed natural clay nearby
-					</label>
+				<label>
+					<input
+						type='checkbox'
+						checked={clayNearby}
+						onChange={(e) => setClayNearby(e.target.checked)}
+					/>
+					Clay nearby - Exposed clay, soil, or mud is good for mason bees.
+				</label>
 
-					<label>
-						<input
-							type='checkbox'
-							checked={flowersNearby}
-							onChange={(e) => setFlowersNearby(e.target.checked)}
-						/>
-						Early-season flowering trees/shrubs nearby
-					</label>
+				<label>
+					<input
+						type='checkbox'
+						checked={flowersNearby}
+						onChange={(e) => setFlowersNearby(e.target.checked)}
+					/>
+					Flowers nearby - Without early season flowers mason bees won't stop to
+					visit.
+				</label>
 
-					<label>
-						<input
-							type='checkbox'
-							checked={woodsNearby}
-							onChange={(e) => setWoodsNearby(e.target.checked)}
-						/>
-						Wooded area nearby
-					</label>
-				</div>
-				<div className='form-actions'>
-					<button type='submit' disabled={loading}>
-						{loading
-							? 'Saving...'
-							: editingBeehouse
-								? 'Save Changes'
-								: 'Add Beehouse'}
+				<label>
+					<input
+						type='checkbox'
+						checked={woodsNearby}
+						onChange={(e) => setWoodsNearby(e.target.checked)}
+					/>
+					Woods nearby - Woodlands, wooded lots, dense brush, thickets or
+					wilderness.
+				</label>
+			</div>
+
+			{/* LOCATION */}
+			<h3 className='form-section-title'>Location</h3>
+			<div className='form-section'>
+				<label>
+					Latitude *
+					<input
+						type='number'
+						step='0.000001'
+						value={latitude}
+						onChange={(e) => setLatitude(e.target.value)}
+						required
+					/>
+				</label>
+
+				<label>
+					Longitude *
+					<input
+						type='number'
+						step='0.000001'
+						value={longitude}
+						onChange={(e) => setLongitude(e.target.value)}
+						required
+					/>
+				</label>
+
+				<div className='location-buttons'>
+					<button
+						type='button'
+						className='button button-secondary'
+						onClick={handleUseCurrentLocation}>
+						Use Current Location
 					</button>
 
-					<button type='button' className='cancel-button' onClick={onClose}>
-						Cancel
+					<button
+						type='button'
+						className='button button-primary'
+						onClick={handleOpenMapPicker}>
+						Select on Map
 					</button>
 				</div>
+			</div>
+
+			{error && <p className='form-error'>{error}</p>}
+
+			<div className='form-actions'>
+				<button className='button button-primary' disabled={isSaving}>
+					{isSaving
+						? 'Saving...'
+						: editingBeehouse
+							? 'Save Changes'
+							: 'Create Beehouse'}
+				</button>
+
+				<button
+					type='button'
+					className='button button-secondary'
+					onClick={() => {
+						setIsCollapsed(true);
+						onClose();
+					}}
+					disabled={isSaving}>
+					Cancel
+				</button>
 			</div>
 		</form>
 	);
