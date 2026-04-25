@@ -435,8 +435,8 @@ export default function ViewOneGardenPage() {
 				{/* Description (moved OUT of header for proper layout) */}
 				<p className='section-description'>
 					All beehouse locations entered here are private and only you can see
-					them. The data is used to determine mason bee population densities for
-					the "Probability of Finding Mason Bees" map.
+					them. The data is used to predict mason bee scores for the "Mason Bee
+					Finder" page.
 				</p>
 
 				{/* Bee Notes Entry Form */}

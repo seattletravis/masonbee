@@ -53,31 +53,24 @@ function cacheKey(lat, lon) {
 }
 
 function MasonBeeFinder() {
+	const [freshData, setFreshData] = useState(null);
 	const [hasRunPrediction, setHasRunPrediction] = useState(false);
-
 	const [publicGardens, setPublicGardens] = useState([]);
-
 	const [userLocation, setUserLocation] = useState(null); // { lat, lon }
 	const [locationError, setLocationError] = useState(null);
-
 	const [showMapModal, setShowMapModal] = useState(false);
 	const [selectedLocation, setSelectedLocation] = useState(null); // { lat, lon }
 	const [isCheckingLocation, setIsCheckingLocation] = useState(false);
-
 	const [hasPollinators, setHasPollinators] = useState(false);
 	const [hasWater, setHasWater] = useState(false);
 	const [hasClay, setHasClay] = useState(false);
 	const [hasWoods, setHasWoods] = useState(false);
-
 	const [waterAutoDetected, setWaterAutoDetected] = useState(false);
 	const [clayAutoDetected, setClayAutoDetected] = useState(false);
 	const [woodsAutoDetected, setWoodsAutoDetected] = useState(false);
-
 	const [nearbyBeehouses, setNearbyBeehouses] = useState(0);
 	const [nearbyCommunityGardens, setNearbyCommunityGardens] = useState(0);
-
 	const [prediction, setPrediction] = useState(null);
-
 	const [addressInput, setAddressInput] = useState('');
 	const [addressError, setAddressError] = useState(null);
 
@@ -107,7 +100,10 @@ function MasonBeeFinder() {
 	// Geolocation on mount
 	useEffect(() => {
 		if (!navigator.geolocation) {
-			setLocationError('Geolocation is not supported by this browser.');
+			setLocationError(
+				'Geolocation is not available. Please select a location from the map to get started.',
+			);
+			setShowMapModal(true);
 			return;
 		}
 
@@ -115,11 +111,22 @@ function MasonBeeFinder() {
 			(pos) => {
 				const { latitude, longitude } = pos.coords;
 				const loc = { lat: latitude, lon: longitude };
+
+				// Set initial location
 				setUserLocation(loc);
 				setSelectedLocation(loc);
+
+				// Reset prediction for new location
+				setPrediction(null);
+				setHasRunPrediction(false);
+
+				// Immediately run map detection so the page works on first load
+				handleCheckLocation(loc);
 			},
 			() => {
-				setLocationError('Unable to retrieve your location.');
+				setLocationError(
+					'Unable to retrieve your location. Please select a location from the map to get started.',
+				);
 				setShowMapModal(true);
 			},
 		);
@@ -270,48 +277,49 @@ out center;
 			try {
 				const { lat, lon } = loc;
 
-				const [overpassResult, beehouseCount] = await Promise.all([
+				const [overpassResult, beehouseList] = await Promise.all([
 					runOverpassDetection(lat, lon),
 					fetchPublicBeehouses(lat, lon),
 				]);
 
+				const beehouseCount = Array.isArray(beehouseList)
+					? beehouseList.length
+					: 0;
 				const gardenCount = computeNearbyCommunityGardens(lat, lon);
+
+				// Store fresh data for Run Checker
+				const clayFromOverpass =
+					overpassResult.clayDetected || overpassResult.waterDetected;
+
+				// ⭐ Store fresh data for Run Checker
+				setFreshData({
+					overpassResult,
+					beehouseCount,
+					gardenCount,
+					clayFromOverpass,
+				});
 
 				// Update UI state
 				setNearbyBeehouses(beehouseCount);
 				setNearbyCommunityGardens(gardenCount);
 
-				// Auto-check pollinators in UI
+				// Auto-check pollinators
 				if (gardenCount > 0) {
 					setHasPollinators(true);
 				}
 
-				// Fresh local pollinator value for prediction
-				const pollinatorsDetected = gardenCount > 0 ? true : hasPollinators;
-
+				// Auto-detected hints
 				setWaterAutoDetected(overpassResult.waterDetected);
-				setHasWater(overpassResult.waterDetected);
-
-				const clayFromOverpass =
-					overpassResult.clayDetected || overpassResult.waterDetected;
 				setClayAutoDetected(clayFromOverpass);
-				setHasClay(clayFromOverpass);
-
 				setWoodsAutoDetected(overpassResult.woodsDetected);
+
+				// ⭐ Auto-apply map-detected values to checkboxes
+				setHasWater(overpassResult.waterDetected);
+				setHasClay(clayFromOverpass);
 				setHasWoods(overpassResult.woodsDetected);
 
-				// ⭐ Prediction uses ONLY fresh local values
-				const result = calculateMasonBeeLikelihood({
-					hasPollinators: pollinatorsDetected,
-					hasWater: overpassResult.waterDetected,
-					hasClay: clayFromOverpass,
-					hasWoods: overpassResult.woodsDetected,
-					nearbyBeehouses: beehouseCount,
-					nearbyCommunityGardens: gardenCount,
-				});
-
-				setPrediction(result);
-				setHasRunPrediction(true);
+				// ❌ REMOVE prediction from here
+				// No calculateMasonBeeLikelihood here
 			} catch (err) {
 				console.error(err);
 				setAddressError('There was a problem checking this location.');
@@ -323,22 +331,21 @@ out center;
 			runOverpassDetection,
 			fetchPublicBeehouses,
 			computeNearbyCommunityGardens,
-			hasPollinators,
+			setFreshData,
 		],
 	);
 
 	// Run prediction ONLY when user clicks the checker
-	function runChecker(loc, fresh) {
-		if (!loc || !fresh) return;
+	function runChecker() {
+		if (!selectedLocation || !freshData) return;
 
-		const { overpassResult, beehouseCount, gardenCount, clayFromOverpass } =
-			fresh;
+		const { beehouseCount, gardenCount } = freshData;
 
 		const result = calculateMasonBeeLikelihood({
 			hasPollinators,
-			hasWater: overpassResult.waterDetected,
-			hasClay: clayFromOverpass,
-			hasWoods: overpassResult.woodsDetected,
+			hasWater, // user-selected
+			hasClay, // user-selected
+			hasWoods, // user-selected
 			nearbyBeehouses: beehouseCount,
 			nearbyCommunityGardens: gardenCount,
 		});
@@ -503,8 +510,23 @@ out center;
 			if (!markerRef.current) return;
 
 			const pos = markerRef.current.getLatLng();
-			setSelectedLocation({ lat: pos.lat, lon: pos.lng });
+			const loc = { lat: pos.lat, lon: pos.lng };
+
+			// Reset manual selections for new location
+			setHasWater(false);
+			setHasClay(false);
+			setHasWoods(false);
+
+			// ⭐ Reset prediction card back to initial state
+			setPrediction(null);
+			setHasRunPrediction(false);
+
+			// Update location
+			setSelectedLocation(loc);
 			setShowMapModal(false);
+
+			// Run map detection (updates checkboxes + freshData)
+			handleCheckLocation(loc);
 		};
 
 		return (
@@ -577,7 +599,10 @@ out center;
 			</div>
 		);
 	});
-
+	function resetPrediction() {
+		setHasRunPrediction(false);
+		setPrediction(null);
+	}
 	return (
 		<div className='mason-bee-finder'>
 			<h1>Mason Bee Finder</h1>
@@ -612,8 +637,8 @@ out center;
 					</p>
 					<p>
 						<strong>
-							Please check the box for the features within 100 feet of your
-							location:
+							Please select the resources within 100 feet of your location then
+							hit Run Checker.
 						</strong>
 					</p>
 				</div>
@@ -626,7 +651,10 @@ out center;
 								type='checkbox'
 								checked={hasWater}
 								disabled={waterAutoDetected}
-								onChange={(e) => setHasWater(e.target.checked)}
+								onChange={(e) => {
+									setHasWater(e.target.checked);
+									resetPrediction();
+								}}
 							/>
 							Water / lake, pond, river or creek
 							{waterAutoDetected && (
@@ -647,7 +675,10 @@ out center;
 								type='checkbox'
 								checked={hasClay}
 								disabled={clayAutoDetected}
-								onChange={(e) => setHasClay(e.target.checked)}
+								onChange={(e) => {
+									setHasClay(e.target.checked);
+									resetPrediction();
+								}}
 							/>
 							Clay / exposed soil
 							{clayAutoDetected && (
@@ -669,7 +700,10 @@ out center;
 								type='checkbox'
 								checked={hasWoods}
 								disabled={woodsAutoDetected}
-								onChange={(e) => setHasWoods(e.target.checked)}
+								onChange={(e) => {
+									setHasWoods(e.target.checked);
+									resetPrediction();
+								}}
 							/>
 							Nearby woods / wooded land, greenways, lots
 							{woodsAutoDetected && (
@@ -690,7 +724,10 @@ out center;
 							<input
 								type='checkbox'
 								checked={hasPollinators}
-								onChange={(e) => setHasPollinators(e.target.checked)}
+								onChange={(e) => {
+									setHasPollinators(e.target.checked);
+									resetPrediction();
+								}}
 							/>
 							Nearby early season flowers / pollinator habitat
 						</label>
@@ -704,10 +741,8 @@ out center;
 			<div className='actions'>
 				<button
 					className='button'
-					onClick={async () => {
-						const loc = { ...selectedLocation };
-						const fresh = await handleCheckLocation(loc);
-						runChecker(loc, fresh);
+					onClick={() => {
+						runChecker();
 					}}
 					disabled={!selectedLocation || isCheckingLocation}>
 					{isCheckingLocation
@@ -749,8 +784,8 @@ out center;
 			{!hasRunPrediction ? (
 				<div className='start-message'>
 					<p>
-						Please check the mason bee resources at your location to get
-						started.
+						Please click the mason bee resources your location has, then click
+						the Run Checker at this Location button.
 					</p>
 				</div>
 			) : (
@@ -804,8 +839,8 @@ out center;
 							boreholes make perfect nests.
 						</li>
 						<li>
-							<strong>Early-season flowers</strong> — the deal-breaker. No
-							blooms, no bees.
+							<strong>Early-season flowers</strong> — Having blooms determines
+							if a passing bee will stop to visit.
 						</li>
 						<li>
 							<strong>Nearby beehouses</strong> — a sign that other mason bees

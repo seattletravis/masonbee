@@ -219,7 +219,7 @@ export default function MasonBeeForecasting() {
 						<p className='forecast-status-note'>
 							{forecast.status.event === 'Emergence' ||
 							forecast.status.event === 'Active Season'
-								? 'Status: Actively Polinating, enjoy occasional photos.'
+								? 'Status: Actively Polinating, bees enjoy occasional photos. Do Not Disturb.'
 								: 'Status: Inactive/Dormant — Safe to handle, inspect, and clean cocoons.'}
 						</p>
 					</section>

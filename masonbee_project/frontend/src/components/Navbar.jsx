@@ -13,6 +13,7 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 	}, [location.pathname]);
 
 	const toggleMenu = () => setIsOpen((prev) => !prev);
+	const showMyGardens = defaultGarden || hasPinnedGardens;
 
 	const handleLogout = () => {
 		setIsOpen(false);
@@ -29,15 +30,15 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 				</div>
 
 				<div className='nav-right desktop-links'>
-					<Link to='/my-gardens' className='nav-link'>
+					{/* <Link to='/my-gardens' className='nav-link'>
 						My Gardens
-					</Link>
+					</Link> */}
 
 					{authenticated && (
 						<>
-							<Link to='/garden-finder' className='nav-link'>
+							{/* <Link to='/garden-finder' className='nav-link'>
 								Garden Finder
-							</Link>
+							</Link> */}
 
 							<Link to='/dashboard' className='nav-link'>
 								Dashboard

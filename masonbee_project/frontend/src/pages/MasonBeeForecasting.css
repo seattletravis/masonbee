@@ -67,6 +67,10 @@
 	font-weight: 500;
 }
 
+.forecast-status-note {
+	font-weight: 600;
+}
+
 /* Forecast Sections */
 .forecast-section {
 	margin-bottom: 1.75rem;

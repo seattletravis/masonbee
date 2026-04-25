@@ -55,12 +55,12 @@ function MyProfilePage() {
 
 					<p className='profile-bio'>{profile.bio || 'No bio added yet.'}</p>
 
-					<div className='profile-details'>
+					{/* <div className='profile-details'>
 						<p>
 							<strong>Friend Request Notifications:</strong>{' '}
 							{profile.friend_request_notifications ? 'On' : 'Off'}
 						</p>
-					</div>
+					</div> */}
 
 					<button
 						className='profile-edit-button'

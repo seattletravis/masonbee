@@ -31,18 +31,9 @@ function Dashboard() {
 					</p>
 				</Link>
 
-				{/* Recent Activity */}
-				<div className='dashboard-card dashboard-card-disabled'>
-					<h2 className='card-title'>Recent Activity</h2>
-					<p className='card-text'>
-						Coming Soon - Your latest garden updates, journal entries, and
-						beehouse changes.
-					</p>
-				</div>
-
 				{/* Bee Awakening Forecast (Weather replacement) */}
 				<Link to='/forecasting' className='dashboard-card dashboard-card-link'>
-					<h2 className='card-title'>Mason Bee Forecasting</h2>
+					<h2 className='card-title'>Mason Bee Forecast</h2>
 					<p className='card-text'>
 						See when mason bees emerge, become inactive, and when to handle
 						cocoons.
@@ -59,22 +50,14 @@ function Dashboard() {
 				</Link>
 
 				{/* Bee Resources */}
-				<Link
-					to='/bee-resources'
-					className='dashboard-card dashboard-card-link dashboard-card-disabled'>
+				<Link to='/resources' className='dashboard-card dashboard-card-link'>
 					<h2 className='card-title'>Bee Resources</h2>
 					<p className='card-text'>
-						Coming Soon - Guides, tips, and trusted sources for mason bee care.
+						Guides, plant lists, and how‑to articles for supporting mason bees.
 					</p>
 				</Link>
 
 				{/* Seasonal Insights (Coming Soon) */}
-				<div className='dashboard-card dashboard-card-disabled'>
-					<h2 className='card-title'>Seasonal Insights</h2>
-					<p className='card-text'>
-						Coming Soon — seasonal trends and guidance.
-					</p>
-				</div>
 			</div>
 		</div>
 	);

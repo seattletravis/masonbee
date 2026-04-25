@@ -77,12 +77,7 @@ function GardenFinderCard({
 				</div>
 
 				<div className='garden-card__badges'>
-					{/* <span className='button button-secondary'>
-						{formatAccessLabel(garden.is_public)}
-					</span> */}
-					{isDefault && (
-						<span className='button button-primary'>Default Garden</span>
-					)}
+					{isDefault && <span className='default-badge'>Default Garden</span>}
 				</div>
 			</div>
 

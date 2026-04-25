@@ -317,6 +317,7 @@
 	font-size: 0.95rem;
 	color: #333;
 	margin-top: 0.5rem;
+	margin-bottom: 1rem;
 }
 
 /* Color states */
@@ -336,9 +337,9 @@
 }
 
 .likelihood-card.excellent {
-	background: #2e7d32; /* dark green */
-	border-color: #1b5e20;
-	color: white;
+	background: #44b049; /* dark green */
+	border-color: darkgreen;
+	color: black;
 }
 .start-message {
 	margin: 1.5rem auto;
