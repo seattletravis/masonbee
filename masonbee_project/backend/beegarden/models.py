@@ -238,6 +238,7 @@ class BeeHouse(models.Model):
         null=True,
         blank=True
     )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     # NEW: Human-friendly name
     name = models.CharField(

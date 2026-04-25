@@ -361,3 +361,91 @@
 	color: #2e3d2f;
 	line-height: 1.4;
 }
+/* ---------------------------------------------
+   Expandable Mason Bee Article (Learn More style)
+--------------------------------------------- */
+
+.learn-more {
+	margin-top: 2.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid #e5e7eb;
+}
+
+/* Collapsible summary */
+.learn-more summary {
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	color: #0f172a;
+	padding: 0.75rem 0;
+	list-style: none;
+}
+
+.learn-more summary::-webkit-details-marker {
+	display: none;
+}
+
+.learn-more summary::after {
+	content: '▾';
+	float: right;
+	transition: transform 0.2s ease;
+	color: #64748b;
+}
+
+.learn-more[open] summary::after {
+	transform: rotate(180deg);
+}
+
+/* Article content */
+.learn-more-content {
+	margin-top: 1rem;
+	padding: 1rem 0.5rem;
+	background: #faf9f7; /* soft off-white, Kindle-like */
+	border-radius: 8px;
+	border: 1px solid #e2e8f0;
+}
+
+/* Typography */
+.learn-more-content p,
+.learn-more-content li {
+	font-size: 0.9rem;
+	line-height: 1.65;
+	color: #374151;
+	margin-bottom: 1.1rem;
+	text-align: left;
+	font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.learn-more-content p::first-line {
+	text-indent: 0.75rem;
+}
+
+.learn-more-content h3 {
+	font-size: 1.05rem;
+	margin: 1.2rem 0 0.6rem;
+	color: #1e293b;
+	font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* Lists */
+.learn-more-content ul {
+	padding-left: 1.2rem;
+	margin-bottom: 1.2rem;
+}
+
+.learn-more-content li {
+	margin-bottom: 0.6rem;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+	.learn-more-content {
+		padding: 0.85rem 0.75rem;
+	}
+
+	.learn-more-content p,
+	.learn-more-content li {
+		font-size: 0.92rem;
+		line-height: 1.7;
+	}
+}

@@ -3,6 +3,7 @@ app_name = "api"
 from rest_framework.routers import DefaultRouter
 from .views import GardenViewSet, BeeHouseViewSet, BeeHouseEventViewSet, JournalEntryViewSet, default_garden, watched_gardens
 from django.urls import path
+from .beehouse_views import PublicBeehouseListView
 from .friend_views import (
     UserSearchView,
     SendFriendRequestView,
@@ -37,7 +38,8 @@ urlpatterns = [
     # Gardens
     path("gardens/default/", default_garden),
     path("gardens/watched/", watched_gardens, name="watched-gardens"),
-
+    
+    path("beehouses/public/", PublicBeehouseListView.as_view(), name="public-beehouses"),
 ]
 
 urlpatterns += router.urls

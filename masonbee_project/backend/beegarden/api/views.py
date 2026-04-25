@@ -238,3 +238,5 @@ def watched_gardens(request):
 
     return Response(UserPinnedGardenSerializer(pinned, many=True).data)
 
+
+

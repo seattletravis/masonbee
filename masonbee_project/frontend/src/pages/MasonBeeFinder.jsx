@@ -8,6 +8,7 @@ import beeMarker from '../assets/leaflet/bee-marker.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import gardenIconImg from '../assets/leaflet/garden-marker.png';
 import { get } from '../api/client';
+import { fetchPublicBeehouses } from '../api/beehouses';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -260,67 +261,79 @@ out center;
 	);
 
 	// Run full location check (Overpass + beehouses + gardens)
-	const handleCheckLocation = useCallback(async () => {
-		if (!selectedLocation) return;
-		setIsCheckingLocation(true);
-		setAddressError(null);
+	const handleCheckLocation = useCallback(
+		async (loc) => {
+			if (!loc) return;
+			setIsCheckingLocation(true);
+			setAddressError(null);
 
-		try {
-			const { lat, lon } = selectedLocation;
+			try {
+				const { lat, lon } = loc;
 
-			const [overpassResult, beehouseCount] = await Promise.all([
-				runOverpassDetection(lat, lon),
-				fetchNearbyBeehouses(lat, lon),
-			]);
+				const [overpassResult, beehouseCount] = await Promise.all([
+					runOverpassDetection(lat, lon),
+					fetchPublicBeehouses(lat, lon),
+				]);
 
-			const gardenCount = computeNearbyCommunityGardens(lat, lon);
+				const gardenCount = computeNearbyCommunityGardens(lat, lon);
 
-			// Update all state
-			setNearbyBeehouses(beehouseCount);
-			setNearbyCommunityGardens(gardenCount);
+				// Update UI state
+				setNearbyBeehouses(beehouseCount);
+				setNearbyCommunityGardens(gardenCount);
 
-			setWaterAutoDetected(overpassResult.waterDetected);
-			setHasWater(overpassResult.waterDetected);
+				// Auto-check pollinators in UI
+				if (gardenCount > 0) {
+					setHasPollinators(true);
+				}
 
-			const clayFromOverpass =
-				overpassResult.clayDetected || overpassResult.waterDetected;
-			setClayAutoDetected(clayFromOverpass);
-			setHasClay(clayFromOverpass);
+				// Fresh local pollinator value for prediction
+				const pollinatorsDetected = gardenCount > 0 ? true : hasPollinators;
 
-			setWoodsAutoDetected(overpassResult.woodsDetected);
-			setHasWoods(overpassResult.woodsDetected);
+				setWaterAutoDetected(overpassResult.waterDetected);
+				setHasWater(overpassResult.waterDetected);
 
-			// ⭐ RUN PREDICTION HERE — AFTER all state updates
-			const result = calculateMasonBeeLikelihood({
-				hasPollinators,
-				hasWater: overpassResult.waterDetected,
-				hasClay: clayFromOverpass,
-				hasWoods: overpassResult.woodsDetected,
-				nearbyBeehouses: beehouseCount,
-				nearbyCommunityGardens: gardenCount,
-			});
+				const clayFromOverpass =
+					overpassResult.clayDetected || overpassResult.waterDetected;
+				setClayAutoDetected(clayFromOverpass);
+				setHasClay(clayFromOverpass);
 
-			setPrediction(result);
-			setHasRunPrediction(true);
-		} catch (err) {
-			console.error(err);
-			setAddressError('There was a problem checking this location.');
-		} finally {
-			setIsCheckingLocation(false);
-		}
-	}, [
-		selectedLocation,
-		runOverpassDetection,
-		fetchNearbyBeehouses,
-		computeNearbyCommunityGardens,
-		hasPollinators,
-	]);
+				setWoodsAutoDetected(overpassResult.woodsDetected);
+				setHasWoods(overpassResult.woodsDetected);
+
+				// ⭐ Prediction uses ONLY fresh local values
+				const result = calculateMasonBeeLikelihood({
+					hasPollinators: pollinatorsDetected,
+					hasWater: overpassResult.waterDetected,
+					hasClay: clayFromOverpass,
+					hasWoods: overpassResult.woodsDetected,
+					nearbyBeehouses: beehouseCount,
+					nearbyCommunityGardens: gardenCount,
+				});
+
+				setPrediction(result);
+				setHasRunPrediction(true);
+			} catch (err) {
+				console.error(err);
+				setAddressError('There was a problem checking this location.');
+			} finally {
+				setIsCheckingLocation(false);
+			}
+		},
+		[
+			runOverpassDetection,
+			fetchPublicBeehouses,
+			computeNearbyCommunityGardens,
+			hasPollinators,
+		],
+	);
 
 	// Run prediction ONLY when user clicks the checker
-	function runChecker() {
-		if (!selectedLocation) return;
+	function runChecker(loc, fresh) {
+		if (!loc || !fresh) return;
 
-		// ⭐ Compute prediction using the freshly computed values, NOT state
+		const { overpassResult, beehouseCount, gardenCount, clayFromOverpass } =
+			fresh;
+
 		const result = calculateMasonBeeLikelihood({
 			hasPollinators,
 			hasWater: overpassResult.waterDetected,
@@ -426,6 +439,7 @@ out center;
 					markerRef.current = L.marker([lat, lng], {
 						icon: BeeIcon,
 						draggable: true,
+						zIndexOffset: 1000,
 					}).addTo(map);
 
 					markerRef.current.on('dragend', () => {
@@ -450,6 +464,7 @@ out center;
 				markerRef.current = L.marker([lat, lon], {
 					icon: BeeIcon,
 					draggable: true,
+					zIndexOffset: 1000,
 				}).addTo(mapRef.current);
 
 				markerRef.current.on('dragend', () => {
@@ -498,7 +513,8 @@ out center;
 					<h2>Select a Location</h2>
 
 					<div className='map-instruction'>
-						Tap anywhere on the map to drop a pin. Drag the pin to fine‑tune.
+						Tap anywhere on the map to drop the bee there. Drag the bee to
+						fine‑tune.
 					</div>
 
 					<div
@@ -689,8 +705,9 @@ out center;
 				<button
 					className='button'
 					onClick={async () => {
-						await handleCheckLocation();
-						runChecker();
+						const loc = { ...selectedLocation };
+						const fresh = await handleCheckLocation(loc);
+						runChecker(loc, fresh);
 					}}
 					disabled={!selectedLocation || isCheckingLocation}>
 					{isCheckingLocation
@@ -722,7 +739,13 @@ out center;
 					clay, and planting early‑season flowers.
 				</div>
 			)}
-
+			{nearbyCommunityGardens > 0 && (
+				<div className='garden-footer'>
+					Community gardens value and nurture many of the same things that help
+					mason bees thrive. Having a community garden near your location is a
+					strong sign that mason bees are already active in your area.
+				</div>
+			)}
 			{!hasRunPrediction ? (
 				<div className='start-message'>
 					<p>
@@ -741,6 +764,134 @@ out center;
 					</div>
 				)
 			)}
+			<details className='learn-more'>
+				<summary>Learn More About Mason Bees</summary>
+
+				<div className='learn-more-content'>
+					<h3>The Tiny Neighbors With a Big Spring Agenda</h3>
+					<p>
+						Mason bees are some of the earliest pollinators to wake up each
+						year. While honey bees are still waiting for warm weather and a good
+						reason to leave the hive, mason bees are already out exploring.
+						They’re the spring shift — the early risers of the pollinator world.
+					</p>
+
+					<p>
+						And unlike honey bees, mason bees don’t wander far. Their entire
+						world is usually within about <strong>100 feet</strong> of their
+						nesting site. That means if you spot a mason bee, it’s not passing
+						through — it lives nearby, knows the neighborhood, and has strong
+						opinions about your flowering shrubs.
+					</p>
+
+					<h3>Why the Checker Looks for Certain Things</h3>
+					<p>
+						Mason bees are simple creatures with simple needs. The checker looks
+						for the same things a mason bee looks for when deciding whether to
+						stick around:
+					</p>
+
+					<ul>
+						<li>
+							<strong>Water</strong> — for drinking and softening mud.
+						</li>
+						<li>
+							<strong>Clay or exposed soil</strong> — their construction
+							material of choice.
+						</li>
+						<li>
+							<strong>Wooded areas or dead wood</strong> — hollow stems and
+							boreholes make perfect nests.
+						</li>
+						<li>
+							<strong>Early-season flowers</strong> — the deal-breaker. No
+							blooms, no bees.
+						</li>
+						<li>
+							<strong>Nearby beehouses</strong> — a sign that other mason bees
+							are already thriving.
+						</li>
+						<li>
+							<strong>Community gardens</strong> — pollinator hotspots full of
+							early blooms.
+						</li>
+					</ul>
+
+					<p>
+						These ingredients form a tiny ecosystem. When they’re all present,
+						mason bees don’t just visit — they move in, unpack, and start
+						building.
+					</p>
+
+					<h3>The Mason Bee Life Cycle (The Short, Fun Version)</h3>
+					<p>
+						Mason bees emerge in early spring, mate, and immediately get to work
+						collecting pollen and building nests. They’re solitary, so every
+						female is her own queen, architect, and construction crew. She fills
+						a tube with pollen, lays an egg, seals it with mud, and repeats
+						until the tube is full.
+					</p>
+
+					<p>
+						By summer, the next generation is already developing inside those
+						little mud-sealed rooms. They’ll overwinter there and emerge the
+						following spring to start the cycle again.
+					</p>
+
+					<h3>Micro-Habitats: Why 100 Feet Matters</h3>
+					<p>
+						Because mason bees stay so close to home, tiny changes in your yard
+						can make a huge difference. A single flowering shrub, a patch of
+						clay-rich soil, or a small bundle of hollow stems can turn an
+						“almost suitable” habitat into a perfect one.
+					</p>
+
+					<p>
+						Think of it like setting up a tiny pollinator studio apartment —
+						cozy, functional, and close to everything they need.
+					</p>
+
+					<h3>Inviting Mason Bees to Stay</h3>
+					<p>
+						If your area is missing one or two key resources, don’t worry. Mason
+						bees are incredibly adaptable. As long as you have flowers, you can
+						<strong>add the rest</strong>: a beehouse, nesting straws, a shallow
+						water dish with pebbles, and a little patch of clay-rich soil.
+						You’re basically rolling out the welcome mat.
+					</p>
+
+					<h3>What If You Don’t Have Native Bees Yet?</h3>
+					<p>
+						Sometimes a location has great flowers but hasn’t attracted native
+						mason bees yet. That’s okay — there’s a solution with a very fun
+						acronym:
+						<strong>BYOB: Bring Your Own Bees</strong>.
+					</p>
+
+					<p>
+						Many gardeners purchase cocoons from reputable suppliers and place
+						them outside at the right time of year. The bees emerge, explore,
+						and often decide to stick around if the habitat feels right. It’s a
+						gentle, eco-friendly way to jump-start a local population.
+					</p>
+
+					<h3>Hosting Your Own Beehouse?</h3>
+					<p>
+						If you decide to host your own beehouse, consider adding it to our
+						app. Every beehouse entry helps us better understand and research
+						domesticated mason bee population densities. Your contribution
+						becomes part of a growing community science effort — and it helps
+						other people discover where mason bees are thriving.
+					</p>
+
+					<p>
+						Whether you’re attracting wild mason bees or inviting a few to move
+						in, you’re helping support one of the most efficient,
+						low-maintenance pollinators in North America — and your garden will
+						thank you for it.
+					</p>
+				</div>
+			</details>
 
 			{showMapModal && <MapModal />}
 		</div>
