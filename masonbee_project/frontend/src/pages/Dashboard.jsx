@@ -57,6 +57,23 @@ function Dashboard() {
 					</p>
 				</Link>
 
+				<Link to='/add-beehouse' className='dashboard-card dashboard-card-link'>
+					<h2 className='card-title'>Add Beehouse</h2>
+					<p className='card-text'>
+						If you care for mason bees, please add your beehouse here.
+					</p>
+				</Link>
+
+				{/* <article className='dashboard-card'>
+					<h3>Add Beehouse</h3>
+					<p>If you care for mason bees, please add your beehouse here.</p>
+					<button
+						className='button button-primary'
+						onClick={() => navigate('/add-beehouse')}>
+						Add Beehouse
+					</button>
+				</article> */}
+
 				{/* Seasonal Insights (Coming Soon) */}
 			</div>
 		</div>

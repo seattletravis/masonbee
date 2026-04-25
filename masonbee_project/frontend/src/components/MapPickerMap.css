@@ -1,0 +1,59 @@
+.map-picker-container {
+	width: 100%;
+	height: 100%;
+}
+
+.map-picker-map {
+	width: 100%;
+	height: 100%;
+	min-height: 350px;
+	border-radius: 8px;
+
+	/* ⭐ FIX: allow Leaflet’s click layer to receive events */
+	overflow: visible !important;
+	pointer-events: auto !important;
+}
+
+.center-button {
+	position: absolute;
+	bottom: 12px;
+	right: 12px;
+	z-index: 5000;
+	background: white;
+	border-radius: 50%;
+	width: 42px;
+	height: 42px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+	cursor: pointer;
+	border: 2px solid #eee;
+	transition: background 0.2s ease;
+}
+
+.center-button:hover {
+	background: #f0f0f0;
+}
+
+.center-button img {
+	width: 22px;
+	height: 22px;
+	opacity: 0.8;
+}
+.center-button {
+	position: absolute;
+	bottom: 12px;
+	right: 12px;
+	z-index: 5000;
+	background: white;
+	border-radius: 50%;
+	width: 42px;
+	height: 42px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+	cursor: pointer;
+	border: 2px solid #eee;
+}

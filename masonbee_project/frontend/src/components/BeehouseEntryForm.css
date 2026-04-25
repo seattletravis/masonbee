@@ -1,108 +1,108 @@
+/* Overall form layout */
 .beehouse-entry-form {
-	background: #ffffff;
-	border: 1px solid #e5e7eb;
-	border-radius: 8px;
-	padding: 1.75rem;
-	max-width: 720px;
-	margin: 0 auto;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.beehouse-entry-form h3 {
-	margin-top: 0;
-	margin-bottom: 1.25rem;
-	font-size: 1.4rem;
-	font-weight: 600;
-	color: #1f2937;
-}
-
-.error-text {
-	background: #fee2e2;
-	color: #b91c1c;
-	padding: 0.75rem 1rem;
-	border-radius: 6px;
-	margin-bottom: 1rem;
-	font-size: 0.95rem;
-}
-
-.form-grid {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 1.25rem 1.5rem;
-}
-
-.form-grid label {
 	display: flex;
 	flex-direction: column;
-	font-weight: 500;
-	color: #374151;
-	font-size: 0.95rem;
+	gap: 1.25rem;
 }
 
-.form-grid input,
-.form-grid select {
-	margin-top: 0.35rem;
-	padding: 0.55rem 0.65rem;
-	border: 1px solid #d1d5db;
+/* Grid for all form fields */
+.form-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 1.25rem;
+}
+
+/* Labels stack nicely */
+.beehouse-entry-form label {
+	display: flex;
+	flex-direction: column;
+	font-weight: 600;
+	gap: 0.35rem;
+}
+
+/* Inputs + selects */
+.beehouse-entry-form input,
+.beehouse-entry-form select {
+	padding: 0.55rem 0.75rem;
 	border-radius: 6px;
+	border: 1px solid #ccc;
 	font-size: 0.95rem;
-	background: #f9fafb;
 }
 
-.form-grid input:focus,
-.form-grid select:focus {
-	outline: none;
-	border-color: #2563eb;
-	background: #ffffff;
-	box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+/* LOCATION SECTION */
+.location-section {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	padding: 0.75rem;
+	border: 1px solid #e5e5e5;
+	border-radius: 8px;
+	background: #fafafa;
 }
 
-.checkbox-group {
-	grid-column: 1 / -1;
+/* Latitude + Longitude side-by-side */
+.latlon-grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 0.75rem 1rem;
-	padding: 0.75rem 1rem;
-	background: #f9fafb;
-	border: 1px solid #e5e7eb;
-	border-radius: 6px;
+	gap: 1rem;
 }
 
-.checkbox-group label {
+/* Buttons row */
+.location-buttons {
 	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	font-weight: 400;
-	color: #374151;
+	gap: 0.75rem;
+	flex-wrap: wrap;
 }
 
-.beehouse-entry-form button[type='button'],
-.beehouse-entry-form button[type='submit'] {
-	padding: 0.6rem 1rem;
-	border-radius: 6px;
-	border: none;
+/* Shared button style */
+.location-button {
+	flex: 1;
+	padding: 0.65rem 1rem;
+	border-radius: 8px;
+	border: 1px solid #d0d0d0;
+	background: #f7f7f7;
 	font-size: 0.95rem;
 	cursor: pointer;
-	transition: background 0.15s ease;
+	transition: all 0.15s ease;
+	text-align: center;
 }
 
-.beehouse-entry-form button[type='button'] {
-	background: #e5e7eb;
-	color: #374151;
+.location-button:hover {
+	background: #efefef;
+	border-color: #c0c0c0;
 }
 
-.beehouse-entry-form button[type='button']:hover {
-	background: #d1d5db;
+.location-button:active {
+	background: #e6e6e6;
 }
 
-.beehouse-entry-form button[type='submit'] {
-	background: #2563eb;
-	color: #ffffff;
-	grid-column: 1 / -1;
+/* Environment section label */
+.env-label {
+	margin-top: 0.5rem;
+	font-weight: 600;
 }
 
-.beehouse-entry-form button[type='submit']:hover {
-	background: #1d4ed8;
+/* Checkbox group */
+.checkbox-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
 }
 
-/* .beehouse-entry-form button[disabled */
+/* Form actions */
+.form-actions {
+	display: flex;
+	gap: 0.75rem;
+	margin-top: 1rem;
+}
+
+.form-actions button {
+	padding: 0.65rem 1.25rem;
+	border-radius: 8px;
+	font-size: 1rem;
+}
+
+.cancel-button {
+	background: #eee;
+	border: 1px solid #ccc;
+}

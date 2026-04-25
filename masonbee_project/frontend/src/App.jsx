@@ -13,6 +13,7 @@ import MasonBeeForecasting from './pages/MasonBeeForecasting';
 import 'leaflet/dist/leaflet.css';
 import MasonBeeFinder from './pages/MasonBeeFinder';
 import ResourcesPage from './pages/ResourcesPage';
+import AddBeehousePage from './pages/AddBeeHousePage';
 
 export default function App() {
 	return (
@@ -48,6 +49,7 @@ export default function App() {
 						<Route path='/forecasting' element={<MasonBeeForecasting />} />
 						<Route path='/finder' element={<MasonBeeFinder />} />
 						<Route path='/resources' element={<ResourcesPage />} />
+						<Route path='/add-beehouse' element={<AddBeehousePage />} />
 
 						<Route
 							path='/garden/:id/journal'

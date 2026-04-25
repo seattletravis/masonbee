@@ -6,6 +6,11 @@ export default function BeehouseEntryForm({
 	onCreated,
 	onClose,
 	editingBeehouse,
+	// NEW OPTIONAL PROPS
+	mode = 'garden', // 'garden' | 'standalone'
+	latitude: externalLat,
+	longitude: externalLon,
+	onOpenMap, // callback to open map modal
 }) {
 	const API_BASE = import.meta.env.VITE_API_BASE_URL;
 	const token = localStorage.getItem('access');
@@ -73,6 +78,12 @@ export default function BeehouseEntryForm({
 		}
 	}, [editingBeehouse]);
 
+	// Sync external coordinates (from map modal)
+	useEffect(() => {
+		if (externalLat != null) setLatitude(externalLat);
+		if (externalLon != null) setLongitude(externalLon);
+	}, [externalLat, externalLon]);
+
 	// -----------------------------
 	// Use current location
 	// -----------------------------
@@ -106,7 +117,7 @@ export default function BeehouseEntryForm({
 
 		const payload = {
 			name: finalName,
-			garden: Number(gardenId),
+			garden: mode === 'garden' ? Number(gardenId) : null,
 			garden_description: gardenDescription || '',
 			beehouse_type: beehouseType,
 			tube_capacity: tubeCapacity,
@@ -188,15 +199,17 @@ export default function BeehouseEntryForm({
 					/>
 				</label>
 
-				<label>
-					Garden Description
-					<input
-						type='text'
-						value={gardenDescription}
-						onChange={(e) => setGardenDescription(e.target.value)}
-						placeholder='e.g., Near the shed, south fence line'
-					/>
-				</label>
+				{mode === 'garden' && (
+					<label>
+						Garden Description
+						<input
+							type='text'
+							value={gardenDescription}
+							onChange={(e) => setGardenDescription(e.target.value)}
+							placeholder='e.g., Near the shed, south fence line'
+						/>
+					</label>
+				)}
 
 				<label>
 					Bee House Type *
@@ -252,31 +265,51 @@ export default function BeehouseEntryForm({
 					</select>
 				</label>
 
-				<label>
-					Latitude *
-					<input
-						required
-						type='text'
-						value={latitude}
-						onChange={(e) => setLatitude(e.target.value)}
-					/>
+				<div className='location-section'>
+					<div className='latlon-grid'>
+						<label>
+							Latitude *
+							<input
+								required
+								type='text'
+								value={latitude}
+								onChange={(e) => setLatitude(e.target.value)}
+							/>
+						</label>
+
+						<label>
+							Longitude *
+							<input
+								required
+								type='text'
+								value={longitude}
+								onChange={(e) => setLongitude(e.target.value)}
+							/>
+						</label>
+					</div>
+
+					<div className='location-buttons'>
+						<button
+							type='button'
+							className='location-button'
+							onClick={useCurrentLocation}>
+							Use Current Location
+						</button>
+
+						{onOpenMap && (
+							<button
+								type='button'
+								className='location-button'
+								onClick={onOpenMap}>
+								Select Location on Map
+							</button>
+						)}
+					</div>
+				</div>
+
+				<label className='env-label'>
+					Bee Environment (Check the items within 100ft)
 				</label>
-
-				<label>
-					Longitude *
-					<input
-						required
-						type='text'
-						value={longitude}
-						onChange={(e) => setLongitude(e.target.value)}
-					/>
-				</label>
-
-				<button type='button' onClick={useCurrentLocation}>
-					Use Current Location
-				</button>
-
-				<label>Bee Environment (within 100ft)</label>
 				<div className='checkbox-group'>
 					<label>
 						<input
