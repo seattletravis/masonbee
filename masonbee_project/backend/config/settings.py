@@ -11,26 +11,35 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(os.path.join(BASE_DIR, "..", ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-q&*qu2nm&8vx2t5-_q3jtxvxbbogc*(371es_ysild!5ylif%p'
-
+SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = []
+
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+
+ALLOWED_HOSTS = [
+    "themasonbee.com",
+    "www.themasonbee.com",
+    "localhost",
+    "127.0.0.1",
+]
+
 
 
 # Application definition
@@ -134,17 +143,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-
-# REST_FRAMEWORK = {
-#     "DEFAULT_AUTHENTICATION_CLASSES": [
-#         "rest_framework.authentication.SessionAuthentication",
-#         "rest_framework.authentication.TokenAuthentication",
-#     ],
-#     "DEFAULT_PERMISSION_CLASSES": [
-#         "rest_framework.permissions.IsAuthenticated",
-#     ],
-# }
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -158,6 +158,11 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
 }
+
+if not DEBUG:
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
+        "rest_framework.renderers.JSONRenderer",
+    ]
 
 
 
@@ -182,10 +187,18 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 
+CORS_ALLOWED_ORIGINS += [
+    "https://themasonbee.com",
+    "https://www.themasonbee.com",
+]
+
 CSRF_TRUSTED_ORIGINS = [
+    "https://themasonbee.com",
+    "https://www.themasonbee.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
+
 
 
 CORS_ALLOW_HEADERS = [
@@ -198,6 +211,7 @@ CORS_ALLOW_HEADERS = [
 ]
 
 SESSION_COOKIE_SAMESITE = "None"
-SESSION_COOKIE_SECURE = False  # ok for local dev
 CSRF_COOKIE_SAMESITE = "None"
-CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
