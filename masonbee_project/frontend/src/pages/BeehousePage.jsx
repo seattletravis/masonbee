@@ -24,6 +24,7 @@ function getErrorMessage(error, fallbackMessage) {
 }
 
 export default function BeehousePage() {
+	const [activeBeehouseForNote, setActiveBeehouseForNote] = useState(null);
 	const [beehouses, setBeehouses] = useState([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [loadError, setLoadError] = useState('');
@@ -38,6 +39,7 @@ export default function BeehousePage() {
 
 	const [showMapModal, setShowMapModal] = useState(false);
 	const [pendingLatLonSetter, setPendingLatLonSetter] = useState(null);
+	const [expandedBeehouse, setExpandedBeehouse] = useState(null);
 
 	const lastScrollYRef = useRef(0);
 	const formRef = useRef(null);
@@ -214,7 +216,7 @@ export default function BeehousePage() {
 								editingNote={editingNote}
 								noteFormMode={editingNote?.mode}
 								beehouseName={editingNote?.beehouseName}
-								beehouseId={editingNote?.beehouse}
+								beehouseId={activeBeehouseForNote}
 								onCreated={async () => {
 									// ⭐ If this was a destroy event, soft-delete the beehouse
 									if (editingNote?.event_type === 'destroyed') {
@@ -253,7 +255,7 @@ export default function BeehousePage() {
 
 			<section className='section beehouse-page__list'>
 				<div className='section-header'>
-					<h2 className='section-title'>Your Beehouses</h2>
+					<h2 className='section-title'>My Beehouses</h2>
 					<p className='section-description'>
 						Expand a beehouse to view or edit its notes.
 					</p>
@@ -268,9 +270,22 @@ export default function BeehousePage() {
 						{sortedBeehouses.map((b) => (
 							<article key={b.id} className='journal-card beehouse-card'>
 								<div className='journal-card-top'>
-									<h3 className='journal-card-title'>
-										{b.name || 'Unnamed Beehouse'}
-									</h3>
+									<div className='beehouse-card-title-row'>
+										<h3 className='journal-card-title'>
+											{b.name || 'Unnamed Beehouse'}
+										</h3>
+
+										<button
+											className='beehouse-card-caret'
+											disabled={formIsOpen}
+											onClick={() =>
+												setExpandedBeehouse(
+													expandedBeehouse === b.id ? null : b.id,
+												)
+											}>
+											{expandedBeehouse === b.id ? '▲' : '▼'}
+										</button>
+									</div>
 
 									<div className='beehouse-card__badges'>
 										<span className='journal-category-badge'>
@@ -288,6 +303,51 @@ export default function BeehousePage() {
 										</button>
 									</div>
 								</div>
+								{expandedBeehouse === b.id && (
+									<div className='beehouse-card-details'>
+										<p>
+											<strong>Description:</strong>{' '}
+											{b.garden_description || '—'}
+										</p>
+										<p>
+											<strong>Type:</strong> {b.beehouse_type}
+										</p>
+										<p>
+											<strong>Tube Capacity:</strong> {b.tube_capacity}
+										</p>
+										<p>
+											<strong>Height:</strong> {b.height_above_ground_inches}{' '}
+											inches
+										</p>
+										<p>
+											<strong>Orientation:</strong> {b.orientation || '—'}
+										</p>
+
+										<p>
+											<strong>Water Nearby:</strong>{' '}
+											{b.water_nearby ? 'Yes' : 'No'}
+										</p>
+										<p>
+											<strong>Clay Nearby:</strong>{' '}
+											{b.clay_nearby ? 'Yes' : 'No'}
+										</p>
+										<p>
+											<strong>Flowers Nearby:</strong>{' '}
+											{b.flowers_nearby ? 'Yes' : 'No'}
+										</p>
+										<p>
+											<strong>Woods Nearby:</strong>{' '}
+											{b.woods_nearby ? 'Yes' : 'No'}
+										</p>
+
+										<p>
+											<strong>Latitude:</strong> {b.latitude}
+										</p>
+										<p>
+											<strong>Longitude:</strong> {b.longitude}
+										</p>
+									</div>
+								)}
 
 								<div className='journal-card-actions'>
 									<button
@@ -303,6 +363,7 @@ export default function BeehousePage() {
 										onClick={() => {
 											if (formIsOpen) return;
 											lastScrollYRef.current = window.scrollY;
+											setActiveBeehouseForNote(b.id);
 											setEditingNote(null);
 											setShowBeeNotesForm(true);
 

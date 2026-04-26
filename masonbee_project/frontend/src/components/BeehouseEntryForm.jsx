@@ -158,213 +158,215 @@ export default function BeehouseEntryForm({
 	};
 
 	// ------------------------------------------------------------
-	// Collapsed state
-	// ------------------------------------------------------------
-	if (isCollapsed) {
-		return (
-			<div
-				className='beehouse-form-collapsed-header'
-				onClick={() => setIsCollapsed(false)}>
-				<span className='header-text'>Add Beehouse</span>
-				<span className='caret'>▼</span>
-			</div>
-		);
-	}
-
-	// ------------------------------------------------------------
 	// RENDER FULL FORM
 	// ------------------------------------------------------------
 	return (
-		<form className='beehouse-form' onSubmit={handleSubmit}>
-			<h2 className='beehouse-form-header' onClick={() => setIsCollapsed(true)}>
+		<div className='beehouse-form-card'>
+			<h2
+				className={`beehouse-form-header ${isCollapsed ? 'collapsed' : 'expanded'}`}
+				onClick={() => {
+					if (isCollapsed) {
+						setIsCollapsed(false);
+					} else {
+						setIsCollapsed(true);
+						onClose(); // fully exit edit/add mode
+					}
+				}}>
 				<span>{editingBeehouse ? 'Edit Beehouse' : 'Add Beehouse'}</span>
-				<span className='caret open'>▲</span>
+
+				<span className={`caret ${isCollapsed ? '' : 'open'}`}>
+					{isCollapsed ? '▼' : '▲'}
+				</span>
 			</h2>
 
-			{/* BASIC INFO */}
-			<h3 className='form-section-title'>Basic Information</h3>
-			<div className='form-section'>
-				<label>
-					Name (optional)
-					<input
-						type='text'
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-						placeholder='Leave blank to auto-assign'
-					/>
-				</label>
+			{!isCollapsed && (
+				<form className='beehouse-form' onSubmit={handleSubmit}>
+					{/* BASIC INFO */}
+					<h3 className='form-section-title'>Basic Information</h3>
+					<div className='form-section'>
+						<label>
+							Name (optional)
+							<input
+								type='text'
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								placeholder='Leave blank to auto-assign'
+							/>
+						</label>
 
-				<label>
-					Description
-					<input
-						type='text'
-						value={description}
-						onChange={(e) => setDescription(e.target.value)}
-						placeholder='e.g., Near the shed, south fence'
-					/>
-				</label>
+						<label>
+							Description
+							<input
+								type='text'
+								value={description}
+								onChange={(e) => setDescription(e.target.value)}
+								placeholder='e.g., Near the shed, south fence'
+							/>
+						</label>
 
-				<label>
-					Bee House Type *
-					<select
-						value={type}
-						onChange={(e) => setType(e.target.value)}
-						required>
-						<option value=''>Select type</option>
-						<option value='block'>Wood Block</option>
-						<option value='straw'>Straw Bundle or Container</option>
-						<option value='drilled'>Drilled Wood</option>
-						<option value='other'>Other</option>
-					</select>
-				</label>
+						<label>
+							Bee House Type *
+							<select
+								value={type}
+								onChange={(e) => setType(e.target.value)}
+								required>
+								<option value=''>Select type</option>
+								<option value='block'>Wood Block</option>
+								<option value='straw'>Straw Bundle or Container</option>
+								<option value='drilled'>Drilled Wood</option>
+								<option value='other'>Other</option>
+							</select>
+						</label>
 
-				<label>
-					Tube Capacity *
-					<select
-						value={capacity}
-						onChange={(e) => setCapacity(e.target.value)}
-						required>
-						<option value=''>Select capacity</option>
-						<option value='<100'>Less than 100 tubes</option>
-						<option value='<200'>Less than 200 tubes</option>
-						<option value='<300'>Less than 300 tubes</option>
-						<option value='>300'>More than 300 tubes</option>
-					</select>
-				</label>
+						<label>
+							Tube Capacity *
+							<select
+								value={capacity}
+								onChange={(e) => setCapacity(e.target.value)}
+								required>
+								<option value=''>Select capacity</option>
+								<option value='<100'>Less than 100 tubes</option>
+								<option value='<200'>Less than 200 tubes</option>
+								<option value='<300'>Less than 300 tubes</option>
+								<option value='>300'>More than 300 tubes</option>
+							</select>
+						</label>
 
-				<label>
-					Height Above Ground (inches) *
-					<input
-						type='number'
-						value={height}
-						onChange={(e) => setHeight(e.target.value)}
-						required
-					/>
-				</label>
+						<label>
+							Height Above Ground (inches) *
+							<input
+								type='number'
+								value={height}
+								onChange={(e) => setHeight(e.target.value)}
+								required
+							/>
+						</label>
 
-				<label>
-					Orientation
-					<select
-						value={orientation}
-						onChange={(e) => setOrientation(e.target.value)}>
-						<option value=''>None</option>
-						<option value='North'>North</option>
-						<option value='South'>South</option>
-						<option value='East'>East</option>
-						<option value='West'>West</option>
-					</select>
-				</label>
-			</div>
+						<label>
+							Orientation
+							<select
+								value={orientation}
+								onChange={(e) => setOrientation(e.target.value)}>
+								<option value=''>None</option>
+								<option value='North'>North</option>
+								<option value='South'>South</option>
+								<option value='East'>East</option>
+								<option value='West'>West</option>
+							</select>
+						</label>
+					</div>
 
-			{/* ENVIRONMENT */}
-			<h3 className='form-section-title'>Bee Environment</h3>
-			<div className='form-section environment-section'>
-				<label>
-					<input
-						type='checkbox'
-						checked={waterNearby}
-						onChange={(e) => setWaterNearby(e.target.checked)}
-					/>
-					Water source nearby - Check box if there's a nearby lake, creek, river
-					or pond.
-				</label>
+					{/* ENVIRONMENT */}
+					<h3 className='form-section-title'>Bee Environment</h3>
+					<div className='form-section environment-section'>
+						<label>
+							<input
+								type='checkbox'
+								checked={waterNearby}
+								onChange={(e) => setWaterNearby(e.target.checked)}
+							/>
+							Water source nearby - Check box if there's a nearby lake, creek,
+							river or pond.
+						</label>
 
-				<label>
-					<input
-						type='checkbox'
-						checked={clayNearby}
-						onChange={(e) => setClayNearby(e.target.checked)}
-					/>
-					Clay nearby - Exposed clay, soil, or mud is good for mason bees.
-				</label>
+						<label>
+							<input
+								type='checkbox'
+								checked={clayNearby}
+								onChange={(e) => setClayNearby(e.target.checked)}
+							/>
+							Clay nearby - Exposed clay, soil, or mud is good for mason bees.
+						</label>
 
-				<label>
-					<input
-						type='checkbox'
-						checked={flowersNearby}
-						onChange={(e) => setFlowersNearby(e.target.checked)}
-					/>
-					Flowers nearby - Without early season flowers mason bees won't stop to
-					visit.
-				</label>
+						<label>
+							<input
+								type='checkbox'
+								checked={flowersNearby}
+								onChange={(e) => setFlowersNearby(e.target.checked)}
+							/>
+							Flowers nearby - Without early season flowers mason bees won't
+							stop to visit.
+						</label>
 
-				<label>
-					<input
-						type='checkbox'
-						checked={woodsNearby}
-						onChange={(e) => setWoodsNearby(e.target.checked)}
-					/>
-					Woods nearby - Woodlands, wooded lots, dense brush, thickets or
-					wilderness.
-				</label>
-			</div>
+						<label>
+							<input
+								type='checkbox'
+								checked={woodsNearby}
+								onChange={(e) => setWoodsNearby(e.target.checked)}
+							/>
+							Woods nearby - Woodlands, wooded lots, dense brush, thickets or
+							wilderness.
+						</label>
+					</div>
 
-			{/* LOCATION */}
-			<h3 className='form-section-title'>Location</h3>
-			<div className='form-section'>
-				<label>
-					Latitude *
-					<input
-						type='number'
-						step='0.000001'
-						value={latitude}
-						onChange={(e) => setLatitude(e.target.value)}
-						required
-					/>
-				</label>
+					{/* LOCATION */}
+					<h3 className='form-section-title'>Location</h3>
+					<div className='form-section'>
+						<label>
+							Latitude *
+							<input
+								type='number'
+								step='0.000001'
+								value={latitude}
+								onChange={(e) => setLatitude(e.target.value)}
+								required
+							/>
+						</label>
 
-				<label>
-					Longitude *
-					<input
-						type='number'
-						step='0.000001'
-						value={longitude}
-						onChange={(e) => setLongitude(e.target.value)}
-						required
-					/>
-				</label>
+						<label>
+							Longitude *
+							<input
+								type='number'
+								step='0.000001'
+								value={longitude}
+								onChange={(e) => setLongitude(e.target.value)}
+								required
+							/>
+						</label>
 
-				<div className='location-buttons'>
-					<button
-						type='button'
-						className='button button-secondary'
-						onClick={handleUseCurrentLocation}>
-						Use Current Location
-					</button>
+						<div className='location-buttons'>
+							<button
+								type='button'
+								className='button button-secondary'
+								onClick={handleUseCurrentLocation}>
+								Use Current Location
+							</button>
 
-					<button
-						type='button'
-						className='button button-primary'
-						onClick={handleOpenMapPicker}>
-						Select on Map
-					</button>
-				</div>
-			</div>
+							<button
+								type='button'
+								className='button button-primary'
+								onClick={handleOpenMapPicker}>
+								Select on Map
+							</button>
+						</div>
+					</div>
 
-			{error && <p className='form-error'>{error}</p>}
+					{error && <p className='form-error'>{error}</p>}
 
-			<div className='form-actions'>
-				<button
-					className='button button-primary'
-					disabled={isSaving || (editingBeehouse && !hasChanges)}>
-					{isSaving
-						? 'Saving...'
-						: editingBeehouse
-							? 'Save Changes'
-							: 'Create Beehouse'}
-				</button>
+					<div className='form-actions'>
+						<button
+							className='button button-primary'
+							disabled={isSaving || (editingBeehouse && !hasChanges)}>
+							{isSaving
+								? 'Saving...'
+								: editingBeehouse
+									? 'Save Changes'
+									: 'Create Beehouse'}
+						</button>
 
-				<button
-					type='button'
-					className='button button-secondary'
-					onClick={() => {
-						setIsCollapsed(true);
-						onClose();
-					}}
-					disabled={isSaving}>
-					Cancel
-				</button>
-			</div>
-		</form>
+						<button
+							type='button'
+							className='button button-secondary'
+							onClick={() => {
+								setIsCollapsed(true);
+								onClose();
+							}}
+							disabled={isSaving}>
+							Cancel
+						</button>
+					</div>
+				</form>
+			)}
+		</div>
 	);
 }

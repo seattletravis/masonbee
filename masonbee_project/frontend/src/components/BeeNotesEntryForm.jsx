@@ -17,7 +17,7 @@ export default function BeeNotesEntryForm({
 	);
 
 	const [beehouseId, setBeehouseId] = useState(
-		editingNote ? editingNote.beehouse : isRemoveMode ? forcedBeehouseId : '',
+		editingNote?.beehouse ?? forcedBeehouseId ?? '',
 	);
 
 	const [notes, setNotes] = useState(editingNote ? editingNote.notes : '');
@@ -66,6 +66,13 @@ export default function BeeNotesEntryForm({
 		if (token) loadBeehouses();
 	}, [API_BASE, token, isRemoveMode]);
 
+	// Sync beehouseId when a beehouse card triggers Add Bee Note
+	useEffect(() => {
+		if (!isEditing && forcedBeehouseId) {
+			setBeehouseId(forcedBeehouseId);
+		}
+	}, [forcedBeehouseId, isEditing]);
+
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError('');
@@ -75,12 +82,8 @@ export default function BeeNotesEntryForm({
 			return;
 		}
 
-		if (!notes.trim()) {
-			setError(
-				isRemoveMode
-					? 'Please provide a reason for removing this beehouse.'
-					: 'Notes cannot be empty.',
-			);
+		if (!notes.trim() && !isRemoveMode) {
+			setError('Notes cannot be empty.');
 			return;
 		}
 
@@ -153,7 +156,8 @@ export default function BeeNotesEntryForm({
 			{isRemoveMode && (
 				<div className='remove-warning'>
 					You are removing <strong>"{beehouseName}"</strong>. This action cannot
-					be undone. Please enter a reason to help us better manage mason bees.
+					be undone. Once you submit this form, the beehouse and all associated
+					notes will not be accessible.
 				</div>
 			)}
 
