@@ -1,133 +1,100 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as api from '../api/client';
-import { createJournalEntry, updateJournalEntry } from '../api/journal';
-
-const CATEGORY_OPTIONS = [
-	{ value: 'bee_activity', label: 'Bee Activity' },
-	{ value: 'bloom', label: 'Bloom / Flowering' },
-	{ value: 'maintenance', label: 'Maintenance' },
-	{ value: 'observation', label: 'General Observation' },
-	{ value: 'weather', label: 'Weather Note' },
-	{ value: 'other', label: 'Other' },
-];
-
-const EMPTY_FORM = {
-	title: '',
-	date: '',
-	category: 'observation',
-	garden: '',
-	notes: '',
-};
+import './JournalEntryForm.css';
 
 function normalizeGardens(payload) {
-	if (Array.isArray(payload)) {
-		return payload;
-	}
-
-	if (Array.isArray(payload?.results)) {
-		return payload.results;
-	}
-
+	if (Array.isArray(payload)) return payload;
+	if (Array.isArray(payload?.results)) return payload.results;
 	return [];
 }
 
 function buildInitialFormState(entry, routeGardenId) {
-	const today = new Date().toISOString().slice(0, 10);
-
-	if (entry) {
-		return {
-			title: entry.title || '',
-			date: entry.date || today,
-			category: entry.category || 'observation',
-			garden:
-				entry.garden === null || entry.garden === undefined
-					? routeGardenId || ''
-					: String(entry.garden),
-			notes: entry.notes || '',
-		};
-	}
-
 	return {
-		...EMPTY_FORM,
-		date: today,
-		garden: routeGardenId || '',
+		title: entry?.title || '',
+		date: entry?.date || new Date().toISOString().split('T')[0],
+		category: entry?.category || 'general',
+		garden: entry?.garden || routeGardenId || '',
+		notes: entry?.notes || '',
 	};
 }
 
-function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
+export default function JournalEntryForm({
+	isOpen,
+	onClose,
+	onSubmitSuccess,
+	entry,
+}) {
+	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
-	const gardenIdFromQuery = searchParams.get('gardenId');
-	const [selectedGarden, setSelectedGarden] = useState(null);
 
-	const { id: routeGardenIdFromUrl } = useParams();
-	const routeGardenId = gardenIdFromQuery || routeGardenIdFromUrl;
+	// returnTo=/gardens/:id
+	const returnTo = searchParams.get('returnTo') || null;
+	const routeGardenId = searchParams.get('gardenId') || null;
 
-	const [formData, setFormData] = useState(() =>
+	const isEditing = Boolean(entry?.id);
+	const isGardenLocked = Boolean(routeGardenId);
+
+	const [formData, setFormData] = useState(
 		buildInitialFormState(entry, routeGardenId),
 	);
-	const [gardens, setGardens] = useState([]);
+
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [isLoadingGardens, setIsLoadingGardens] = useState(false);
 	const [submitError, setSubmitError] = useState('');
+
+	const [gardens, setGardens] = useState([]);
+	const [isLoadingGardens, setIsLoadingGardens] = useState(false);
 	const [gardensError, setGardensError] = useState('');
 
-	// const isGardenLocked = Boolean(routeGardenId);
-	const isGardenLocked = false;
+	const [selectedGarden, setSelectedGarden] = useState(null);
 
-	const dialogTitle = entry ? 'Edit Entry' : 'New Entry';
-
+	// ------------------------------------------------------------
+	// Load form state when entry changes OR form opens
+	// ------------------------------------------------------------
 	useEffect(() => {
-		if (!isOpen) {
-			return;
-		}
+		if (!isOpen) return;
 
 		setFormData(buildInitialFormState(entry, routeGardenId));
 		setSubmitError('');
 	}, [entry, isOpen, routeGardenId]);
 
+	// ------------------------------------------------------------
+	// Load gardens (only when not locked)
+	// ------------------------------------------------------------
 	useEffect(() => {
-		if (!isOpen || isGardenLocked) {
-			return;
-		}
+		if (!isOpen || isGardenLocked) return;
 
 		let isMounted = true;
 
-		const loadGardens = async () => {
+		async function loadGardens() {
 			setIsLoadingGardens(true);
 			setGardensError('');
 
 			try {
 				const response = await api.get('/api/gardens/');
-				if (!isMounted) {
-					return;
-				}
-
-				setGardens(normalizeGardens(response));
+				if (isMounted) setGardens(normalizeGardens(response));
 			} catch (error) {
-				if (!isMounted) {
-					return;
-				}
-
-				setGardensError(
-					error?.response?.data?.detail ||
-						error?.response?.data?.message ||
-						'Unable to load gardens right now.',
-				);
-			} finally {
 				if (isMounted) {
-					setIsLoadingGardens(false);
+					setGardensError(
+						error?.response?.data?.detail ||
+							error?.response?.data?.message ||
+							'Unable to load gardens right now.',
+					);
 				}
+			} finally {
+				if (isMounted) setIsLoadingGardens(false);
 			}
-		};
+		}
 
 		loadGardens();
-
 		return () => {
 			isMounted = false;
 		};
 	}, [isGardenLocked, isOpen]);
 
+	// ------------------------------------------------------------
+	// Load locked garden details
+	// ------------------------------------------------------------
 	useEffect(() => {
 		if (!routeGardenId) return;
 
@@ -143,38 +110,51 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 		}
 
 		loadGarden();
-
 		return () => {
 			isMounted = false;
 		};
 	}, [routeGardenId]);
 
+	// ------------------------------------------------------------
+	// Garden name for locked mode
+	// ------------------------------------------------------------
 	const selectedGardenName = useMemo(() => {
 		if (!isGardenLocked) return '';
 
 		if (selectedGarden?.name) return selectedGarden.name;
-
 		if (entry?.garden_name) return entry.garden_name;
-
 		if (entry?.garden && typeof entry.garden === 'object' && entry.garden.name)
 			return entry.garden.name;
 
 		return `Garden #${routeGardenId}`;
 	}, [isGardenLocked, selectedGarden, entry, routeGardenId]);
 
-	if (!isOpen) {
-		return null;
+	// ------------------------------------------------------------
+	// Cancel handler (respects returnTo)
+	// ------------------------------------------------------------
+	function handleCancel() {
+		if (returnTo) {
+			navigate(returnTo);
+			return;
+		}
+		onClose();
 	}
 
+	// ------------------------------------------------------------
+	// Form change handler
+	// ------------------------------------------------------------
 	const handleChange = (event) => {
 		const { name, value } = event.target;
 
-		setFormData((currentFormData) => ({
-			...currentFormData,
+		setFormData((current) => ({
+			...current,
 			[name]: value,
 		}));
 	};
 
+	// ------------------------------------------------------------
+	// Submit handler
+	// ------------------------------------------------------------
 	const handleSubmit = async (event) => {
 		event.preventDefault();
 		setIsSubmitting(true);
@@ -182,7 +162,6 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 
 		const payload = {
 			title: formData.title.trim() || 'My Journal Entry',
-
 			date: formData.date,
 			category: formData.category,
 			garden: formData.garden ? Number(formData.garden) : null,
@@ -190,14 +169,19 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 		};
 
 		try {
-			if (entry?.id) {
-				await updateJournalEntry(entry.id, payload);
+			if (isEditing) {
+				await api.updateJournalEntry(entry.id, payload);
 			} else {
-				await createJournalEntry(payload);
+				await api.createJournalEntry(payload);
 			}
 
 			await onSubmitSuccess();
-			onClose();
+
+			if (returnTo) {
+				navigate(returnTo);
+			} else {
+				onClose();
+			}
 		} catch (error) {
 			const fieldErrors = error?.response?.data;
 
@@ -216,134 +200,102 @@ function JournalEntryForm({ isOpen, onClose, onSubmitSuccess, entry = null }) {
 		}
 	};
 
+	// ------------------------------------------------------------
+	// RENDER
+	// ------------------------------------------------------------
+	if (!isOpen) return null;
+
 	return (
-		<div
-			className='journal-modal-backdrop'
-			role='presentation'
-			onClick={(event) => {
-				if (event.target === event.currentTarget) {
-					onClose();
-				}
-			}}>
-			<div
-				className='journal-modal'
-				role='dialog'
-				aria-modal='true'
-				aria-labelledby='journal-entry-form-title'>
-				<div className='journal-modal-header'>
-					<div>
-						<h2 id='journal-entry-form-title'>{dialogTitle}</h2>
-						<p>Capture what happened in your garden today.</p>
-					</div>
-					<button
-						type='button'
-						className='journal-icon-button'
-						onClick={onClose}
-						aria-label='Close journal form'>
-						X
+		<div className='journal-entry-form'>
+			<h2 className='form-title'>
+				{isEditing ? 'Edit Journal Entry' : 'New Journal Entry'}
+			</h2>
+
+			<form onSubmit={handleSubmit}>
+				{/* TITLE */}
+				<label>
+					Title
+					<input
+						type='text'
+						name='title'
+						value={formData.title}
+						onChange={handleChange}
+					/>
+				</label>
+
+				{/* DATE */}
+				<label>
+					Date
+					<input
+						type='date'
+						name='date'
+						value={formData.date}
+						onChange={handleChange}
+					/>
+				</label>
+
+				{/* CATEGORY */}
+				<label>
+					Category
+					<select
+						name='category'
+						value={formData.category}
+						onChange={handleChange}>
+						<option value='general'>General Observation</option>
+						<option value='bloom'>Bloom</option>
+						<option value='bee_activity'>Bee Activity</option>
+						<option value='maintenance'>Maintenance</option>
+					</select>
+				</label>
+
+				{/* GARDEN SELECT */}
+				{isGardenLocked ? (
+					<p className='locked-garden-label'>
+						<strong>Garden:</strong> {selectedGardenName}
+					</p>
+				) : (
+					<label>
+						Garden
+						<select
+							name='garden'
+							value={formData.garden}
+							onChange={handleChange}>
+							<option value=''>Select a garden</option>
+							{gardens.map((g) => (
+								<option key={g.id} value={g.id}>
+									{g.name}
+								</option>
+							))}
+						</select>
+					</label>
+				)}
+
+				{/* NOTES */}
+				<label>
+					Notes
+					<textarea
+						name='notes'
+						value={formData.notes}
+						onChange={handleChange}
+					/>
+				</label>
+
+				{submitError && <p className='journal-feedback error'>{submitError}</p>}
+
+				<div className='form-actions'>
+					<button type='submit' className='submit-btn' disabled={isSubmitting}>
+						{isSubmitting
+							? 'Saving...'
+							: isEditing
+								? 'Update Entry'
+								: 'Create Entry'}
+					</button>
+
+					<button type='button' className='cancel-btn' onClick={handleCancel}>
+						Cancel
 					</button>
 				</div>
-
-				<form className='journal-form' onSubmit={handleSubmit}>
-					{submitError ? (
-						<p className='journal-feedback error'>{submitError}</p>
-					) : null}
-
-					<div className='journal-form-grid'>
-						<label className='journal-field'>
-							<span>Title</span>
-							<input
-								type='text'
-								name='title'
-								value={formData.title}
-								onChange={handleChange}
-								placeholder='Title Required - Please add a title'
-								required
-							/>
-						</label>
-
-						<label className='journal-field'>
-							<span>Date</span>
-							<input
-								type='date'
-								name='date'
-								value={formData.date}
-								onChange={handleChange}
-								required
-							/>
-						</label>
-
-						<label className='journal-field'>
-							<span>Category</span>
-							<select
-								name='category'
-								value={formData.category}
-								onChange={handleChange}
-								required>
-								{CATEGORY_OPTIONS.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</select>
-						</label>
-
-						<label className='journal-field'>
-							<span>Garden</span>
-							<select
-								name='garden'
-								value={formData.garden}
-								onChange={handleChange}
-								disabled={isLoadingGardens}>
-								<option value=''>No garden selected</option>
-								{gardens.map((garden) => (
-									<option key={garden.id} value={garden.id}>
-										{garden.name}
-									</option>
-								))}
-							</select>
-
-							{gardensError ? (
-								<small className='journal-inline-error'>{gardensError}</small>
-							) : null}
-						</label>
-					</div>
-
-					<label className='journal-field'>
-						<span>Notes</span>
-						<textarea
-							name='notes'
-							value={formData.notes}
-							onChange={handleChange}
-							rows='6'
-							placeholder='Record bee behavior, blooms, weather, maintenance, or anything worth remembering.'
-							required
-						/>
-					</label>
-
-					<div className='journal-form-actions'>
-						<button
-							type='button'
-							className='journal-button journal-button-secondary'
-							onClick={onClose}
-							disabled={isSubmitting}>
-							Cancel
-						</button>
-						<button
-							type='submit'
-							className='journal-button journal-button-primary'
-							disabled={isSubmitting}>
-							{isSubmitting
-								? 'Saving...'
-								: entry
-									? 'Save Changes'
-									: 'Create Entry'}
-						</button>
-					</div>
-				</form>
-			</div>
+			</form>
 		</div>
 	);
 }
-
-export default JournalEntryForm;

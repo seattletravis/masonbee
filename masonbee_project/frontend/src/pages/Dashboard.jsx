@@ -22,6 +22,16 @@ function Dashboard() {
 						View and manage your mason bee gardens, houses, and locations.
 					</p>
 				</Link>
+				{/* Garden Finder */}
+				<Link
+					to='/garden-finder'
+					className='dashboard-card dashboard-card-link'>
+					<h2 className='card-title'>Garden Finder</h2>
+					<p className='card-text'>
+						Search through community gardens in your area, more gardens beeing
+						added soon!
+					</p>
+				</Link>
 
 				{/* My Journal */}
 				<Link to='/journal' className='dashboard-card dashboard-card-link'>

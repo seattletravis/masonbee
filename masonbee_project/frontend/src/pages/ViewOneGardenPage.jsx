@@ -5,6 +5,7 @@ import { useAuthContext } from '../auth/AuthProvider';
 import SingleGardenMap from '../components/SingleGardenMap';
 import useUserLocation from '../hooks/useUserLocation';
 import GardenMetadata from '../components/GardenMetadata';
+import JournalEntryForm from '../components/JournalEntryForm';
 import './ViewOneGardenPage.css';
 import './PageWrapperGlobal.css';
 
@@ -71,6 +72,7 @@ export default function ViewOneGardenPage() {
 	const [isSavingDefault, setIsSavingDefault] = useState(false);
 	const [isSavingPin, setIsSavingPin] = useState(false);
 	const [actionError, setActionError] = useState('');
+	const [editingEntry, setEditingEntry] = useState(null);
 
 	const { location: userLocation } = useUserLocation(true);
 
@@ -329,14 +331,25 @@ export default function ViewOneGardenPage() {
 								<div className='journal-card-actions'>
 									<button
 										className='journal-button journal-button-secondary'
-										onClick={() =>
-											navigate(
-												`/journal?gardenId=${id}&editEntryId=${entry.id}`,
-											)
-										}>
+										onClick={() => setEditingEntry(entry)}>
 										Edit
 									</button>
 								</div>
+
+								{/* INLINE EDIT FORM */}
+								{editingEntry?.id === entry.id && (
+									<div className='inline-edit-container'>
+										<JournalEntryForm
+											isOpen={true}
+											entry={editingEntry}
+											onClose={() => setEditingEntry(null)}
+											onSubmitSuccess={async () => {
+												await loadGardenPage(); // reload entries
+												setEditingEntry(null);
+											}}
+										/>
+									</div>
+								)}
 							</article>
 						))}
 					</div>

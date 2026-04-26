@@ -54,6 +54,9 @@ function Journal() {
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deletingEntryId, setDeletingEntryId] = useState(null);
 	const [selectedGardenId, setSelectedGardenId] = useState('all');
+	const [confirmingId, setConfirmingId] = useState(null);
+	const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+	const [editingEntry, setEditingEntry] = useState(null);
 
 	const loadEntries = useCallback(async () => {
 		setIsLoading(true);
@@ -140,25 +143,13 @@ function Journal() {
 		}
 	};
 
-	const handleDelete = async (entryId) => {
-		const confirmed = window.confirm(
-			'Delete this journal entry? This action cannot be undone.',
-		);
-
-		if (!confirmed) return;
-
-		setDeletingEntryId(entryId);
-		setDeleteError('');
-
+	const handleDelete = async (id) => {
 		try {
-			await deleteJournalEntry(entryId);
-			setEntries((current) => current.filter((entry) => entry.id !== entryId));
-		} catch (error) {
-			setDeleteError(
-				error?.response?.data?.detail ||
-					error?.response?.data?.message ||
-					'Unable to delete this entry right now.',
-			);
+			setDeletingEntryId(id);
+			await deleteJournalEntry(id);
+			await loadEntries();
+		} catch (err) {
+			setDeleteError('Unable to delete entry.');
 		} finally {
 			setDeletingEntryId(null);
 		}
@@ -248,36 +239,59 @@ function Journal() {
 										<button
 											type='button'
 											className='journal-button journal-button-secondary'
-											onClick={() => handleEditClick(entry)}>
+											onClick={() => setEditingEntry(entry)}>
 											Edit
 										</button>
-										<button
-											type='button'
-											className='journal-button journal-button-danger'
-											onClick={() => handleDelete(entry.id)}
-											disabled={deletingEntryId === entry.id}>
-											{deletingEntryId === entry.id ? 'Deleting...' : 'Delete'}
-										</button>
+
+										{confirmingDeleteId === entry.id ? (
+											<>
+												<button
+													type='button'
+													className='journal-button journal-button-danger'
+													onClick={() => handleDelete(entry.id)}>
+													Confirm Delete
+												</button>
+
+												<button
+													type='button'
+													className='journal-button'
+													onClick={() => setConfirmingDeleteId(null)}>
+													Cancel
+												</button>
+											</>
+										) : (
+											<button
+												type='button'
+												className='journal-button journal-button-danger'
+												onClick={() => setConfirmingDeleteId(entry.id)}
+												disabled={deletingEntryId === entry.id}>
+												{deletingEntryId === entry.id
+													? 'Deleting...'
+													: 'Delete'}
+											</button>
+										)}
 									</div>
+
+									{/* INLINE EDIT FORM */}
+									{editingEntry?.id === entry.id && (
+										<div className='inline-edit-container'>
+											<JournalEntryForm
+												isOpen={true}
+												entry={editingEntry}
+												onClose={() => setEditingEntry(null)}
+												onSubmitSuccess={async () => {
+													await loadEntries(); // reload journal list
+													setEditingEntry(null);
+												}}
+											/>
+										</div>
+									)}
 								</article>
 							);
 						})}
 					</div>
 				)}
 			</div>
-
-			<JournalEntryForm
-				isOpen={isFormOpen}
-				onClose={handleCloseForm}
-				onSubmitSuccess={async () => {
-					await loadEntries();
-
-					if (returnTo) {
-						navigate(returnTo);
-					}
-				}}
-				entry={entryBeingEdited}
-			/>
 		</div>
 	);
 }

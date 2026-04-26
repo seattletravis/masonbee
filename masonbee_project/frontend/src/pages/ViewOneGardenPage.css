@@ -224,3 +224,17 @@ button:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
+.garden-metadata {
+	min-width: 0; /* CRITICAL */
+}
+
+.metadata-section {
+	min-width: 0; /* CRITICAL */
+}
+
+.metadata-section p,
+.metadata-section a {
+	white-space: normal;
+	overflow-wrap: break-word;
+	word-break: break-word;
+}

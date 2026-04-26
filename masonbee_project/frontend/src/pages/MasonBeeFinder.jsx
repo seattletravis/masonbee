@@ -273,8 +273,8 @@ out center;
 				setPrediction(null);
 				setHasRunPrediction(false);
 
-				// ❌ DO NOT call handleCheckLocation here
-				// We wait until the user confirms via the modal
+				// ✔ Automatically run map detection when geolocation succeeds
+				handleCheckLocation(loc);
 			},
 			() => {
 				setLocationError(

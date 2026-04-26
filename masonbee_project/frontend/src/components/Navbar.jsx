@@ -78,22 +78,10 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 
 			{isOpen && (
 				<div className='mobile-menu'>
-					{showMyGardens && (
-						<Link to='/my-gardens' className='mobile-link'>
-							My Gardens
-						</Link>
-					)}
-
 					{authenticated && (
-						<>
-							<Link to='/garden-finder' className='mobile-link'>
-								Garden Finder
-							</Link>
-
-							<Link to='/dashboard' className='mobile-link'>
-								Dashboard
-							</Link>
-						</>
+						<Link to='/dashboard' className='mobile-link'>
+							Dashboard
+						</Link>
 					)}
 
 					{authenticated && (
