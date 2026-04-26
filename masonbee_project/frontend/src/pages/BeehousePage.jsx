@@ -117,8 +117,9 @@ export default function BeehousePage() {
 			beehouse: beehouse.id,
 			event_type: 'destroyed',
 			notes: '',
+			mode: 'remove',
+			beehouseName: beehouse.name || `Beehouse ${beehouse.id}`,
 		});
-
 		setShowBeeNotesForm(true);
 
 		setTimeout(() => {
@@ -211,6 +212,9 @@ export default function BeehousePage() {
 							<BeeNotesEntryForm
 								beehouses={beehouses}
 								editingNote={editingNote}
+								noteFormMode={editingNote?.mode}
+								beehouseName={editingNote?.beehouseName}
+								beehouseId={editingNote?.beehouse}
 								onCreated={async () => {
 									// ⭐ If this was a destroy event, soft-delete the beehouse
 									if (editingNote?.event_type === 'destroyed') {

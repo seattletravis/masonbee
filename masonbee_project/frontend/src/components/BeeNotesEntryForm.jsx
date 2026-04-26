@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react';
 import './BeeNotesEntryForm.css';
 
-export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
+export default function BeeNotesEntryForm({
+	onCreated,
+	onClose,
+	editingNote,
+	noteFormMode = 'normal', // "normal" | "remove"
+	beehouseName,
+	beehouseId: forcedBeehouseId,
+}) {
 	const isEditing = Boolean(editingNote);
+	const isRemoveMode = noteFormMode === 'remove';
 
-	// const [eventType, setEventType] = useState('');
 	const [eventType, setEventType] = useState(
-		editingNote ? editingNote.event_type : '',
+		editingNote ? editingNote.event_type : isRemoveMode ? 'destroyed' : '',
 	);
-	// const [beehouseId, setBeehouseId] = useState('');
+
 	const [beehouseId, setBeehouseId] = useState(
-		editingNote ? editingNote.beehouse : '',
+		editingNote ? editingNote.beehouse : isRemoveMode ? forcedBeehouseId : '',
 	);
-	// const [notes, setNotes] = useState('');
+
 	const [notes, setNotes] = useState(editingNote ? editingNote.notes : '');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
@@ -37,16 +44,10 @@ export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
 		{ value: 'other', label: 'Other' },
 	];
 
+	// Load beehouses only in normal mode
 	useEffect(() => {
-		if (editingNote) {
-			setEventType(editingNote.event_type);
-			setBeehouseId(editingNote.beehouse);
-			setNotes(editingNote.notes || '');
-		}
-	}, [editingNote]);
+		if (isRemoveMode) return;
 
-	// Load all user beehouses
-	useEffect(() => {
 		async function loadBeehouses() {
 			try {
 				const res = await fetch(`${API_BASE}/api/beehouses/`, {
@@ -63,38 +64,40 @@ export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
 		}
 
 		if (token) loadBeehouses();
-	}, [API_BASE, token]);
+	}, [API_BASE, token, isRemoveMode]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError('');
 
-		if (!eventType) {
-			setError('Event type is required.');
+		if (!beehouseId) {
+			setError('Beehouse is required.');
 			return;
 		}
 
-		if (!beehouseId) {
-			setError('Please select a beehouse.');
+		if (!notes.trim()) {
+			setError(
+				isRemoveMode
+					? 'Please provide a reason for removing this beehouse.'
+					: 'Notes cannot be empty.',
+			);
 			return;
 		}
 
 		setLoading(true);
 
 		const payload = {
-			event_type: eventType,
+			event_type: isRemoveMode ? 'destroyed' : eventType,
 			beehouse: Number(beehouseId),
 			notes: notes.trim(),
 		};
 
-		// ⭐ FIX: Only edit if an ID exists
-		const isEditing = Boolean(editingNote?.id);
+		const isEditingNote = Boolean(editingNote?.id);
 
 		try {
 			let res;
 
-			if (isEditing) {
-				// ⭐ UPDATE EXISTING NOTE
+			if (isEditingNote) {
 				res = await fetch(
 					`${API_BASE}/api/beehouse-events/${editingNote.id}/`,
 					{
@@ -107,7 +110,6 @@ export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
 					},
 				);
 			} else {
-				// ⭐ CREATE NEW NOTE
 				res = await fetch(`${API_BASE}/api/beehouse-events/`, {
 					method: 'POST',
 					headers: {
@@ -126,9 +128,9 @@ export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
 
 			onCreated?.(data);
 
-			if (!isEditing) {
-				setEventType('');
-				setBeehouseId('');
+			if (!isEditingNote) {
+				setEventType(isRemoveMode ? 'destroyed' : '');
+				setBeehouseId(isRemoveMode ? forcedBeehouseId : '');
 				setNotes('');
 			}
 		} catch (err) {
@@ -140,55 +142,88 @@ export default function BeeNotesEntryForm({ onCreated, onClose, editingNote }) {
 
 	return (
 		<form className='bee-notes-entry-form' onSubmit={handleSubmit}>
-			<h3>Add Beenote</h3>
+			<h3>
+				{noteFormMode === 'remove'
+					? 'Remove Beehouse'
+					: isEditing
+						? 'Edit Beenote'
+						: 'Add Beenote'}
+			</h3>
+
+			{isRemoveMode && (
+				<div className='remove-warning'>
+					You are removing <strong>"{beehouseName}"</strong>. This action cannot
+					be undone. Please enter a reason to help us better manage mason bees.
+				</div>
+			)}
 
 			{error && <div className='error-text'>{error}</div>}
 
 			<div className='form-grid'>
-				<label>
-					Event Type *
-					<select
-						required
-						value={eventType}
-						onChange={(e) => setEventType(e.target.value)}>
-						<option value=''>Select event</option>
-						{EVENT_TYPES.map((t) => (
-							<option key={t.value} value={t.value}>
-								{t.label}
-							</option>
-						))}
-					</select>
-				</label>
+				{/* Event Type — hidden in remove mode */}
+				{!isRemoveMode && (
+					<label>
+						Event Type *
+						<select
+							required
+							value={eventType}
+							onChange={(e) => setEventType(e.target.value)}>
+							<option value=''>Select event</option>
+							{EVENT_TYPES.map((t) => (
+								<option key={t.value} value={t.value}>
+									{t.label}
+								</option>
+							))}
+						</select>
+					</label>
+				)}
 
-				<label>
-					Associated Beehouse *
-					<select
-						required
-						value={beehouseId}
-						onChange={(e) => setBeehouseId(e.target.value)}>
-						<option value=''>Select beehouse</option>
-						{userBeehouses.map((b) => (
-							<option key={b.id} value={b.id}>
-								{b.name || `Beehouse ${b.id}`}
-							</option>
-						))}
-					</select>
-				</label>
+				{/* Beehouse field — read-only in remove mode */}
+				{isRemoveMode ? (
+					<label>
+						Beehouse
+						<input type='text' value={beehouseName} readOnly />
+					</label>
+				) : (
+					<label>
+						Associated Beehouse *
+						<select
+							required
+							value={beehouseId}
+							onChange={(e) => setBeehouseId(e.target.value)}>
+							<option value=''>Select beehouse</option>
+							{userBeehouses.map((b) => (
+								<option key={b.id} value={b.id}>
+									{b.name || `Beehouse ${b.id}`}
+								</option>
+							))}
+						</select>
+					</label>
+				)}
 
 				<label className='full-width'>
-					Notes (optional)
+					{isRemoveMode ? 'Reason for removal *' : 'Notes (optional)'}
 					<textarea
 						value={notes}
 						onChange={(e) => setNotes(e.target.value)}
 						rows={4}
-						placeholder='Add details about the event...'
+						placeholder={
+							isRemoveMode
+								? 'Explain why this beehouse is being removed...'
+								: 'Add details about the event...'
+						}
 					/>
 				</label>
 
-				{/* ⭐ Buttons Row */}
 				<div className='form-actions'>
 					<button type='submit' disabled={loading}>
-						{loading ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Note'}
+						{loading
+							? 'Saving...'
+							: isRemoveMode
+								? 'Remove Beehouse'
+								: isEditing
+									? 'Save Changes'
+									: 'Add Note'}
 					</button>
 
 					<button type='button' className='cancel-button' onClick={onClose}>

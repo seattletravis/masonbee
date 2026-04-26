@@ -224,3 +224,30 @@
 		text-align: center;
 	}
 }
+/* ------------------------------------------
+   MOBILE OPTIMIZATION — Beehouse Page Layout
+-------------------------------------------*/
+@media (max-width: 600px) {
+	.beehouse-page {
+		padding: 1rem;
+	}
+
+	.beehouse-section {
+		margin-bottom: 1.5rem;
+	}
+
+	.beehouse-section h2 {
+		font-size: 1.3rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.beehouse-list {
+		gap: 0.75rem;
+	}
+
+	.beehouse-card {
+		padding: 1rem;
+		border-radius: 12px;
+		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+	}
+}

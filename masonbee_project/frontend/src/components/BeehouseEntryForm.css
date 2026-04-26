@@ -30,7 +30,7 @@
 .form-section-title {
 	font-size: 1.05rem;
 	font-weight: 700;
-	margin: 0.15rem 0 0.4rem 0;
+	margin-top: 0.5rem; /* was larger before */
 	color: #333;
 }
 
@@ -40,6 +40,7 @@
 	grid-template-columns: 1fr 1fr;
 	gap: 0.65rem 1.25rem;
 	padding: 0.75rem;
+	padding-top: 0rem;
 	background: #fafafa;
 	border-radius: 8px;
 	border: 1px solid #e5e5e5;
@@ -48,7 +49,6 @@
 /* Environment section: single column */
 .environment-section {
 	grid-template-columns: 1fr;
-	padding: 0.75rem 1rem;
 }
 
 /* Checkbox alignment fix */
@@ -95,4 +95,123 @@
 	color: #b00020;
 	font-weight: 600;
 	margin-top: -0.25rem;
+}
+/* ------------------------------------------
+   MOBILE OPTIMIZATION — Add Beehouse Form
+-------------------------------------------*/
+@media (max-width: 600px) {
+	/* Prevent ANY horizontal overflow */
+	.beehouse-form {
+		width: 100%;
+		box-sizing: border-box;
+		overflow-x: hidden;
+	}
+
+	/* Collapse all grids into a single column */
+	.form-section {
+		display: block !important;
+	}
+
+	.form-section > label,
+	.form-section > div {
+		width: 100% !important;
+		margin-bottom: 1rem;
+	}
+
+	/* Inputs stretch full width */
+	.beehouse-form input,
+	.beehouse-form select,
+	.beehouse-form textarea {
+		width: 100% !important;
+		max-width: 100%;
+		box-sizing: border-box;
+		font-size: 0.95rem;
+	}
+
+	/* Location buttons stack */
+	.location-buttons {
+		display: block;
+	}
+
+	.location-buttons .button {
+		width: 100%;
+		margin-bottom: 0.75rem;
+	}
+
+	/* Form actions stack */
+	.form-actions {
+		display: block;
+	}
+
+	.form-actions .button {
+		width: 100%;
+		margin-bottom: 0.75rem;
+	}
+
+	/* Checkbox rows behave on mobile */
+	.environment-section label {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		line-height: 1.3;
+	}
+
+	.environment-section input[type='checkbox'] {
+		transform: scale(1.25);
+		margin-top: 0.2rem;
+	}
+}
+/* Collapsed header */
+.beehouse-form-collapsed-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.85rem 1rem;
+	background: #ffffff;
+	border: 1px solid #dcdcdc;
+	border-radius: 10px;
+	font-size: 1.2rem;
+	font-weight: 700;
+	cursor: pointer;
+	user-select: none;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.beehouse-form-collapsed-header:hover {
+	background: #f7f7f7;
+}
+
+/* Expanded header */
+.beehouse-form-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	cursor: pointer;
+	user-select: none;
+	padding: 0.5rem 0;
+}
+
+/* Caret */
+.caret {
+	font-size: 1.1rem;
+	transition: transform 0.25s ease;
+	opacity: 0.8;
+}
+
+.caret.open {
+	transform: rotate(180deg);
+}
+.button-disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+@media (max-width: 600px) {
+	.form-section-title {
+		margin-top: 0.25rem;
+		margin-bottom: 0.25rem;
+	}
+
+	.form-section {
+		padding: 0.5rem 0.75rem;
+	}
 }

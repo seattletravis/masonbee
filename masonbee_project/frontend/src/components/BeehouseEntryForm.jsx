@@ -27,29 +27,66 @@ export default function BeehouseEntryForm({
 
 	const [isSaving, setIsSaving] = useState(false);
 	const [error, setError] = useState('');
+	const [initialValues, setInitialValues] = useState(null);
 
 	// ------------------------------------------------------------
-	// Load editing data
+	// Load editing data + store initial values for change detection
 	// ------------------------------------------------------------
 	useEffect(() => {
 		if (editingBeehouse) {
 			setIsCollapsed(false);
 
-			setName(editingBeehouse.name || '');
-			setDescription(editingBeehouse.garden_description || '');
-			setType(editingBeehouse.type || '');
-			setCapacity(editingBeehouse.tube_capacity || '');
-			setHeight(editingBeehouse.height_inches || '');
-			setOrientation(editingBeehouse.orientation || '');
-			setLatitude(editingBeehouse.latitude || '');
-			setLongitude(editingBeehouse.longitude || '');
+			const original = {
+				name: editingBeehouse.name || '',
+				description: editingBeehouse.garden_description || '',
+				type: editingBeehouse.beehouse_type || '',
+				capacity: editingBeehouse.tube_capacity || '',
+				height: editingBeehouse.height_above_ground_inches || '',
+				orientation: editingBeehouse.orientation || '',
+				latitude: editingBeehouse.latitude || '',
+				longitude: editingBeehouse.longitude || '',
+				waterNearby: editingBeehouse.water_nearby || false,
+				clayNearby: editingBeehouse.clay_nearby || false,
+				flowersNearby: editingBeehouse.flowers_nearby || false,
+				woodsNearby: editingBeehouse.woods_nearby || false,
+			};
 
-			setWaterNearby(editingBeehouse.water_nearby || false);
-			setClayNearby(editingBeehouse.clay_nearby || false);
-			setFlowersNearby(editingBeehouse.flowers_nearby || false);
-			setWoodsNearby(editingBeehouse.woods_nearby || false);
+			setInitialValues(original);
+
+			// Populate form
+			setName(original.name);
+			setDescription(original.description);
+			setType(original.type);
+			setCapacity(original.capacity);
+			setHeight(original.height);
+			setOrientation(original.orientation);
+			setLatitude(original.latitude);
+			setLongitude(original.longitude);
+
+			setWaterNearby(original.waterNearby);
+			setClayNearby(original.clayNearby);
+			setFlowersNearby(original.flowersNearby);
+			setWoodsNearby(original.woodsNearby);
 		}
 	}, [editingBeehouse, setIsCollapsed]);
+
+	// ------------------------------------------------------------
+	// Detect if any field has changed
+	// ------------------------------------------------------------
+	const hasChanges =
+		initialValues &&
+		(name !== initialValues.name ||
+			description !== initialValues.description ||
+			type !== initialValues.type ||
+			capacity !== initialValues.capacity ||
+			height !== initialValues.height ||
+			orientation !== initialValues.orientation ||
+			latitude !== initialValues.latitude ||
+			longitude !== initialValues.longitude ||
+			waterNearby !== initialValues.waterNearby ||
+			clayNearby !== initialValues.clayNearby ||
+			flowersNearby !== initialValues.flowersNearby ||
+			woodsNearby !== initialValues.woodsNearby);
 
 	// ------------------------------------------------------------
 	// Map Picker Integration
@@ -87,12 +124,12 @@ export default function BeehouseEntryForm({
 		const payload = {
 			name,
 			garden_description: description,
-			beehouse_type: type, // FIXED
-			tube_capacity: capacity, // FIXED
-			height_above_ground_inches: height, // FIXED
+			beehouse_type: type,
+			tube_capacity: capacity,
+			height_above_ground_inches: height,
 			orientation,
-			latitude: Number(latitude).toFixed(6), // FIXED
-			longitude: Number(longitude).toFixed(6), // FIXED
+			latitude: Number(latitude).toFixed(6),
+			longitude: Number(longitude).toFixed(6),
 			water_nearby: waterNearby,
 			clay_nearby: clayNearby,
 			flowers_nearby: flowersNearby,
@@ -125,12 +162,11 @@ export default function BeehouseEntryForm({
 	// ------------------------------------------------------------
 	if (isCollapsed) {
 		return (
-			<div className='beehouse-form-collapsed'>
-				<button
-					className='button button-primary'
-					onClick={() => setIsCollapsed(false)}>
-					+ Add Beehouse
-				</button>
+			<div
+				className='beehouse-form-collapsed-header'
+				onClick={() => setIsCollapsed(false)}>
+				<span className='header-text'>Add Beehouse</span>
+				<span className='caret'>▼</span>
 			</div>
 		);
 	}
@@ -140,9 +176,11 @@ export default function BeehouseEntryForm({
 	// ------------------------------------------------------------
 	return (
 		<form className='beehouse-form' onSubmit={handleSubmit}>
-			<h2 className='beehouse-form-header'>
-				{editingBeehouse ? 'Edit Beehouse' : 'Add Beehouse'}
+			<h2 className='beehouse-form-header' onClick={() => setIsCollapsed(true)}>
+				<span>{editingBeehouse ? 'Edit Beehouse' : 'Add Beehouse'}</span>
+				<span className='caret open'>▲</span>
 			</h2>
+
 			{/* BASIC INFO */}
 			<h3 className='form-section-title'>Basic Information</h3>
 			<div className='form-section'>
@@ -306,7 +344,9 @@ export default function BeehouseEntryForm({
 			{error && <p className='form-error'>{error}</p>}
 
 			<div className='form-actions'>
-				<button className='button button-primary' disabled={isSaving}>
+				<button
+					className='button button-primary'
+					disabled={isSaving || (editingBeehouse && !hasChanges)}>
 					{isSaving
 						? 'Saving...'
 						: editingBeehouse
