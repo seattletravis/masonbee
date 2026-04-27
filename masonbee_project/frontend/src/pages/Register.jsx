@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { post, setTokens } from '../api/client';
+import { post } from '../api/client';
 import './Register.css';
 
 export default function Register() {
@@ -12,19 +12,40 @@ export default function Register() {
 		e.preventDefault();
 		setError('');
 
-		const result = await post('/api/register/', {
-			username,
-			email,
-			password,
-		});
+		try {
+			const response = await post('/api/register/', {
+				username,
+				email,
+				password,
+			});
 
-		if (!result || result.detail) {
-			setError(result?.detail || 'Registration failed');
-			return;
+			// If backend returned a status code outside 200–299,
+			// your post() helper likely returns { detail: "...error..." }
+			if (response?.detail) {
+				// Map backend messages to nicer UI messages
+				const msg = response.detail;
+
+				if (msg.includes('required')) {
+					setError('Please fill out all fields.');
+				} else if (msg.includes('Username already taken')) {
+					setError('That username is already in use.');
+				} else if (msg.includes('Email already in use')) {
+					setError('That email is already registered.');
+				} else if (msg.toLowerCase().includes('password')) {
+					setError('Your password does not meet requirements.');
+				} else {
+					setError(msg || 'Registration failed.');
+				}
+
+				return;
+			}
+
+			// SUCCESS — backend returned 201
+			window.location.assign('/check-email');
+		} catch (err) {
+			console.error('REGISTER ERROR:', err);
+			setError('Something went wrong. Please try again.');
 		}
-
-		// Redirect to the check email page
-		window.location.assign('/check-email');
 	}
 
 	return (
@@ -42,7 +63,8 @@ export default function Register() {
 
 				<input
 					type='email'
-					placeholder='Email (optional)'
+					required
+					placeholder='Email'
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
 					className='register-input'
@@ -55,6 +77,8 @@ export default function Register() {
 					onChange={(e) => setPassword(e.target.value)}
 					className='register-input'
 				/>
+
+				{error && <p className='register-error'>{error}</p>}
 
 				<button type='submit' className='register-button'>
 					Create Account

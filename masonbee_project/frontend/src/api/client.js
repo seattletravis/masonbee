@@ -125,7 +125,9 @@ async function parseResponse(response) {
 
 async function request(method, url, data, retried = false) {
 	const { access } = getTokens();
-	const headers = {};
+	const headers = {
+		Accept: 'application/json',
+	};
 
 	if (data !== undefined) {
 		headers['Content-Type'] = 'application/json';

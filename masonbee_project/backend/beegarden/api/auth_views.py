@@ -1,3 +1,5 @@
+print("REGISTER VIEW EXECUTED")
+
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -19,65 +21,97 @@ from django.utils.http import urlsafe_base64_decode
 
 from django.shortcuts import redirect
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+@method_decorator(csrf_exempt, name='dispatch')
+
 class RegisterView(APIView):
     authentication_classes = []  # Allow anyone
     permission_classes = []      # No auth required
 
     def post(self, request):
+        print("\n================ REGISTER VIEW EXECUTED ================")
+        print("RAW request.data:", request.data)
+
+        # Extract fields
         username = request.data.get("username")
         password = request.data.get("password")
         email = request.data.get("email")
 
-        # Require all fields
+        print(f"Parsed fields -> username: {username}, email: {email}, password: {'***' if password else None}")
+
+        # ---------------------------
+        # VALIDATION: Missing fields
+        # ---------------------------
         if not username or not password or not email:
+            print("ERROR 1: Missing required fields")
             return Response(
                 {"detail": "Username, email, and password are required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check username uniqueness
+        # ---------------------------
+        # VALIDATION: Username exists
+        # ---------------------------
         if User.objects.filter(username=username).exists():
+            print("ERROR 2: Username already taken")
             return Response(
                 {"detail": "Username already taken"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check email uniqueness
+        # ---------------------------
+        # VALIDATION: Email exists
+        # ---------------------------
         if User.objects.filter(email=email).exists():
+            print("ERROR 3: Email already in use")
             return Response(
                 {"detail": "Email already in use"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Create inactive user
-        user = User.objects.create_user(
-            username=username,
-            password=password,
-            email=email,
-            is_active=False
-        )
+        # ---------------------------
+        # USER CREATION + TOKEN GEN
+        # ---------------------------
+        try:
+            print("STEP A: Creating user...")
+            user = User.objects.create_user(
+                username=username,
+                password=password,
+                email=email,
+                is_active=False
+            )
+            print("STEP A SUCCESS: User created with ID:", user.id)
 
-        # Generate verification token + uid
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = default_token_generator.make_token(user)
+            print("STEP B: Generating UID...")
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            print("STEP B SUCCESS: UID =", uid)
 
-        verification_link = f"https://yourdomain.com/api/verify-email/{uid}/{token}/"
+            print("STEP C: Generating token...")
+            token = default_token_generator.make_token(user)
+            print("STEP C SUCCESS: Token =", token)
 
-        # Send verification email
-        send_mail(
-            subject="Verify your MasonBee account",
-            message=f"Click the link to verify your account: {verification_link}",
-            from_email="no-reply@masonbee.com",
-            recipient_list=[email],
-            fail_silently=False,
-        )
+            print("STEP D: Building verification link...")
+            verification_link = f"http://127.0.0.1:8000/api/verify-email/{uid}/{token}/"
+            print("STEP D SUCCESS: Link =", verification_link)
 
+        except Exception as e:
+            print("REGISTER ERROR (inside try/except):", repr(e))
+            return Response({"detail": str(e)}, status=400)
+
+        # ---------------------------
+        # SUCCESS RESPONSE
+        # ---------------------------
+        print("REGISTER SUCCESS: Returning 201 response")
         return Response(
-            {
-                "detail": "Account created. Please check your email to verify your account."
-            },
+            {"detail": "Account created. Check your email to verify."},
             status=status.HTTP_201_CREATED
         )
+
+
+
+
 
 
 
