@@ -379,6 +379,14 @@ out center;
 	return (
 		<div className='mason-bee-finder'>
 			<h1>Mason Bee Finder</h1>
+			<div className='finder-intro'>
+				<p>
+					Choose a spot in the map by dropping the bee pin, and we’ll
+					automatically scan the area for water, clay, and nearby habitat
+					indicators. Put a check mark in which resources are near by and hit
+					the Run Mason Bee Check button at the bottom of the page.
+				</p>
+			</div>
 			<MapPinModal
 				isOpen={showMapModal}
 				onSelect={handleMapSelect}
