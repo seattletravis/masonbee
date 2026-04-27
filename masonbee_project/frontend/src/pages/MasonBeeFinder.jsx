@@ -1,5 +1,5 @@
 // src/pages/MasonBeeFinder.jsx
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { calculateMasonBeeLikelihood } from '../utils/masonBeePrediction';
 import './MasonBeeFinder.css';
 import 'leaflet/dist/leaflet.css';
@@ -9,38 +9,88 @@ import { fetchPublicBeehouses } from '../api/beehouses';
 import MapPinModal from '../components/MapPinModal';
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
-const SEARCH_RADIUS_METERS = 90; // ~300 ft
+const SEARCH_RADIUS_METERS = 90;
 
-// Simple Haversine helper
+// ------------------------------
+// Utility helpers
+// ------------------------------
+
 function distanceMeters(lat1, lon1, lat2, lon2) {
 	const R = 6371000;
 	const toRad = (v) => (v * Math.PI) / 180;
 	const dLat = toRad(lat2 - lat1);
 	const dLon = toRad(lon2 - lon1);
 	const a =
-		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-		Math.cos(toRad(lat1)) *
-			Math.cos(toRad(lat2)) *
-			Math.sin(dLon / 2) *
-			Math.sin(dLon / 2);
+		Math.sin(dLat / 2) ** 2 +
+		Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
 	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	return R * c;
 }
 
-// Cache for Overpass results (persists across renders)
+// ------------------------------
+// Overpass caching + retry logic
+// ------------------------------
+
 const overpassCache = new Map();
+let overpassInFlight = null;
+
 function cacheKey(lat, lon) {
 	return `${lat.toFixed(4)},${lon.toFixed(4)}`;
 }
 
+async function safeOverpassCall(fn) {
+	// If another Overpass call is already running, wait for it
+	if (overpassInFlight) {
+		return overpassInFlight;
+	}
+
+	// Create a promise representing the in‑flight request
+	overpassInFlight = (async () => {
+		let attempt = 0;
+		const maxAttempts = 3;
+
+		while (attempt < maxAttempts) {
+			try {
+				const result = await fn();
+				overpassInFlight = null; // clear lock
+				return result;
+			} catch (err) {
+				// Only retry Overpass rate limits
+				if (!err.message.includes('Overpass')) {
+					overpassInFlight = null;
+					throw err;
+				}
+
+				attempt++;
+
+				if (attempt >= maxAttempts) {
+					console.warn('Overpass is temporarily rate-limited.');
+					overpassInFlight = null;
+					throw err;
+				}
+
+				// Backoff: 300ms → 600ms → 1200ms
+				const delay = 300 * Math.pow(2, attempt - 1);
+				await new Promise((resolve) => setTimeout(resolve, delay));
+			}
+		}
+	})();
+
+	return overpassInFlight;
+}
+
 function MasonBeeFinder() {
+	const predictionRef = useRef(null);
+
+	const hasLoadedGardensRef = useRef(false);
+	const hasInitializedRef = React.useRef(false);
 	const [freshData, setFreshData] = useState(null);
 	const [hasRunPrediction, setHasRunPrediction] = useState(false);
 	const [publicGardens, setPublicGardens] = useState([]);
-	const [userLocation, setUserLocation] = useState(null); // { lat, lon }
+	const [userLocation, setUserLocation] = useState(null);
 	const [locationError, setLocationError] = useState(null);
 	const [showMapModal, setShowMapModal] = useState(false);
-	const [selectedLocation, setSelectedLocation] = useState(null); // { lat, lon }
+	const [selectedLocation, setSelectedLocation] = useState(null);
 	const [isCheckingLocation, setIsCheckingLocation] = useState(false);
 
 	const [hasPollinators, setHasPollinators] = useState(false);
@@ -56,20 +106,23 @@ function MasonBeeFinder() {
 	const [nearbyCommunityGardens, setNearbyCommunityGardens] = useState(0);
 	const [prediction, setPrediction] = useState(null);
 
-	// Load public gardens from backend
+	// ------------------------------
+	// Load public gardens
+	// ------------------------------
+
 	useEffect(() => {
+		if (hasLoadedGardensRef.current) return;
+		hasLoadedGardensRef.current = true;
 		async function loadGardens() {
 			try {
 				const data = await get('/api/gardens/');
-
 				const filtered = data.filter(
 					(g) =>
-						g.is_public === true &&
+						g.is_public &&
 						(g.garden_type === 'community' || g.garden_type === 'public') &&
 						g.latitude &&
 						g.longitude,
 				);
-
 				setPublicGardens(filtered);
 			} catch (err) {
 				console.error('Failed to load gardens', err);
@@ -79,7 +132,10 @@ function MasonBeeFinder() {
 		loadGardens();
 	}, []);
 
-	// Overpass query for water / woods / clay (inferred)
+	// ------------------------------
+	// Overpass detection
+	// ------------------------------
+
 	const runOverpassDetection = useCallback(async (lat, lon) => {
 		const key = cacheKey(lat, lon);
 
@@ -89,44 +145,17 @@ function MasonBeeFinder() {
 
 		const radius = SEARCH_RADIUS_METERS;
 		const query = `
-[out:json][timeout:25];
+[out:json][timeout:10];
 (
-  node(around:${radius},${lat},${lon})[natural=water];
-  way(around:${radius},${lat},${lon})[natural=water];
-  relation(around:${radius},${lat},${lon})[natural=water];
+  // Water sources
+  nwr(around:${radius},${lat},${lon})[natural~"water|wetland"];
+  nwr(around:${radius},${lat},${lon})[water];
+  nwr(around:${radius},${lat},${lon})[waterway];
 
-  node(around:${radius},${lat},${lon})[water];
-  way(around:${radius},${lat},${lon})[water];
-  relation(around:${radius},${lat},${lon})[water];
-
-  node(around:${radius},${lat},${lon})[waterway];
-  way(around:${radius},${lat},${lon})[waterway];
-  relation(around:${radius},${lat},${lon})[waterway];
-
-  node(around:${radius},${lat},${lon})[wetland];
-  way(around:${radius},${lat},${lon})[wetland];
-  relation(around:${radius},${lat},${lon})[wetland];
-
-  node(around:${radius},${lat},${lon})[landuse=forest];
-  way(around:${radius},${lat},${lon})[landuse=forest];
-  relation(around:${radius},${lat},${lon})[landuse=forest];
-
-  node(around:${radius},${lat},${lon})[natural=wood];
-  way(around:${radius},${lat},${lon})[natural=wood];
-  relation(around:${radius},${lat},${lon})[natural=wood];
-
-  node(around:${radius},${lat},${lon})[landcover=trees];
-  way(around:${radius},${lat},${lon})[landcover=trees];
-  relation(around:${radius},${lat},${lon})[landcover=trees];
-
-  node(around:${radius},${lat},${lon})[natural=bare_rock];
-  way(around:${radius},${lat},${lon})[natural=bare_rock];
-
-  node(around:${radius},${lat},${lon})[natural=earth_bank];
-  way(around:${radius},${lat},${lon})[natural=earth_bank];
-
-  node(around:${radius},${lat},${lon})[landuse=quarry];
-  way(around:${radius},${lat},${lon})[landuse=quarry];
+  // Woods / forest / trees
+  nwr(around:${radius},${lat},${lon})[landuse=forest];
+  nwr(around:${radius},${lat},${lon})[natural=wood];
+  nwr(around:${radius},${lat},${lon})[landcover=trees];
 );
 out center;
 `;
@@ -137,7 +166,7 @@ out center;
 		});
 
 		if (!res.ok) {
-			throw new Error('Overpass API error');
+			throw new Error('Overpass rate limit');
 		}
 
 		const data = await res.json();
@@ -182,7 +211,10 @@ out center;
 		return result;
 	}, []);
 
-	// Community garden proximity check
+	// ------------------------------
+	// Community garden proximity
+	// ------------------------------
+
 	const computeNearbyCommunityGardens = useCallback(
 		(lat, lon) => {
 			return publicGardens.filter((g) => {
@@ -197,8 +229,40 @@ out center;
 		},
 		[publicGardens],
 	);
+	// Run prediction ONLY when user clicks the checker
+	function runChecker() {
+		if (!selectedLocation || !freshData) return;
 
-	// Run full location check (Overpass + beehouses + gardens)
+		const { beehouseCount, gardenCount } = freshData;
+
+		const result = calculateMasonBeeLikelihood({
+			hasPollinators,
+			hasWater,
+			hasClay,
+			hasWoods,
+			nearbyBeehouses: beehouseCount,
+			nearbyCommunityGardens: gardenCount,
+		});
+
+		setPrediction(result);
+		setHasRunPrediction(true);
+		setTimeout(() => {
+			if (predictionRef.current) {
+				const rect = predictionRef.current.getBoundingClientRect();
+				const scrollY = window.scrollY + rect.bottom - window.innerHeight;
+
+				window.scrollTo({
+					top: scrollY,
+					behavior: 'smooth',
+				});
+			}
+		}, 50);
+	}
+
+	// ------------------------------
+	// Full location check
+	// ------------------------------
+
 	const handleCheckLocation = useCallback(
 		async (loc) => {
 			if (!loc) return;
@@ -208,13 +272,14 @@ out center;
 				const { lat, lon } = loc;
 
 				const [overpassResult, beehouseList] = await Promise.all([
-					runOverpassDetection(lat, lon),
+					safeOverpassCall(() => runOverpassDetection(lat, lon)),
 					fetchPublicBeehouses(lat, lon),
 				]);
 
 				const beehouseCount = Array.isArray(beehouseList)
 					? beehouseList.length
 					: 0;
+
 				const gardenCount = computeNearbyCommunityGardens(lat, lon);
 
 				const clayFromOverpass =
@@ -242,16 +307,42 @@ out center;
 				setHasClay(clayFromOverpass);
 				setHasWoods(overpassResult.woodsDetected);
 			} catch (err) {
-				console.error(err);
+				console.warn('Overpass temporarily unavailable, retry failed:', err);
 			} finally {
 				setIsCheckingLocation(false);
 			}
 		},
 		[runOverpassDetection, fetchPublicBeehouses, computeNearbyCommunityGardens],
 	);
+	// Handle selection from MapPinModal
+	function handleMapSelect(lat, lon) {
+		const loc = { lat, lon };
+
+		setSelectedLocation(loc);
+		setUserLocation(loc);
+
+		// Reset user toggles
+		setHasWater(false);
+		setHasClay(false);
+		setHasWoods(false);
+		setHasPollinators(false);
+
+		// Reset prediction
+		setPrediction(null);
+		setHasRunPrediction(false);
+
+		// Reset Yes/No indicators while checking new location
+		setNearbyBeehouses(0);
+		setNearbyCommunityGardens(0);
+
+		// Run full location check
+		handleCheckLocation(loc);
+	}
 
 	// Geolocation on mount
 	useEffect(() => {
+		if (hasInitializedRef.current) return;
+		hasInitializedRef.current = true;
 		if (!navigator.geolocation) {
 			setLocationError(
 				'Geolocation is not available. Please select a location from the map to get started.',
@@ -273,7 +364,7 @@ out center;
 				setPrediction(null);
 				setHasRunPrediction(false);
 
-				// ✔ Automatically run map detection when geolocation succeeds
+				// Automatically run full detection
 				handleCheckLocation(loc);
 			},
 			() => {
@@ -283,55 +374,16 @@ out center;
 				setShowMapModal(true);
 			},
 		);
-	}, []);
-
-	// Run prediction ONLY when user clicks the checker
-	function runChecker() {
-		if (!selectedLocation || !freshData) return;
-
-		const { beehouseCount, gardenCount } = freshData;
-
-		const result = calculateMasonBeeLikelihood({
-			hasPollinators,
-			hasWater,
-			hasClay,
-			hasWoods,
-			nearbyBeehouses: beehouseCount,
-			nearbyCommunityGardens: gardenCount,
-		});
-
-		setPrediction(result);
-		setHasRunPrediction(true);
-	}
-
-	// Handle selection from MapPinModal
-	function handleMapSelect(lat, lon) {
-		const loc = { lat, lon };
-
-		setSelectedLocation(loc);
-		setUserLocation(loc);
-
-		setHasWater(false);
-		setHasClay(false);
-		setHasWoods(false);
-		setHasPollinators(false);
-
-		setPrediction(null);
-		setHasRunPrediction(false);
-
-		handleCheckLocation(loc);
-	}
+	}, [handleCheckLocation]);
 
 	return (
 		<div className='mason-bee-finder'>
 			<h1>Mason Bee Finder</h1>
-
 			<MapPinModal
 				isOpen={showMapModal}
 				onSelect={handleMapSelect}
 				onClose={() => setShowMapModal(false)}
 			/>
-
 			<div className='controls'>
 				<button className='button' onClick={() => setShowMapModal(true)}>
 					Choose Location on Map
@@ -350,7 +402,6 @@ out center;
 					</div>
 				)}
 			</div>
-
 			<div className='toggles'>
 				<div className='finder-intro'>
 					<h2>Mason Bee Habitat Check</h2>
@@ -362,8 +413,9 @@ out center;
 					</p>
 					<p>
 						<strong>
-							Please select the resources within 100 feet of your location then
-							hit Run Mason Bee Check button at the bottom of the form.
+							Please select the resources within 100 ft of the location. These
+							indicatiors have a big impact on the prediction. Take time to fill
+							it out.
 						</strong>
 					</p>
 				</div>
@@ -470,7 +522,6 @@ out center;
 					</div>
 				</div>
 			</div>
-
 			<div className='yesno-section'>
 				<div className='yesno-item'>
 					<strong>Nearby beehouses:</strong>
@@ -486,7 +537,6 @@ out center;
 					</span>
 				</div>
 			</div>
-
 			{nearbyBeehouses > 0 && (
 				<div className='beehouse-footer'>
 					There are active mason bee keepers in your area that contribute to the
@@ -495,7 +545,6 @@ out center;
 					clay, and planting early‑season flowers.
 				</div>
 			)}
-
 			{nearbyCommunityGardens > 0 && (
 				<div className='garden-footer'>
 					Community gardens value and nurture many of the same things that help
@@ -503,16 +552,16 @@ out center;
 					strong sign that mason bees are already active in your area.
 				</div>
 			)}
-
 			<div className='actions'>
 				<button
 					className='button mbf-checker-button'
 					onClick={runChecker}
 					disabled={!selectedLocation || isCheckingLocation}>
-					{isCheckingLocation ? 'Checking location…' : 'Run Mason Bee Check'}
+					{isCheckingLocation
+						? 'Checking several sources for information… Please be patient.'
+						: 'Run Mason Bee Check'}
 				</button>
 			</div>
-
 			{!hasRunPrediction ? (
 				<div className='start-message'>
 					<p>
@@ -531,9 +580,9 @@ out center;
 					</div>
 				)
 			)}
-
 			<details className='learn-more'>
 				<summary>Learn More About Mason Bees</summary>
+				<div ref={predictionRef}>{/* your prediction card */}</div>
 
 				<div className='learn-more-content'>
 					<h3>The Tiny Neighbors With a Big Spring Agenda</h3>

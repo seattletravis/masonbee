@@ -54,7 +54,8 @@ function Dashboard() {
 				<Link to='/journal' className='dashboard-card dashboard-card-link'>
 					<h2 className='card-title'>My Journal</h2>
 					<p className='card-text'>
-						Record observations, blooms, weather notes, and bee activity.
+						Record observations, blooms, weather notes, and bee activity. Keep
+						records that help you become a better bee keeper.
 					</p>
 				</Link>
 
