@@ -202,4 +202,4 @@ export function del(url) {
 	return request('DELETE', url);
 }
 
-export { setTokens, getTokens, clearTokens, setRefreshHandler };
+export { setTokens, getTokens, clearTokens, setRefreshHandler, buildUrl };

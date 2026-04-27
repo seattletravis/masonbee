@@ -111,6 +111,19 @@ class RegisterView(APIView):
 
 
 
+class CheckUsernameView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        username = request.query_params.get("username", "").strip()
+
+        if not username:
+            return Response({"available": False, "detail": "No username provided"}, 400)
+
+        exists = User.objects.filter(username=username).exists()
+
+        return Response({"available": not exists})
 
 
 

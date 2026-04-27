@@ -14,7 +14,7 @@ from .friend_views import (
 )
 
 from .profile_views import UserProfileView, AvatarUploadView
-from .auth_views import RegisterView, VerifyEmailView
+from .auth_views import RegisterView, VerifyEmailView, CheckUsernameView
 
 
 router = DefaultRouter()
@@ -46,6 +46,8 @@ urlpatterns = [
     # Register
     path("register/", RegisterView.as_view(), name="register"),
     path("verify-email/<uidb64>/<token>/", VerifyEmailView.as_view(), name="verify-email"),
+    path("check-username/", CheckUsernameView.as_view()),
+
 ]
 
 urlpatterns += router.urls

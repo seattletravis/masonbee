@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { post } from '../api/client';
 import './Register.css';
+import { buildUrl } from '../api/client';
 
 export default function Register() {
 	const [username, setUsername] = useState('');
@@ -8,6 +9,45 @@ export default function Register() {
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
 
+	// Username availability state
+	const [usernameAvailable, setUsernameAvailable] = useState(null);
+	const [checking, setChecking] = useState(false);
+	const [lastChecked, setLastChecked] = useState(''); // prevents flicker
+
+	// -------------------------------
+	// Username Availability Checker
+	// -------------------------------
+	useEffect(() => {
+		if (!username) {
+			setUsernameAvailable(null);
+			setLastChecked('');
+			return;
+		}
+
+		setChecking(true);
+
+		const timeout = setTimeout(async () => {
+			try {
+				const res = await fetch(
+					buildUrl(`/api/check-username/?username=${username}`),
+				);
+				const data = await res.json();
+
+				setUsernameAvailable(data.available);
+				setLastChecked(username);
+			} catch {
+				setUsernameAvailable(null);
+			}
+
+			setChecking(false);
+		}, 500);
+
+		return () => clearTimeout(timeout);
+	}, [username]);
+
+	// -------------------------------
+	// Registration Submit Handler
+	// -------------------------------
 	async function handleSubmit(e) {
 		e.preventDefault();
 		setError('');
@@ -19,10 +59,7 @@ export default function Register() {
 				password,
 			});
 
-			// If backend returned a status code outside 200–299,
-			// your post() helper likely returns { detail: "...error..." }
 			if (response?.detail) {
-				// Map backend messages to nicer UI messages
 				const msg = response.detail;
 
 				if (msg.includes('required')) {
@@ -40,7 +77,7 @@ export default function Register() {
 				return;
 			}
 
-			// SUCCESS — backend returned 201
+			// SUCCESS
 			window.location.assign('/check-email');
 		} catch (err) {
 			console.error('REGISTER ERROR:', err);
@@ -48,6 +85,9 @@ export default function Register() {
 		}
 	}
 
+	// -------------------------------
+	// Render
+	// -------------------------------
 	return (
 		<div className='register-container'>
 			<h2 className='register-title'>Create an Account</h2>
@@ -60,6 +100,23 @@ export default function Register() {
 					onChange={(e) => setUsername(e.target.value)}
 					className='register-input'
 				/>
+
+				{/* Username Status Messages */}
+				{username && checking && <p className='username-check'>Checking...</p>}
+
+				{username &&
+					!checking &&
+					lastChecked === username &&
+					usernameAvailable === false && (
+						<p className='username-error'>That username is already taken.</p>
+					)}
+
+				{username &&
+					!checking &&
+					lastChecked === username &&
+					usernameAvailable === true && (
+						<p className='username-ok'>Username is available!</p>
+					)}
 
 				<input
 					type='email'

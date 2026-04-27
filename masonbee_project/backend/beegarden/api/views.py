@@ -34,6 +34,9 @@ from beegarden.permissions import (
     user_can_revoke_access,
 )
 
+
+
+
 class JournalEntryViewSet(viewsets.ModelViewSet):
     serializer_class = JournalEntrySerializer
     queryset = JournalEntry.objects.all()
