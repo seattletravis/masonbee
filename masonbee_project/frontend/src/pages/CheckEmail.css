@@ -1,0 +1,38 @@
+.checkemail-container {
+	max-width: 420px;
+	margin: 4rem auto;
+	padding: 2rem;
+	background: #ffffff;
+	border-radius: 12px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+	text-align: center;
+}
+
+.checkemail-title {
+	font-size: 1.6rem;
+	margin-bottom: 1rem;
+	color: #333;
+	font-weight: 600;
+}
+
+.checkemail-message {
+	font-size: 1rem;
+	color: #555;
+	line-height: 1.5;
+	margin-bottom: 1.5rem;
+}
+
+.checkemail-subtext {
+	font-size: 0.9rem;
+	color: #666;
+}
+
+.checkemail-link {
+	color: #0077cc;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.checkemail-link:hover {
+	text-decoration: underline;
+}

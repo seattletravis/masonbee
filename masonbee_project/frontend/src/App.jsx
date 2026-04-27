@@ -14,6 +14,9 @@ import 'leaflet/dist/leaflet.css';
 import MasonBeeFinder from './pages/MasonBeeFinder';
 import ResourcesPage from './pages/ResourcesPage';
 import BeehousePage from './pages/BeehousePage';
+import Register from './pages/Register';
+import CheckEmail from './pages/CheckEmail';
+import EmailVerified from './pages/EmailVerified';
 
 export default function App() {
 	return (
@@ -50,6 +53,9 @@ export default function App() {
 						<Route path='/finder' element={<MasonBeeFinder />} />
 						<Route path='/resources' element={<ResourcesPage />} />
 						<Route path='/beehouse' element={<BeehousePage />} />
+						<Route path='/register' element={<Register />} />
+						<Route path='/check-email' element={<CheckEmail />} />
+						<Route path='/email-verified' element={<EmailVerified />} />
 
 						<Route
 							path='/garden/:id/journal'

@@ -148,6 +148,18 @@ export default function Login() {
 						{loading ? 'Signing in...' : 'Login'}
 					</button>
 				</form>
+				<p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#555' }}>
+					Don’t have an account?{' '}
+					<a
+						href='/register'
+						style={{
+							color: '#0077cc',
+							textDecoration: 'none',
+							fontWeight: '600',
+						}}>
+						Create one
+					</a>
+				</p>
 			</div>
 		</div>
 	);

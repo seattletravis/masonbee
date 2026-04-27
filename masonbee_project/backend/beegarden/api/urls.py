@@ -14,6 +14,8 @@ from .friend_views import (
 )
 
 from .profile_views import UserProfileView, AvatarUploadView
+from .auth_views import RegisterView, VerifyEmailView
+
 
 router = DefaultRouter()
 router.register(r"gardens", GardenViewSet, basename="garden")
@@ -40,6 +42,10 @@ urlpatterns = [
     path("gardens/watched/", watched_gardens, name="watched-gardens"),
     
     path("beehouses/public/", PublicBeehouseListView.as_view(), name="public-beehouses"),
+    
+    # Register
+    path("register/", RegisterView.as_view(), name="register"),
+    path("verify-email/<uidb64>/<token>/", VerifyEmailView.as_view(), name="verify-email"),
 ]
 
 urlpatterns += router.urls
