@@ -8,6 +8,7 @@ export default function Register() {
 	const [username, setUsername] = useState('');
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
+	const [confirmPassword, setConfirmPassword] = useState('');
 
 	// Error message for form submission
 	const [error, setError] = useState('');
@@ -24,6 +25,10 @@ export default function Register() {
 
 	// Password strength
 	const [passwordStrength, setPasswordStrength] = useState('weak');
+
+	// Show/hide password toggles
+	const [showPassword, setShowPassword] = useState(false);
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 	// ---------------------------------------------------------
 	// Password Strength Checker
@@ -132,6 +137,10 @@ export default function Register() {
 			);
 			return;
 		}
+		if (password !== confirmPassword) {
+			setError('Passwords do not match.');
+			return;
+		}
 
 		try {
 			const response = await post('/api/register/', {
@@ -180,6 +189,7 @@ export default function Register() {
 					value={username}
 					onChange={(e) => setUsername(e.target.value)}
 					className='register-input'
+					autoComplete='new-username'
 				/>
 
 				{username && checkingUsername && (
@@ -208,6 +218,7 @@ export default function Register() {
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
 					className='register-input'
+					autoComplete='new-email'
 				/>
 
 				{email && checkingEmail && (
@@ -229,14 +240,45 @@ export default function Register() {
 					)}
 
 				{/* Password */}
-				<input
-					type='password'
-					placeholder='Password'
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
-					className='register-input'
-				/>
+				<div className='password-wrapper'>
+					<input
+						type={showPassword ? 'text' : 'password'}
+						placeholder='Password'
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						className='register-input'
+						autoComplete='new-password'
+					/>
+					<span
+						className='password-toggle'
+						onClick={() => setShowPassword(!showPassword)}>
+						{showPassword ? '👁️' : '👁️‍🗨️'}
+					</span>
+				</div>
 
+				{/* Confirm Password */}
+				<div className='password-wrapper'>
+					<input
+						type={showConfirmPassword ? 'text' : 'password'}
+						placeholder='Confirm Password'
+						value={confirmPassword}
+						onChange={(e) => setConfirmPassword(e.target.value)}
+						className='register-input'
+						autoComplete='confirm-password'
+					/>
+					<span
+						className='password-toggle'
+						onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+						{showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+					</span>
+				</div>
+
+				{confirmPassword && password !== confirmPassword && (
+					<p className='password-mismatch'>Passwords do not match.</p>
+				)}
+
+				{/* Form Error */}
+				{error && <p className='register-error'>{error}</p>}
 				{/* Password Strength Meter */}
 				<div className='password-strength'>
 					<div className={`strength-bar ${passwordStrength}`}></div>
@@ -246,10 +288,6 @@ export default function Register() {
 						{passwordStrength === 'strong' && 'Strong password'}
 					</p>
 				</div>
-
-				{/* Form Error */}
-				{error && <p className='register-error'>{error}</p>}
-
 				<button type='submit' className='register-button'>
 					Create Account
 				</button>

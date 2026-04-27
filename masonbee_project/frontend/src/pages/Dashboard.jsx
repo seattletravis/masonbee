@@ -15,21 +15,38 @@ function Dashboard() {
 			</header>
 
 			<div className='dashboard-grid'>
+				{/* Mason Bee Finder */}
+				<Link to='/finder' className='dashboard-card dashboard-card-link'>
+					<h2 className='card-title'>Mason Bee Finder</h2>
+					<p className='card-text'>
+						Check your location’s likelihood of finding and supporting mason
+						bees. Check other locations as well.
+					</p>
+				</Link>
+				{/* Bee Awakening Forecast (Weather replacement) */}
+				<Link to='/forecasting' className='dashboard-card dashboard-card-link'>
+					<h2 className='card-title'>Mason Bee Forecast</h2>
+					<p className='card-text'>
+						See when mason bees emerge, become inactive, and when to handle
+						cocoons. Check any location.
+					</p>
+				</Link>
+
+				{/* My Beehouses */}
+				<Link to='/beehouse' className='dashboard-card dashboard-card-link'>
+					<h2 className='card-title'>My Beehouses</h2>
+					<p className='card-text'>
+						Add and manage your beehouses, add notes, and track important
+						changes.
+					</p>
+				</Link>
+
 				{/* My Gardens */}
 				<Link to='/my-gardens' className='dashboard-card dashboard-card-link'>
 					<h2 className='card-title'>My Gardens</h2>
 					<p className='card-text'>
-						View and manage your mason bee gardens, houses, and locations.
-					</p>
-				</Link>
-				{/* Garden Finder */}
-				<Link
-					to='/garden-finder'
-					className='dashboard-card dashboard-card-link'>
-					<h2 className='card-title'>Garden Finder</h2>
-					<p className='card-text'>
-						Search through community gardens in your area, more gardens beeing
-						added soon!
+						View your default and pinned community gardens all in one page.
+						Discussion boards are coming soon for a community garden near you!
 					</p>
 				</Link>
 
@@ -41,37 +58,11 @@ function Dashboard() {
 					</p>
 				</Link>
 
-				{/* Bee Awakening Forecast (Weather replacement) */}
-				<Link to='/forecasting' className='dashboard-card dashboard-card-link'>
-					<h2 className='card-title'>Mason Bee Forecast</h2>
-					<p className='card-text'>
-						See when mason bees emerge, become inactive, and when to handle
-						cocoons.
-					</p>
-				</Link>
-
-				{/* Mason Bee Finder */}
-				<Link to='/finder' className='dashboard-card dashboard-card-link'>
-					<h2 className='card-title'>Mason Bee Finder</h2>
-					<p className='card-text'>
-						Check your location’s likelihood of finding and supporting mason
-						bees.
-					</p>
-				</Link>
-
 				{/* Bee Resources */}
 				<Link to='/resources' className='dashboard-card dashboard-card-link'>
 					<h2 className='card-title'>Bee Resources</h2>
 					<p className='card-text'>
 						Guides, plant lists, and how‑to articles for supporting mason bees.
-					</p>
-				</Link>
-
-				<Link to='/beehouse' className='dashboard-card dashboard-card-link'>
-					<h2 className='card-title'>My Beehouses</h2>
-					<p className='card-text'>
-						Add and manage your mason beehouses, add notes and keep track of
-						changes.
 					</p>
 				</Link>
 			</div>
