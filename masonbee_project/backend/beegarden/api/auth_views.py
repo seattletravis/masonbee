@@ -126,6 +126,19 @@ class CheckUsernameView(APIView):
         return Response({"available": not exists})
 
 
+class CheckEmailView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        email = request.query_params.get("email", "").strip()
+
+        if not email:
+            return Response({"available": False, "detail": "No email provided"}, 400)
+
+        exists = User.objects.filter(email=email).exists()
+
+        return Response({"available": not exists})
 
 
 class MeView(APIView):
