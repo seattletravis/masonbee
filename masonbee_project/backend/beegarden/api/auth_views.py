@@ -1,31 +1,23 @@
-print("REGISTER VIEW EXECUTED")
-
-from django.contrib.auth import authenticate, login
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
+print("REGISTER VIEW LOADED")
 
 from django.contrib.auth.models import User
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
-
-from django.utils.http import urlsafe_base64_decode
-
 from django.shortcuts import redirect
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
-@method_decorator(csrf_exempt, name='dispatch')
+import os
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
     authentication_classes = []  # Allow anyone
     permission_classes = []      # No auth required
@@ -93,12 +85,40 @@ class RegisterView(APIView):
             print("STEP C SUCCESS: Token =", token)
 
             print("STEP D: Building verification link...")
-            verification_link = f"http://127.0.0.1:8000/api/verify-email/{uid}/{token}/"
+
+            # Dev vs Prod URL
+            if os.getenv("DEBUG", "False") == "True":
+                base_url = "http://127.0.0.1:8000"
+            else:
+                base_url = "https://themasonbee.com"
+
+            verification_link = f"{base_url}/api/verify-email/{uid}/{token}/"
             print("STEP D SUCCESS: Link =", verification_link)
 
         except Exception as e:
             print("REGISTER ERROR (inside try/except):", repr(e))
             return Response({"detail": str(e)}, status=400)
+
+        # ---------------------------
+        # SEND VERIFICATION EMAIL
+        # ---------------------------
+        print("STEP E: Sending verification email...")
+
+        try:
+            send_mail(
+                subject="Verify your MasonBee account",
+                message=f"Click the link to verify your account:\n\n{verification_link}",
+                from_email="no-reply@themasonbee.com",
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            print("STEP E SUCCESS: Email sent to", email)
+        except Exception as e:
+            print("EMAIL SEND ERROR:", repr(e))
+            return Response(
+                {"detail": "User created but email failed to send", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         # ---------------------------
         # SUCCESS RESPONSE
@@ -108,6 +128,7 @@ class RegisterView(APIView):
             {"detail": "Account created. Check your email to verify."},
             status=status.HTTP_201_CREATED
         )
+
 
 
 

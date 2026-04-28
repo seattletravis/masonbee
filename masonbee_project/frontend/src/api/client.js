@@ -202,4 +202,12 @@ export function del(url) {
 	return request('DELETE', url);
 }
 
+export async function createJournalEntry(payload) {
+	return post('/journal/', payload);
+}
+
+export async function updateJournalEntry(id, payload) {
+	return put(`/journal/${id}/`, payload);
+}
+
 export { setTokens, getTokens, clearTokens, setRefreshHandler, buildUrl };

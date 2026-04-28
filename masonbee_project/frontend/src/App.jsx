@@ -17,6 +17,7 @@ import BeehousePage from './pages/BeehousePage';
 import Register from './pages/Register';
 import CheckEmail from './pages/CheckEmail';
 import EmailVerified from './pages/EmailVerified';
+import AboutPage from './pages/AboutPage';
 
 export default function App() {
 	return (
@@ -56,6 +57,7 @@ export default function App() {
 						<Route path='/register' element={<Register />} />
 						<Route path='/check-email' element={<CheckEmail />} />
 						<Route path='/email-verified' element={<EmailVerified />} />
+						<Route path='/about' element={<AboutPage />} />
 
 						<Route
 							path='/garden/:id/journal'

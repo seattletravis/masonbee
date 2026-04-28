@@ -1,0 +1,26 @@
+.about-page {
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 2rem 1.5rem;
+}
+
+.about-page__header {
+	margin-bottom: 2rem;
+	text-align: center;
+}
+
+.about-page__header h1 {
+	font-size: 2rem;
+	margin-bottom: 0.5rem;
+}
+
+.about-page__subtitle {
+	color: #555;
+	font-size: 1rem;
+}
+
+.about-page__content p {
+	margin-bottom: 1.25rem;
+	line-height: 1.6;
+	font-size: 1.05rem;
+}

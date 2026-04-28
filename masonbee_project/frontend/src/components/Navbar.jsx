@@ -26,7 +26,9 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 		<nav className='navbar'>
 			<div className='navbar__inner'>
 				<div className='nav-left'>
-					<Link className='nav-logo'>MasonBee</Link>
+					<Link to='/about' className='nav-logo'>
+						MasonBee
+					</Link>
 				</div>
 
 				<div className='nav-right desktop-links'>
