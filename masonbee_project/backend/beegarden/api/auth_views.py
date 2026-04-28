@@ -15,14 +15,14 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.permissions import AllowAny
 import os
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
-    authentication_classes = []  # Allow anyone
-    permission_classes = []      # No auth required
+    authentication_classes = []      # Allow anyone
+    permission_classes = [AllowAny]  # No auth required
 
     def post(self, request):
         print("\n================ REGISTER VIEW EXECUTED ================")
@@ -110,24 +110,22 @@ class RegisterView(APIView):
             send_mail(
                 subject="Verify your MasonBee account",
                 message=f"Click the link to verify your account:\n\n{verification_link}",
-                from_email="no-reply@themasonbee.com",
+                from_email="no-reply@masonbee.com",
                 recipient_list=[email],
                 fail_silently=False,
             )
-            print("STEP E SUCCESS: Email sent to", email)
+            print("STEP E SUCCESS: Email sent")
+
         except Exception as e:
             print("EMAIL SEND ERROR:", repr(e))
-            return Response(
-                {"detail": "User created but email failed to send", "error": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"detail": "Failed to send verification email"}, status=500)
 
         # ---------------------------
         # SUCCESS RESPONSE
         # ---------------------------
         print("REGISTER SUCCESS: Returning 201 response")
         return Response(
-            {"detail": "Account created. Check your email to verify."},
+            {"detail": "Account created. Please check your email to verify your account."},
             status=status.HTTP_201_CREATED
         )
 
