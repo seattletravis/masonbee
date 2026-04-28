@@ -10,12 +10,8 @@ function buildUrl(url) {
 	if (!API_BASE_URL) return url;
 	if (/^https?:\/\//i.test(url)) return url;
 
-	const base = API_BASE_URL.endsWith('/')
-		? API_BASE_URL.slice(0, -1)
-		: API_BASE_URL;
-
-	const path = url.startsWith('/') ? url : `/${url}`;
-	return `${base}${path}`;
+	const base = API_BASE_URL.replace(/\/+$/, ''); // remove trailing slashes ONLY from base
+	return `${base}${url}`; // do NOT modify the path
 }
 
 function setTokens(tokens = {}) {
