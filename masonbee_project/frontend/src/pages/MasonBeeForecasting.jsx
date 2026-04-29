@@ -101,15 +101,31 @@ export default function MasonBeeForecasting() {
 					setLocation({ latitude, longitude, name });
 					setForecast(forecastData);
 				} catch (err) {
-					console.error(err);
 					setError('Unable to load location or forecast data.');
 				}
 
 				setLoading(false);
 			},
 			() => {
-				setError('Unable to detect your location.');
-				setLoading(false);
+				// Fallback to Seattle, WA
+				const fallback = {
+					latitude: 47.6062,
+					longitude: -122.3321,
+					name: 'Seattle, Washington',
+				};
+
+				setLocation(fallback);
+
+				getMasonBeeForecast(fallback.latitude, fallback.longitude)
+					.then((forecastData) => {
+						setForecast(forecastData);
+					})
+					.catch(() => {
+						setError('Unable to load forecast data.');
+					})
+					.finally(() => {
+						setLoading(false);
+					});
 			},
 		);
 	}, []);
@@ -170,6 +186,31 @@ export default function MasonBeeForecasting() {
 					year: 'numeric',
 				})}
 			</p>
+
+			{/* Manual location override button */}
+			<button
+				className='forecast-location-button'
+				onClick={() => setManualMode((prev) => !prev)}>
+				{manualMode ? 'Cancel' : 'Check forecast in a different location'}
+			</button>
+
+			{/* Manual location form */}
+			{manualMode && (
+				<form className='forecast-location-form' onSubmit={handleManualSubmit}>
+					<label>
+						Enter ZIP code, city, or address
+						<input
+							type='text'
+							value={manualInput}
+							onChange={(e) => setManualInput(e.target.value)}
+							placeholder='e.g., 98101 or Seattle, WA'
+						/>
+					</label>
+					<button type='submit' className='forecast-submit-button'>
+						Update Forecast
+					</button>
+				</form>
+			)}
 
 			{loading && <p>Loading forecast…</p>}
 			{error && <p className='forecast-error'>{error}</p>}
@@ -255,30 +296,6 @@ export default function MasonBeeForecasting() {
 				</div>
 			)}
 
-			{/* Manual location override button */}
-			<button
-				className='forecast-location-button'
-				onClick={() => setManualMode((prev) => !prev)}>
-				{manualMode ? 'Cancel' : 'Check forecast in a different location'}
-			</button>
-
-			{/* Manual location form */}
-			{manualMode && (
-				<form className='forecast-location-form' onSubmit={handleManualSubmit}>
-					<label>
-						Enter ZIP code, city, or address
-						<input
-							type='text'
-							value={manualInput}
-							onChange={(e) => setManualInput(e.target.value)}
-							placeholder='e.g., 98101 or Seattle, WA'
-						/>
-					</label>
-					<button type='submit' className='forecast-submit-button'>
-						Update Forecast
-					</button>
-				</form>
-			)}
 			<div className='learn-more-section'>
 				<details>
 					<summary>Learn More About Mason Bees & Their Seasonal Cycle</summary>

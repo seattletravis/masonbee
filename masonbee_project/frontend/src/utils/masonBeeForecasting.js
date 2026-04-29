@@ -1,7 +1,15 @@
+// -------------------------------------------------------------
+// Mason Bee Forecast Engine (Clean, Corrected, Production-Ready)
+// -------------------------------------------------------------
+
+const SIX_WEEKS = 42; // days
+
 export async function getMasonBeeForecast(lat, lon) {
 	const today = new Date();
 
-	// Fetch 1 year of historical temps for THIS YEAR emergence detection
+	// -------------------------------------------------------------
+	// FETCH 1 YEAR OF HISTORICAL TEMPERATURES
+	// -------------------------------------------------------------
 	const start = new Date();
 	start.setFullYear(today.getFullYear() - 1);
 
@@ -20,74 +28,109 @@ export async function getMasonBeeForecast(lat, lon) {
 	const dates = data.daily.time;
 
 	// -------------------------------------------------------------
-	// THIS YEAR EMERGENCE (temperature-based)
+	// EMERGENCE (temperature-based)
 	// -------------------------------------------------------------
 	const emergenceDate = findEmergenceDate(temps, dates);
 	const fallback = fallbackEmergenceDate(lat, today.getFullYear());
 
 	const emergenceEarly = emergenceDate ? new Date(emergenceDate) : fallback;
-	const emergenceLate = shiftDate(emergenceEarly, 14);
+	const emergenceLate = shiftDate(emergenceEarly, 14); // 2-week emergence window
 
 	// -------------------------------------------------------------
-	// LAST YEAR EMERGENCE
+	// ACTIVE SEASON (emergence → emergence + 6 weeks)
 	// -------------------------------------------------------------
-	const lastEmergenceEarly = new Date(
-		emergenceEarly.getFullYear() - 1,
-		emergenceEarly.getMonth(),
-		emergenceEarly.getDate(),
+	const activeEarly = emergenceEarly;
+	const activeLate = shiftDate(emergenceLate, SIX_WEEKS);
+
+	// -------------------------------------------------------------
+	// DORMANCY (after active season)
+	// -------------------------------------------------------------
+	const dormancyEarly = activeLate;
+	const dormancyLate = shiftDate(activeLate, 60); // ~late summer
+
+	// -------------------------------------------------------------
+	// LAST YEAR DORMANCY (for "Last Event")
+	// -------------------------------------------------------------
+	const lastDormancyEarly = new Date(
+		dormancyEarly.getFullYear() - 1,
+		dormancyEarly.getMonth(),
+		dormancyEarly.getDate(),
 	);
 
-	const lastEmergenceLate = new Date(
-		emergenceLate.getFullYear() - 1,
-		emergenceLate.getMonth(),
-		emergenceLate.getDate(),
+	const lastDormancyLate = new Date(
+		dormancyLate.getFullYear() - 1,
+		dormancyLate.getMonth(),
+		dormancyLate.getDate(),
 	);
 
 	// -------------------------------------------------------------
-	// LAST YEAR DORMANCY
+	// CURRENT EVENT (corrected)
 	// -------------------------------------------------------------
-	const lastDormancyEarly = shiftDate(lastEmergenceEarly, 28);
-	const lastDormancyLate = shiftDate(lastEmergenceLate, 42);
+	let currentEvent;
+
+	if (today >= emergenceEarly && today <= emergenceLate) {
+		currentEvent = {
+			type: 'Emergence',
+			early: formatDate(emergenceEarly),
+			late: formatDate(emergenceLate),
+		};
+	} else if (today > emergenceLate && today <= activeLate) {
+		currentEvent = {
+			type: 'Active Season',
+			early: formatDate(activeEarly),
+			late: formatDate(activeLate),
+		};
+	} else if (today >= dormancyEarly && today <= dormancyLate) {
+		currentEvent = {
+			type: 'Dormancy',
+			early: formatDate(dormancyEarly),
+			late: formatDate(dormancyLate),
+		};
+	} else {
+		// Winter fallback
+		currentEvent = {
+			type: 'Dormancy',
+			early: formatDate(dormancyEarly),
+			late: formatDate(dormancyLate),
+		};
+	}
 
 	// -------------------------------------------------------------
-	// THIS YEAR DORMANCY
+	// NEXT EVENT (corrected)
 	// -------------------------------------------------------------
-	const dormancyEarly = shiftDate(emergenceEarly, 28);
-	const dormancyLate = shiftDate(emergenceLate, 42);
+	let nextEvent;
+
+	if (today < emergenceEarly) {
+		nextEvent = {
+			type: 'Emergence',
+			early: formatDate(emergenceEarly),
+			late: formatDate(emergenceLate),
+		};
+	} else if (today <= activeLate) {
+		nextEvent = {
+			type: 'Dormancy',
+			early: formatDate(dormancyEarly),
+			late: formatDate(dormancyLate),
+		};
+	} else {
+		// After dormancy → next year's emergence
+		const nextEmergenceEarly = new Date(
+			emergenceEarly.getFullYear() + 1,
+			emergenceEarly.getMonth(),
+			emergenceEarly.getDate(),
+		);
+
+		const nextEmergenceLate = shiftDate(nextEmergenceEarly, 14);
+
+		nextEvent = {
+			type: 'Emergence',
+			early: formatDate(nextEmergenceEarly),
+			late: formatDate(nextEmergenceLate),
+		};
+	}
 
 	// -------------------------------------------------------------
-	// CURRENT EVENT DETECTION
-	// -------------------------------------------------------------
-	const isEmergingNow = today >= emergenceEarly && today <= emergenceLate;
-	const isDormantNow = today >= dormancyEarly && today <= dormancyLate;
-
-	// -------------------------------------------------------------
-	// NEXT EVENT
-	// -------------------------------------------------------------
-	const nextEvent = isEmergingNow
-		? {
-				type: 'Dormancy',
-				early: formatDate(dormancyEarly),
-				late: formatDate(dormancyLate),
-			}
-		: {
-				type: 'Emergence',
-				early: formatDate(emergenceEarly),
-				late: formatDate(emergenceLate),
-			};
-
-	// -------------------------------------------------------------
-	// MUST-HAVE-BEES-OUT-BY
-	// -------------------------------------------------------------
-	const mustPlaceBy = addMonths(lastEmergenceLate, 10);
-
-	// -------------------------------------------------------------
-	// COCOON HANDLING WINDOW
-	// -------------------------------------------------------------
-	const cocoonSafeDate = shiftDate(dormancyLate, 90);
-
-	// -------------------------------------------------------------
-	// STATUS TAG (fixed variable names)
+	// STATUS TAG (uses corrected windows)
 	// -------------------------------------------------------------
 	const status = getBeeStatus(
 		today,
@@ -98,6 +141,16 @@ export async function getMasonBeeForecast(lat, lon) {
 	);
 
 	// -------------------------------------------------------------
+	// COCOON HANDLING WINDOW
+	// -------------------------------------------------------------
+	const cocoonSafeDate = shiftDate(dormancyLate, 90);
+
+	// -------------------------------------------------------------
+	// MUST PLACE BY (45 days before emergence)
+	// -------------------------------------------------------------
+	const mustPlaceBy = shiftDate(emergenceEarly, -45);
+
+	// -------------------------------------------------------------
 	// RETURN FORECAST OBJECT
 	// -------------------------------------------------------------
 	return {
@@ -106,15 +159,7 @@ export async function getMasonBeeForecast(lat, lon) {
 			early: formatDate(lastDormancyEarly),
 			late: formatDate(lastDormancyLate),
 		},
-		currentEvent: {
-			type: isEmergingNow
-				? 'Emergence'
-				: isDormantNow
-					? 'Dormancy'
-					: status.event,
-			early: formatDate(emergenceEarly),
-			late: formatDate(emergenceLate),
-		},
+		currentEvent,
 		nextEvent,
 		status,
 		cocoonSafeDate: formatDate(cocoonSafeDate),
@@ -158,12 +203,6 @@ function shiftDate(date, days) {
 	return d;
 }
 
-function addMonths(date, months) {
-	const d = new Date(date);
-	d.setMonth(d.getMonth() + months);
-	return d;
-}
-
 function formatDate(d) {
 	return d.toLocaleDateString('en-US', {
 		month: 'long',
@@ -183,11 +222,14 @@ function getBeeStatus(
 		return { event: 'Emergence', status: 'Active — Please do not disturb' };
 	}
 
+	if (today > emergenceEnd && today <= shiftDate(emergenceEnd, SIX_WEEKS)) {
+		return { event: 'Active Season', status: 'Active — Bees are foraging' };
+	}
+
 	if (today >= dormancyStart && today <= dormancyEnd) {
 		return { event: 'Dormancy', status: 'Dormant — OK to handle' };
 	}
 
-	// Pre‑emergence (late winter)
 	if (today < emergenceStart) {
 		return {
 			event: 'Pre‑Emergence',
@@ -195,14 +237,8 @@ function getBeeStatus(
 		};
 	}
 
-	// Post‑dormancy (fall)
-	if (today > dormancyEnd) {
-		return {
-			event: 'Post‑Dormancy',
-			status: 'Inactive — Bees are dormant again',
-		};
-	}
-
-	// Mid‑season (after emergence, before dormancy)
-	return { event: 'Active Season', status: 'Active — Bees are foraging' };
+	return {
+		event: 'Post‑Dormancy',
+		status: 'Inactive — Bees are dormant again',
+	};
 }
