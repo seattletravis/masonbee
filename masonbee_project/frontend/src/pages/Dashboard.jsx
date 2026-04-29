@@ -19,15 +19,15 @@ function Dashboard() {
 				<Link to='/finder' className='dashboard-card dashboard-card-link'>
 					<h2 className='card-title'>MasonBee Finder</h2>
 					<p className='card-text'>
-						Check your location’s likelihood of finding and supporting mason
-						bees. Check other locations as well.
+						Check your location’s likelihood of finding and supporting
+						masonbees. Check other locations as well.
 					</p>
 				</Link>
 				{/* Bee Awakening Forecast (Weather replacement) */}
 				<Link to='/forecasting' className='dashboard-card dashboard-card-link'>
 					<h2 className='card-title'>MasonBee Forecast</h2>
 					<p className='card-text'>
-						See when mason bees emerge, become inactive, and when to handle
+						See when masonbees emerge, become inactive, and when to handle
 						cocoons. Check any location.
 					</p>
 				</Link>
@@ -56,6 +56,17 @@ function Dashboard() {
 					<p className='card-text'>
 						Record observations, blooms, weather notes, and bee activity. Keep
 						records that help you become a better bee keeper.
+					</p>
+				</Link>
+
+				{/* My Journal */}
+				<Link
+					to='/garden-finder'
+					className='dashboard-card dashboard-card-link'>
+					<h2 className='card-title'>Garden Finder</h2>
+					<p className='card-text'>
+						Search through our database of Community Gardens and public areas
+						suitable for spotting masonbees.
 					</p>
 				</Link>
 
