@@ -110,7 +110,7 @@ function MyGardensPage() {
 		}
 
 		hydrate();
-	}, [defaultGarden?.id, Object.keys(pinned).length]);
+	}, [defaultGarden?.id, pinned ? Object.keys(pinned).length : 0]);
 
 	useEffect(() => {
 		if (!hydrating && !isAuthenticated) {
