@@ -85,9 +85,24 @@ function Navbar({ defaultGarden, hasPinnedGardens }) {
 							Dashboard
 						</Link>
 					)}
+					{authenticated && (
+						<Link to='/finder' className='mobile-link'>
+							MasonBee Finder
+						</Link>
+					)}
+					{authenticated && (
+						<Link to='/forecasting' className='mobile-link'>
+							MasonBee Forecast
+						</Link>
+					)}
+					{authenticated && (
+						<Link to='/resources' className='mobile-link'>
+							Learn More
+						</Link>
+					)}
 
 					{authenticated && (
-						<Link to='/profile' className='nav-link'>
+						<Link to='/profile' className='mobile-link'>
 							Profile
 						</Link>
 					)}

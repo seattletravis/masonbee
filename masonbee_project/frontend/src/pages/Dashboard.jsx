@@ -17,7 +17,7 @@ function Dashboard() {
 			<div className='dashboard-grid'>
 				{/* Mason Bee Finder */}
 				<Link to='/finder' className='dashboard-card dashboard-card-link'>
-					<h2 className='card-title'>Mason Bee Finder</h2>
+					<h2 className='card-title'>MasonBee Finder</h2>
 					<p className='card-text'>
 						Check your location’s likelihood of finding and supporting mason
 						bees. Check other locations as well.
@@ -25,7 +25,7 @@ function Dashboard() {
 				</Link>
 				{/* Bee Awakening Forecast (Weather replacement) */}
 				<Link to='/forecasting' className='dashboard-card dashboard-card-link'>
-					<h2 className='card-title'>Mason Bee Forecast</h2>
+					<h2 className='card-title'>MasonBee Forecast</h2>
 					<p className='card-text'>
 						See when mason bees emerge, become inactive, and when to handle
 						cocoons. Check any location.
