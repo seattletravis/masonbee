@@ -1,0 +1,18 @@
+.public-header {
+	background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+	padding: 2rem 1rem;
+	text-align: center;
+	border-bottom: 2px solid #c8e6c9;
+}
+
+.public-title {
+	font-size: 2.4rem;
+	font-weight: 700;
+	color: #2e7d32;
+	margin-bottom: 0.5rem;
+}
+
+.public-subtitle {
+	font-size: 1.1rem;
+	color: #4f6f52;
+}

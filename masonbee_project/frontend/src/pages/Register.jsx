@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from '../auth/AuthProvider';
 import { post } from '../api/client';
 import { buildUrl } from '../api/client';
 import './Register.css';
 
 export default function Register() {
+	const navigate = useNavigate();
+	const { user } = useAuthContext();
+
 	// Form fields
 	const [username, setUsername] = useState('');
 	const [email, setEmail] = useState('');
@@ -30,6 +35,11 @@ export default function Register() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+	useEffect(() => {
+		if (user) {
+			navigate('/dashboard', { replace: true });
+		}
+	}, [user, navigate]);
 	// ---------------------------------------------------------
 	// Password Strength Checker
 	// ---------------------------------------------------------

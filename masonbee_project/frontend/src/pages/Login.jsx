@@ -1,35 +1,46 @@
+// src/pages/Login.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { post, setTokens } from '../api/client';
 import { useAuthContext } from '../auth/AuthProvider';
 import './Login.css';
 
 export default function Login() {
-	const { login } = useAuthContext();
+	const { login, user, loading: authLoading, loginError } = useAuthContext();
 	const navigate = useNavigate();
+
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
-	const [error, setError] = useState('');
-	const [loading, setLoading] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
+	const [localError, setLocalError] = useState(null);
 
 	useEffect(() => {
 		document.title = 'Login';
+		setLocalError(localStorage.getItem('loginError'));
 	}, []);
+
+	useEffect(() => {
+		if (!authLoading && user) {
+			navigate('/dashboard', { replace: true });
+		}
+	}, [authLoading, user, navigate]);
+
+	useEffect(() => {
+		setLocalError(loginError);
+	}, [loginError]);
 
 	async function handleSubmit(event) {
 		event.preventDefault();
-		setError('');
-		setLoading(true);
+		setSubmitting(true);
+		localStorage.removeItem('loginError');
+		setLocalError(null);
 
 		try {
-			await login(username, password); // ⭐ use the real login function
-			navigate('/dashboard'); // ⭐ redirect after successful login
+			await login(username, password);
+			navigate('/dashboard', { replace: true });
 		} catch (err) {
-			setError(
-				err?.data?.detail || err?.message || 'Login failed. Please try again.',
-			);
+			// loginError already set globally + persisted
 		} finally {
-			setLoading(false);
+			setSubmitting(false);
 		}
 	}
 
@@ -45,7 +56,7 @@ export default function Login() {
 					onChange={(e) => setUsername(e.target.value)}
 					className='login-input'
 					autoComplete='username'
-					disabled={loading}
+					disabled={submitting}
 					required
 				/>
 
@@ -56,14 +67,14 @@ export default function Login() {
 					onChange={(e) => setPassword(e.target.value)}
 					className='login-input'
 					autoComplete='current-password'
-					disabled={loading}
+					disabled={submitting}
 					required
 				/>
 
-				{error && <p className='login-error'>{error}</p>}
+				{localError && <p className='login-error'>{localError}</p>}
 
-				<button type='submit' className='login-button' disabled={loading}>
-					{loading ? 'Signing in...' : 'Login'}
+				<button type='submit' className='login-button' disabled={submitting}>
+					{submitting ? 'Signing in...' : 'Login'}
 				</button>
 			</form>
 

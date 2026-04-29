@@ -184,6 +184,10 @@ export function get(url) {
 
 export function post(url, data) {
 	return request('POST', url, data);
+	throw {
+		status: response.status,
+		data: json,
+	};
 }
 
 export function put(url, data) {

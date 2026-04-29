@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthProvider from './auth/AuthProvider';
 import ProtectedRoute from './auth/ProtectedRoute';
 import MainLayout from './layout/MainLayout';
@@ -18,6 +18,7 @@ import Register from './pages/Register';
 import CheckEmail from './pages/CheckEmail';
 import EmailVerified from './pages/EmailVerified';
 import AboutPage from './pages/AboutPage';
+import PublicRoute from './auth/PublicRoute';
 
 export default function App() {
 	return (
@@ -25,8 +26,6 @@ export default function App() {
 			<BrowserRouter>
 				<Routes>
 					<Route element={<MainLayout />}>
-						<Route path='/login' element={<Login />} />
-
 						<Route
 							path='/dashboard'
 							element={
@@ -54,7 +53,7 @@ export default function App() {
 						<Route path='/finder' element={<MasonBeeFinder />} />
 						<Route path='/resources' element={<ResourcesPage />} />
 						<Route path='/beehouse' element={<BeehousePage />} />
-						<Route path='/register' element={<Register />} />
+
 						<Route path='/check-email' element={<CheckEmail />} />
 						<Route path='/email-verified' element={<EmailVerified />} />
 						<Route path='/about' element={<AboutPage />} />
@@ -75,8 +74,24 @@ export default function App() {
 								</ProtectedRoute>
 							}
 						/>
+						<Route
+							path='/login'
+							element={
+								<PublicRoute>
+									<Login />
+								</PublicRoute>
+							}
+						/>
 
-						<Route path='/' element={<Login />} />
+						<Route
+							path='/register'
+							element={
+								<PublicRoute>
+									<Register />
+								</PublicRoute>
+							}
+						/>
+						<Route path='/' element={<Navigate to='/login' replace />} />
 					</Route>
 				</Routes>
 			</BrowserRouter>

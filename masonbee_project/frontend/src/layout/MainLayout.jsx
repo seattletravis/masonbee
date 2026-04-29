@@ -1,36 +1,37 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { useEffect, useState } from 'react';
 import { useAuthContext } from '../auth/AuthProvider';
+import PublicHeader from './PublicHeader';
 import './MainLayout.css';
 
 function MainLayout() {
 	const location = useLocation();
-	const { defaultGarden, hasPinnedGardens } = useAuthContext(); // ← Always correct source
-	const { loading } = useAuthContext;
-	const hideNavbar = location.pathname === '/login' || loading;
+	const { isAuthenticated, defaultGarden, hasPinnedGardens, loading } =
+		useAuthContext();
 
-	const [ready, setReady] = useState(!hideNavbar);
+	// Pages that should NOT show the navbar
+	const publicPages = [
+		'/login',
+		'/register',
+		'/check-email',
+		'/email-verified',
+	];
 
-	useEffect(() => {
-		if (hideNavbar) {
-			const id = requestAnimationFrame(() => setReady(true));
-			return () => cancelAnimationFrame(id);
-		} else {
-			setReady(true);
-		}
-	}, [hideNavbar]);
-
-	if (hideNavbar && !ready) return null;
+	const isPublicPage = publicPages.includes(location.pathname);
 
 	return (
-		<div className={`layout-container ${hideNavbar ? 'no-nav' : ''}`}>
-			{!hideNavbar && (
+		<div className={`layout-container ${isPublicPage ? 'no-nav' : ''}`}>
+			{/* Authenticated users get the navbar */}
+			{isAuthenticated && !loading && (
 				<Navbar
 					defaultGarden={defaultGarden}
 					hasPinnedGardens={hasPinnedGardens}
 				/>
 			)}
+
+			{/* Public pages get the friendly nature-themed header */}
+			{!isAuthenticated && isPublicPage && <PublicHeader />}
+
 			<main className='layout-content'>
 				<Outlet />
 			</main>
