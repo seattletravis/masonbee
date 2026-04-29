@@ -24,22 +24,37 @@ function ResizeOnMount({ initialPosition }) {
 
 		setTimeout(() => {
 			map.invalidateSize();
-			map.setView(initialPosition, 17, { animate: false });
+			map.setView(initialPosition, 16, { animate: false });
 		}, 300);
 	}, [initialPosition]);
 
 	return null;
 }
 
-export default function MapPickerMap({ onTempChange }) {
+export default function MapPickerMap({ onTempChange, initialLocation }) {
 	const defaultCenter = [47.6062, -122.3321];
 
-	const [position, setPosition] = useState(defaultCenter);
-	const [initialPosition, setInitialPosition] = useState(null);
+	const [position, setPosition] = useState(
+		initialLocation
+			? [initialLocation.lat, initialLocation.lon]
+			: defaultCenter,
+	);
+
+	const [initialPosition, setInitialPosition] = useState(
+		initialLocation ? [initialLocation.lat, initialLocation.lon] : null,
+	);
 	const [mapInstance, setMapInstance] = useState(null);
 
 	// Get user location ONCE
 	useEffect(() => {
+		if (initialLocation) {
+			const loc = [initialLocation.lat, initialLocation.lon];
+			setPosition(loc);
+			setInitialPosition(loc);
+			return;
+		}
+
+		// Otherwise fall back to geolocation
 		if (!navigator.geolocation) {
 			setInitialPosition(defaultCenter);
 			return;
@@ -47,23 +62,15 @@ export default function MapPickerMap({ onTempChange }) {
 
 		navigator.geolocation.getCurrentPosition(
 			(pos) => {
-				const lat = pos.coords.latitude;
-				const lon = pos.coords.longitude;
-
-				const userPos = [lat, lon];
-
+				const userPos = [pos.coords.latitude, pos.coords.longitude];
 				setPosition(userPos);
 				setInitialPosition(userPos);
-
-				if (mapInstance) {
-					mapInstance.setView(userPos, 17, { animate: false });
-				}
 			},
 			() => {
 				setInitialPosition(defaultCenter);
 			},
 		);
-	}, [mapInstance]);
+	}, [initialLocation]);
 
 	// Stop animations when unmounting
 	useEffect(() => {
@@ -127,7 +134,7 @@ export default function MapPickerMap({ onTempChange }) {
 			{initialPosition && (
 				<MapContainer
 					center={initialPosition}
-					zoom={17}
+					zoom={16}
 					scrollWheelZoom={true}
 					className='map-picker-map'
 					whenCreated={(map) => setMapInstance(map)}>

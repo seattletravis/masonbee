@@ -344,7 +344,7 @@
 .start-message {
 	margin: 1.5rem auto;
 	max-width: 420px;
-	padding: 1rem;
+	padding: 1.5rem;
 	text-align: center;
 	color: #444;
 	font-size: 1rem;
@@ -599,4 +599,7 @@
 		opacity: 0.5;
 		cursor: not-allowed;
 	}
+}
+.prediction-header {
+	margin-top: 1rem;
 }

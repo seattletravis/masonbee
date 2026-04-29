@@ -368,9 +368,6 @@ out center;
 				handleCheckLocation(loc);
 			},
 			() => {
-				setLocationError(
-					'Unable to retrieve your location. Please select a location from the map to get started.',
-				);
 				setShowMapModal(true);
 			},
 		);
@@ -383,14 +380,16 @@ out center;
 				<p>
 					Choose a spot in the map by dropping the bee pin, and we’ll
 					automatically scan the area for water, clay, and nearby habitat
-					indicators. Put a check mark in which resources are near by and hit
-					the Run Mason Bee Check button at the bottom of the page.
+					indicators. Put a check mark in which resources are nearby and hit the
+					Run Mason Bee Check button at the bottom of the page. The more
+					information you provide the better the prediction will be.
 				</p>
 			</div>
 			<MapPinModal
 				isOpen={showMapModal}
 				onSelect={handleMapSelect}
 				onClose={() => setShowMapModal(false)}
+				initialLocation={selectedLocation}
 			/>
 			<div className='controls'>
 				<button className='button' onClick={() => setShowMapModal(true)}>
@@ -571,10 +570,18 @@ out center;
 				</button>
 			</div>
 			{!hasRunPrediction ? (
+				<p></p>
+			) : (
+				<p className='prediction-header'>
+					Prediction for this location with specified resources is: (adjust
+					resources & location to optimize prediction.)
+				</p>
+			)}
+			{!hasRunPrediction ? (
 				<div className='start-message'>
 					<p>
 						Please click the mason bee resources your location has, then click
-						the Run Checker at this Location button.
+						the Run Mason Bee Check button.
 					</p>
 				</div>
 			) : (

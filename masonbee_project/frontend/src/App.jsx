@@ -26,6 +26,7 @@ export default function App() {
 			<BrowserRouter>
 				<Routes>
 					<Route element={<MainLayout />}>
+						{/* 🔒 AUTHENTICATED ROUTES */}
 						<Route
 							path='/dashboard'
 							element={
@@ -35,7 +36,6 @@ export default function App() {
 							}
 						/>
 
-						{/* NEW ROUTES */}
 						<Route
 							path='/journal'
 							element={
@@ -44,19 +44,69 @@ export default function App() {
 								</ProtectedRoute>
 							}
 						/>
-						<Route path='/gardens/:id' element={<ViewOneGardenPage />} />
 
-						<Route path='/my-gardens' element={<MyGardensPage />} />
+						<Route
+							path='/gardens/:id'
+							element={
+								<ProtectedRoute>
+									<ViewOneGardenPage />
+								</ProtectedRoute>
+							}
+						/>
 
-						<Route path='/profile' element={<MyProfilePage />} />
-						<Route path='/forecasting' element={<MasonBeeForecasting />} />
-						<Route path='/finder' element={<MasonBeeFinder />} />
-						<Route path='/resources' element={<ResourcesPage />} />
-						<Route path='/beehouse' element={<BeehousePage />} />
+						<Route
+							path='/my-gardens'
+							element={
+								<ProtectedRoute>
+									<MyGardensPage />
+								</ProtectedRoute>
+							}
+						/>
 
-						<Route path='/check-email' element={<CheckEmail />} />
-						<Route path='/email-verified' element={<EmailVerified />} />
-						<Route path='/about' element={<AboutPage />} />
+						<Route
+							path='/profile'
+							element={
+								<ProtectedRoute>
+									<MyProfilePage />
+								</ProtectedRoute>
+							}
+						/>
+
+						<Route
+							path='/forecasting'
+							element={
+								<ProtectedRoute>
+									<MasonBeeForecasting />
+								</ProtectedRoute>
+							}
+						/>
+
+						<Route
+							path='/finder'
+							element={
+								<ProtectedRoute>
+									<MasonBeeFinder />
+								</ProtectedRoute>
+							}
+						/>
+
+						<Route
+							path='/resources'
+							element={
+								<ProtectedRoute>
+									<ResourcesPage />
+								</ProtectedRoute>
+							}
+						/>
+
+						<Route
+							path='/beehouse'
+							element={
+								<ProtectedRoute>
+									<BeehousePage />
+								</ProtectedRoute>
+							}
+						/>
 
 						<Route
 							path='/garden/:id/journal'
@@ -66,6 +116,7 @@ export default function App() {
 								</ProtectedRoute>
 							}
 						/>
+
 						<Route
 							path='/garden-finder'
 							element={
@@ -74,6 +125,8 @@ export default function App() {
 								</ProtectedRoute>
 							}
 						/>
+
+						{/* 🌼 PUBLIC ROUTES */}
 						<Route
 							path='/login'
 							element={
@@ -91,6 +144,12 @@ export default function App() {
 								</PublicRoute>
 							}
 						/>
+
+						<Route path='/check-email' element={<CheckEmail />} />
+						<Route path='/email-verified' element={<EmailVerified />} />
+						<Route path='/about' element={<AboutPage />} />
+
+						{/* DEFAULT REDIRECT */}
 						<Route path='/' element={<Navigate to='/login' replace />} />
 					</Route>
 				</Routes>

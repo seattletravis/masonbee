@@ -3,10 +3,19 @@ import { useState } from 'react';
 import MapPickerMap from './MapPickerMap';
 import './MapPinModal.css';
 
-export default function MapPinModal({ isOpen, onSelect, onClose }) {
+export default function MapPinModal({
+	isOpen,
+	onSelect,
+	onClose,
+	initialLocation,
+}) {
 	if (!isOpen) return null; // ⭐ THE FIX — modal only renders when open
 
-	const [tempCoords, setTempCoords] = useState(null);
+	const [tempCoords, setTempCoords] = useState(
+		initialLocation
+			? { lat: initialLocation.lat, lon: initialLocation.lon }
+			: null,
+	);
 
 	function handleTempChange(lat, lon) {
 		setTempCoords({ lat, lon });
@@ -25,11 +34,15 @@ export default function MapPinModal({ isOpen, onSelect, onClose }) {
 
 				<p>
 					Click anywhere on the map to drop your bee or drag the bee to adjust
-					the location.
+					the location. Please select a location to start or allow the app to
+					access your location.
 				</p>
 
 				<div className='map-container'>
-					<MapPickerMap onTempChange={handleTempChange} />
+					<MapPickerMap
+						onTempChange={handleTempChange}
+						initialLocation={initialLocation}
+					/>
 				</div>
 
 				<div className='modal-actions'>
@@ -41,7 +54,7 @@ export default function MapPinModal({ isOpen, onSelect, onClose }) {
 						className='button button-primary'
 						disabled={!tempCoords}
 						onClick={handleUseLocation}>
-						Use This Location
+						{!tempCoords ? 'Move Bee Pin on Map to Start' : 'Use This Location'}
 					</button>
 				</div>
 			</div>
