@@ -1,5 +1,6 @@
 print("REGISTER VIEW LOADED")
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -117,8 +118,11 @@ class RegisterView(APIView):
             print("STEP E SUCCESS: Email sent")
 
         except Exception as e:
+            import traceback
+            traceback.print_exc()   # <‑‑ THIS prints the real error to Gunicorn logs
             print("EMAIL SEND ERROR:", repr(e))
             return Response({"detail": "Failed to send verification email"}, status=500)
+
 
         # ---------------------------
         # SUCCESS RESPONSE
