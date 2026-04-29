@@ -110,7 +110,7 @@ class RegisterView(APIView):
             send_mail(
                 subject="Verify your MasonBee account",
                 message=f"Click the link to verify your account:\n\n{verification_link}",
-                from_email="no-reply@masonbee.com",
+                from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
                 fail_silently=False,
             )
