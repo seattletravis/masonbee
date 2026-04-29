@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { post, setTokens } from '../api/client';
 import { useAuthContext } from '../auth/AuthProvider';
+import './Login.css';
 
 export default function Login() {
 	const { login } = useAuthContext();
@@ -33,134 +34,42 @@ export default function Login() {
 	}
 
 	return (
-		<div
-			style={{
-				minHeight: '100vh',
-				display: 'grid',
-				placeItems: 'center',
-				background: 'linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)',
-				padding: '24px',
-			}}>
-			<div
-				style={{
-					width: '100%',
-					maxWidth: '420px',
-					backgroundColor: '#ffffff',
-					borderRadius: '16px',
-					boxShadow: '0 12px 32px rgba(15, 23, 42, 0.12)',
-					padding: '32px',
-				}}>
-				<h1
-					style={{
-						margin: '0 0 8px',
-						fontSize: '2rem',
-						color: '#0f172a',
-						textAlign: 'center',
-					}}>
-					Sign In
-				</h1>
-				<p
-					style={{
-						margin: '0 0 24px',
-						color: '#475569',
-						textAlign: 'center',
-					}}>
-					Enter your credentials to access your account.
-				</p>
+		<div className='login-container'>
+			<h2 className='login-title'>Sign In</h2>
 
-				<form onSubmit={handleSubmit} style={{ display: 'grid', gap: '16px' }}>
-					<div style={{ display: 'grid', gap: '8px' }}>
-						<label
-							htmlFor='username'
-							style={{ color: '#1e293b', fontWeight: 600 }}>
-							Username
-						</label>
-						<input
-							id='username'
-							type='text'
-							autoComplete='username'
-							value={username}
-							onChange={(event) => setUsername(event.target.value)}
-							disabled={loading}
-							required
-							style={{
-								padding: '12px 14px',
-								borderRadius: '10px',
-								border: '1px solid #cbd5e1',
-								fontSize: '1rem',
-								outline: 'none',
-							}}
-						/>
-					</div>
+			<form onSubmit={handleSubmit} className='login-form'>
+				<input
+					type='text'
+					placeholder='Username'
+					value={username}
+					onChange={(e) => setUsername(e.target.value)}
+					className='login-input'
+					autoComplete='username'
+					disabled={loading}
+					required
+				/>
 
-					<div style={{ display: 'grid', gap: '8px' }}>
-						<label
-							htmlFor='password'
-							style={{ color: '#1e293b', fontWeight: 600 }}>
-							Password
-						</label>
-						<input
-							id='password'
-							type='password'
-							autoComplete='current-password'
-							value={password}
-							onChange={(event) => setPassword(event.target.value)}
-							disabled={loading}
-							required
-							style={{
-								padding: '12px 14px',
-								borderRadius: '10px',
-								border: '1px solid #cbd5e1',
-								fontSize: '1rem',
-								outline: 'none',
-							}}
-						/>
-					</div>
+				<input
+					type='password'
+					placeholder='Password'
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					className='login-input'
+					autoComplete='current-password'
+					disabled={loading}
+					required
+				/>
 
-					{error ? (
-						<div
-							style={{
-								padding: '12px 14px',
-								borderRadius: '10px',
-								backgroundColor: '#fef2f2',
-								color: '#b91c1c',
-								border: '1px solid #fecaca',
-								fontSize: '0.95rem',
-							}}>
-							{error}
-						</div>
-					) : null}
+				{error && <p className='login-error'>{error}</p>}
 
-					<button
-						type='submit'
-						disabled={loading}
-						style={{
-							marginTop: '8px',
-							padding: '12px 16px',
-							border: 'none',
-							borderRadius: '10px',
-							backgroundColor: loading ? '#94a3b8' : '#0f172a',
-							color: '#ffffff',
-							fontSize: '1rem',
-							fontWeight: 700,
-							cursor: loading ? 'not-allowed' : 'pointer',
-						}}>
-						{loading ? 'Signing in...' : 'Login'}
-					</button>
-				</form>
-				<p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#555' }}>
-					Don’t have an account?{' '}
-					<a
-						href='/register'
-						style={{
-							color: '#0077cc',
-							textDecoration: 'none',
-							fontWeight: '600',
-						}}>
-						Create one
-					</a>
-				</p>
-			</div>
+				<button type='submit' className='login-button' disabled={loading}>
+					{loading ? 'Signing in...' : 'Login'}
+				</button>
+			</form>
+
+			<p className='login-footer'>
+				Don’t have an account? <a href='/register'>Create one</a>
+			</p>
 		</div>
 	);
 }

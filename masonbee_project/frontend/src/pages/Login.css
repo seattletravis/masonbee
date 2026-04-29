@@ -1,0 +1,91 @@
+/* Container matches register page */
+.login-container {
+	max-width: 420px;
+	margin: 4rem auto;
+	padding: 2rem;
+	background: #ffffff;
+	border-radius: 12px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+	text-align: center;
+}
+
+/* Title */
+.login-title {
+	font-size: 1.6rem;
+	margin-bottom: 1.5rem;
+	color: #333;
+	font-weight: 600;
+}
+
+/* Form layout */
+.login-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+/* Inputs match register page */
+.login-input {
+	width: 75%;
+	margin: 0 auto;
+	padding: 0.75rem;
+	border-radius: 8px;
+	border: 1px solid #ccc;
+	font-size: 1rem;
+	transition: border-color 0.2s ease;
+	display: block;
+}
+
+.login-input:focus {
+	border-color: #0077cc;
+	outline: none;
+}
+
+/* Error box */
+.login-error {
+	width: 75%;
+	margin: 0 auto;
+	padding: 0.75rem;
+	border-radius: 8px;
+	background-color: #fef2f2;
+	color: #b91c1c;
+	border: 1px solid #fecaca;
+	font-size: 0.95rem;
+}
+
+/* Button matches register button */
+.login-button {
+	width: 82%;
+	margin: 0.75rem auto 0 auto;
+	padding: 0.75rem;
+	background: #333;
+	color: white;
+	border: none;
+	border-radius: 8px;
+	font-size: 1rem;
+	cursor: pointer;
+	font-weight: 600;
+	transition: background 0.2s ease;
+	display: block;
+}
+
+.login-button:hover {
+	background: #111;
+}
+
+/* Footer */
+.login-footer {
+	margin-top: 1.5rem;
+	font-size: 0.9rem;
+	color: #555;
+}
+
+.login-footer a {
+	color: #0077cc;
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.login-footer a:hover {
+	text-decoration: underline;
+}
