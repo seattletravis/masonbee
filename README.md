@@ -720,3 +720,131 @@ Strengthened the foundation for future educational content throughout the app.
 Tomorrow’s focus will shift to the Mason Bee Finder page — the most visually dynamic and interactive part of the app. This will include UI polish, map integration, and potentially more educational overlays.
 
 IMPORTANT TODO: ADD COMMUNITY GARDEN DATA FOR FEDERAL WAY, SEATAC, KENT, RENTON, LYNNWOOD, AND ISSAQUAH.
+
+🐝 Mason Bee Finder — Intelligent Seasonal Forecasting for Native Pollinators
+Mason Bee Finder is a full‑stack web application that helps gardeners, educators, and conservationists understand the seasonal lifecycle of mason bees based on real climate data. The app provides accurate emergence windows, active season timing, dormancy periods, and cocoon‑handling guidance — all tailored to the user’s location.
+
+This project is now live at:
+
+👉 https://themasonbee.com
+
+The public launch coincides with its submission to the Codex Creator Challenge, where the project demonstrates how AI‑assisted development can accelerate ecological tools that benefit real communities.
+
+🌱 What the App Does
+Mason bees are among the most efficient pollinators in North America, but their lifecycle is short and highly temperature‑dependent. This app helps users:
+
+Know when bees will emerge in their region
+
+Understand the full active pollination season
+
+Identify when bees enter dormancy
+
+Determine safe cocoon handling windows
+
+Know when cocoons must be placed outside for proper emergence
+
+The forecasting engine uses:
+
+Historical temperature data (Open‑Meteo Archive API)
+
+Rolling 14‑day averages to detect emergence thresholds
+
+Biologically accurate lifecycle modeling
+
+Geolocation or manual location input
+
+Automatic fallback to Seattle, WA when location is unavailable
+
+🔧 Recent Improvements (April 2026)
+The final development sprint focused on production polish, biological accuracy, and infrastructure reliability. Key updates include:
+
+✔ Accurate Active Season Modeling
+The active season now spans from the start of emergence through six weeks after the end of emergence, matching real mason bee biology.
+
+✔ Correct Next‑Event Logic
+The app now correctly transitions from:
+
+Emergence → Active Season → Dormancy → Next Year’s Emergence
+
+✔ Clean Forecast Engine Rewrite
+The forecasting logic was fully refactored for clarity, correctness, and maintainability.
+This includes:
+
+Corrected lifecycle windows
+
+Clearer event detection
+
+Better fallback behavior
+
+More intuitive status tags
+
+✔ Seattle Fallback Location
+If geolocation fails, the app automatically loads a forecast for Seattle, Washington, ensuring judges and users never hit a dead‑end screen.
+
+✔ Infrastructure Automation
+To support the public launch, the server now includes:
+
+Cloudflare DDNS automation (updates both root + www records)
+
+Cron‑based IP monitoring
+
+SSD health monitoring
+
+Automatic SSL certificate management (Certbot + Apache)
+
+These improvements ensure the site stays online even when the server’s public IP changes.
+
+🌐 Public Launch: themasonbee.com
+The project is now deployed and accessible at:
+
+👉 https://themasonbee.com
+
+The site is fully HTTPS‑secured, DNS‑automated, and optimized for real‑world use.
+This launch marks the first public release of the Mason Bee Finder tool.
+
+🎨 Built With
+React (frontend)
+
+Django (backend)
+
+Apache (production server)
+
+Cloudflare (DNS + security)
+
+Open‑Meteo API (climate data)
+
+Nominatim / OpenStreetMap (reverse geocoding)
+
+🤖 Codex Creator Challenge Submission
+This project was developed with the assistance of Microsoft Copilot (Codex) to accelerate:
+
+frontend component generation
+
+forecasting logic scaffolding
+
+UI polish
+
+documentation
+
+debugging
+
+infrastructure scripting
+
+The submission includes:
+
+the full GitHub repository
+
+a demo video walkthrough
+
+a description of how AI contributed to the development process
+
+The Mason Bee Finder demonstrates how AI‑assisted coding can support ecological stewardship by making scientific tools more accessible to everyday users.
+
+🐝 Why Mason Bees?
+Mason bees are gentle, solitary pollinators that outperform honey bees in early‑spring pollination. Their lifecycle is short, temperature‑driven, and easy to support — making them ideal for backyard gardeners and educators.
+
+This app helps people stay in sync with the natural rhythm of these important pollinators.
+
+📬 Feedback & Contributions
+Contributions, issues, and feature requests are welcome.
+If you’d like to help expand the forecasting model or add support for additional species, feel free to open a PR or issue.
