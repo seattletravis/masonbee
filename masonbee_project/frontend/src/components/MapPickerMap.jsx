@@ -24,7 +24,7 @@ function ResizeOnMount({ initialPosition }) {
 
 		setTimeout(() => {
 			map.invalidateSize();
-			map.setView(initialPosition, 16, { animate: false });
+			map.setView(initialPosition, 14, { animate: false });
 		}, 300);
 	}, [initialPosition]);
 
@@ -134,7 +134,7 @@ export default function MapPickerMap({ onTempChange, initialLocation }) {
 			{initialPosition && (
 				<MapContainer
 					center={initialPosition}
-					zoom={16}
+					zoom={14}
 					scrollWheelZoom={true}
 					className='map-picker-map'
 					whenCreated={(map) => setMapInstance(map)}>

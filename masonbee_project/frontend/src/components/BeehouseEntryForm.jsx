@@ -327,14 +327,14 @@ export default function BeehouseEntryForm({
 						<div className='location-buttons'>
 							<button
 								type='button'
-								className='button button-secondary'
+								className='button button-primary'
 								onClick={handleUseCurrentLocation}>
 								Use Current Location
 							</button>
 
 							<button
 								type='button'
-								className='button button-primary'
+								className='button button-secondary'
 								onClick={handleOpenMapPicker}>
 								Select on Map
 							</button>
