@@ -22,7 +22,7 @@
 
 /* Features section */
 .landing-features {
-	margin: 0 0 2rem;
+	margin: -0.5rem 0 2rem;
 	text-align: left;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .landing-register-btn {
-	width: 100%;
+	width: 90%;
 	text-align: center;
 }
 
