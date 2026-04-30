@@ -3,8 +3,10 @@ import * as api from '../api/client';
 import UserProfileForm from '../components/UserProfileForm';
 import './MyProfilePage.css';
 import './PageWrapperGlobal.css';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
 function MyProfilePage() {
+	const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 	const [profile, setProfile] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
@@ -55,20 +57,25 @@ function MyProfilePage() {
 
 					<p className='profile-bio'>{profile.bio || 'No bio added yet.'}</p>
 
-					{/* <div className='profile-details'>
-						<p>
-							<strong>Friend Request Notifications:</strong>{' '}
-							{profile.friend_request_notifications ? 'On' : 'Off'}
-						</p>
-					</div> */}
+					<div className='profile-button-row'>
+						<button
+							className='profile-edit-button'
+							onClick={() => setIsFormOpen(true)}>
+							Edit Profile
+						</button>
 
-					<button
-						className='profile-edit-button'
-						onClick={() => setIsFormOpen(true)}>
-						Edit Profile
-					</button>
+						<button
+							className='profile-edit-button secondary'
+							onClick={() => setIsPasswordModalOpen(true)}>
+							Change Password
+						</button>
+					</div>
 				</div>
 			)}
+			<ChangePasswordModal
+				isOpen={isPasswordModalOpen}
+				onClose={() => setIsPasswordModalOpen(false)}
+			/>
 
 			<UserProfileForm
 				isOpen={isFormOpen}

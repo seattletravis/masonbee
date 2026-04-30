@@ -1,7 +1,7 @@
 
 app_name = "api"
 from rest_framework.routers import DefaultRouter
-from .views import GardenViewSet, BeeHouseViewSet, BeeHouseEventViewSet, JournalEntryViewSet, default_garden, watched_gardens
+from .views import GardenViewSet, BeeHouseViewSet, BeeHouseEventViewSet, JournalEntryViewSet, default_garden, watched_gardens, change_password
 from django.urls import path
 from .beehouse_views import PublicBeehouseListView
 from .friend_views import (
@@ -48,8 +48,7 @@ urlpatterns = [
     path("verify-email/<uidb64>/<token>/", VerifyEmailView.as_view(), name="verify-email"),
     path("check-username/", CheckUsernameView.as_view()),
     path("check-email/", CheckEmailView.as_view()),
-
-
+    path("change-password/", change_password, name="change-password"),
 ]
 
 urlpatterns += router.urls

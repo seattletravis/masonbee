@@ -99,3 +99,40 @@
 	background: #1d4ed8;
 	transform: translateY(-1px);
 }
+.profile-button-row {
+	display: flex;
+	justify-content: center;
+	gap: 1rem;
+	margin-top: 1.25rem;
+	flex-wrap: wrap; /* ensures good behavior on small screens */
+}
+
+.profile-edit-button {
+	background: #2563eb;
+	color: white;
+	border: none;
+	padding: 0.65rem 1.25rem;
+	border-radius: 6px;
+	cursor: pointer;
+	font-size: 1rem;
+	font-weight: 600;
+	transition:
+		background 0.2s ease,
+		transform 0.2s ease;
+	min-width: 140px; /* makes both buttons visually balanced */
+	text-align: center;
+}
+
+.profile-edit-button:hover {
+	background: #1d4ed8;
+	transform: translateY(-1px);
+}
+
+/* Secondary button style */
+.profile-edit-button.secondary {
+	background: #6b7280;
+}
+
+.profile-edit-button.secondary:hover {
+	background: #4b5563;
+}
