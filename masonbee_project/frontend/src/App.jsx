@@ -20,6 +20,7 @@ import CheckEmail from './pages/CheckEmail';
 import EmailVerified from './pages/EmailVerified';
 import AboutPage from './pages/AboutPage';
 import PublicRoute from './auth/PublicRoute';
+import LandingPage from './pages/LandingPage';
 
 export default function App() {
 	return (
@@ -27,6 +28,15 @@ export default function App() {
 			<BrowserRouter>
 				<Routes>
 					<Route element={<MainLayout />}>
+						<Route
+							path='/'
+							element={
+								<PublicRoute>
+									<LandingPage />
+								</PublicRoute>
+							}
+						/>
+
 						{/* 🔒 AUTHENTICATED ROUTES */}
 						<Route
 							path='/dashboard'

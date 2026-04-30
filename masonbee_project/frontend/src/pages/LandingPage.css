@@ -1,0 +1,60 @@
+/* Full-page green background */
+.landing-wrapper {
+	min-height: 100vh;
+}
+
+/* Add spacing so the card sits below the PublicHeader */
+
+/* Reuse login-container but allow more content */
+.landing-container {
+	max-width: 480px;
+	padding-bottom: 2rem;
+}
+
+/* Subtitle under title */
+.landing-subtitle {
+	font-size: 1.15rem;
+	color: #444;
+	margin-top: -0.25rem;
+	margin-bottom: 1.75rem;
+	text-align: center;
+}
+
+/* Features section */
+.landing-features {
+	margin: 1.5rem 0 2rem;
+	text-align: left;
+}
+
+.landing-section-title {
+	font-size: 1.25rem;
+	margin-bottom: 0.75rem;
+	text-align: center;
+}
+
+.landing-feature-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.landing-feature-list li {
+	margin-bottom: 0.75rem;
+	line-height: 1.4;
+	font-size: 1rem;
+}
+
+/* CTA section */
+.landing-cta {
+	margin-top: 2rem;
+	text-align: center;
+}
+
+.landing-register-btn {
+	width: 100%;
+	text-align: center;
+}
+
+.landing-login-footer {
+	margin-top: 1rem;
+}
