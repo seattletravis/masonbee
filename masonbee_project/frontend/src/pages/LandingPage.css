@@ -22,7 +22,7 @@
 
 /* Features section */
 .landing-features {
-	margin: 1.5rem 0 2rem;
+	margin: 0 0 2rem;
 	text-align: left;
 }
 
@@ -46,7 +46,8 @@
 
 /* CTA section */
 .landing-cta {
-	margin-top: 2rem;
+	margin-top: 1rem;
+	width: 90%;
 	text-align: center;
 }
 
