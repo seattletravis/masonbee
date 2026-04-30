@@ -203,11 +203,11 @@ export function del(url) {
 }
 
 export async function createJournalEntry(payload) {
-	return post('/journal/', payload);
+	return post('/api/journal/', payload);
 }
 
 export async function updateJournalEntry(id, payload) {
-	return put(`/journal/${id}/`, payload);
+	return put(`/api/journal/${id}/`, payload);
 }
 
 export { setTokens, getTokens, clearTokens, setRefreshHandler, buildUrl };

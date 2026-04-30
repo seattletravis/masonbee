@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as api from '../api/client';
 import './JournalEntryForm.css';
@@ -13,8 +13,12 @@ function buildInitialFormState(entry, routeGardenId) {
 	return {
 		title: entry?.title || '',
 		date: entry?.date || new Date().toISOString().split('T')[0],
-		category: entry?.category || 'general',
-		garden: entry?.garden || routeGardenId || '',
+		category: entry?.category || 'observation',
+		garden: entry?.garden
+			? String(entry.garden)
+			: routeGardenId
+				? String(routeGardenId)
+				: '',
 		notes: entry?.notes || '',
 	};
 }
@@ -33,7 +37,7 @@ export default function JournalEntryForm({
 	const routeGardenId = searchParams.get('gardenId') || null;
 
 	const isEditing = Boolean(entry?.id);
-	const isGardenLocked = Boolean(routeGardenId);
+	const isGardenLocked = isEditing;
 
 	const [formData, setFormData] = useState(
 		buildInitialFormState(entry, routeGardenId),
@@ -168,6 +172,15 @@ export default function JournalEntryForm({
 			notes: formData.notes.trim(),
 		};
 
+		// ------------------------------------------------------------
+		// Validation: garden is required
+		// ------------------------------------------------------------
+		if (!payload.garden) {
+			setSubmitError('Please select a garden.');
+			setIsSubmitting(false);
+			return;
+		}
+
 		try {
 			if (isEditing) {
 				await api.updateJournalEntry(entry.id, payload);
@@ -241,34 +254,27 @@ export default function JournalEntryForm({
 						name='category'
 						value={formData.category}
 						onChange={handleChange}>
-						<option value='general'>General Observation</option>
-						<option value='bloom'>Bloom</option>
+						<option value='observation'>General Observation</option>
+						<option value='bloom'>Bloom / Flowering</option>
 						<option value='bee_activity'>Bee Activity</option>
 						<option value='maintenance'>Maintenance</option>
+						<option value='weather'>Weather Note</option>
+						<option value='other'>Other</option>
 					</select>
 				</label>
 
 				{/* GARDEN SELECT */}
-				{isGardenLocked ? (
-					<p className='locked-garden-label'>
-						<strong>Garden:</strong> {selectedGardenName}
-					</p>
-				) : (
-					<label>
-						Garden
-						<select
-							name='garden'
-							value={formData.garden}
-							onChange={handleChange}>
-							<option value=''>Select a garden</option>
-							{gardens.map((g) => (
-								<option key={g.id} value={g.id}>
-									{g.name}
-								</option>
-							))}
-						</select>
-					</label>
-				)}
+				<label>
+					Garden
+					<select name='garden' value={formData.garden} onChange={handleChange}>
+						<option value=''>Select a garden</option>
+						{gardens.map((g) => (
+							<option key={g.id} value={g.id}>
+								{g.name}
+							</option>
+						))}
+					</select>
+				</label>
 
 				{/* NOTES */}
 				<label>
@@ -296,6 +302,7 @@ export default function JournalEntryForm({
 					</button>
 				</div>
 			</form>
+			<div></div>
 		</div>
 	);
 }

@@ -87,22 +87,24 @@ function MyGardensPage() {
 
 	useEffect(() => {
 		async function hydrate() {
-			const updatedPinned = { ...pinned };
-
-			// Hydrate default garden
+			// 1. Hydrate default garden
 			if (defaultGarden?.id) {
 				const full = await get(`/api/gardens/${defaultGarden.id}/`);
 				if (full) setDefaultGarden(full);
 			}
 
-			// Hydrate pinned gardens
-			for (const key of Object.keys(updatedPinned)) {
-				const g = updatedPinned[key]?.garden;
+			// 2. Hydrate pinned gardens immutably
+			const updatedPinned = {};
+
+			for (const key of Object.keys(pinned)) {
+				const record = pinned[key];
+				const g = record?.garden;
+
 				if (g?.id) {
 					const full = await get(`/api/gardens/${g.id}/`);
-					if (full) {
-						updatedPinned[key].garden = full;
-					}
+					updatedPinned[key] = { garden: full || g };
+				} else {
+					updatedPinned[key] = record;
 				}
 			}
 
@@ -110,7 +112,7 @@ function MyGardensPage() {
 		}
 
 		hydrate();
-	}, [defaultGarden?.id, pinned ? Object.keys(pinned).length : 0]);
+	}, [defaultGarden?.id, Object.keys(pinned).join(',')]);
 
 	useEffect(() => {
 		if (!hydrating && !isAuthenticated) {

@@ -165,30 +165,31 @@ function Journal() {
 							Track blooms, bee activity, maintenance, and seasonal notes.
 						</p>
 					</div>
+					{!isFormOpen && (
+						<div
+							style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+							{!routeGardenId && gardenOptions.length > 0 && (
+								<select
+									className='journal-garden-select'
+									value={selectedGardenId}
+									onChange={(e) => setSelectedGardenId(e.target.value)}>
+									<option value='all'>All Gardens</option>
+									{gardenOptions.map((g) => (
+										<option key={g.id} value={g.id}>
+											{g.name}
+										</option>
+									))}
+								</select>
+							)}
 
-					<div
-						style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-						{!routeGardenId && gardenOptions.length > 0 && (
-							<select
-								className='journal-garden-select'
-								value={selectedGardenId}
-								onChange={(e) => setSelectedGardenId(e.target.value)}>
-								<option value='all'>All Gardens</option>
-								{gardenOptions.map((g) => (
-									<option key={g.id} value={g.id}>
-										{g.name}
-									</option>
-								))}
-							</select>
-						)}
-
-						<button
-							type='button'
-							className='journal-button journal-button-primary'
-							onClick={handleCreateClick}>
-							New Entry
-						</button>
-					</div>
+							<button
+								type='button'
+								className='journal-button journal-button-primary'
+								onClick={handleCreateClick}>
+								New Entry
+							</button>
+						</div>
+					)}
 				</header>
 
 				{loadError && <p className='journal-feedback error'>{loadError}</p>}
@@ -200,7 +201,7 @@ function Journal() {
 					</div>
 				)}
 
-				{!isLoading && displayedEntries.length === 0 && (
+				{!isFormOpen && !isLoading && displayedEntries.length === 0 && (
 					<div className='journal-state-card'>
 						<h2>No entries yet</h2>
 						<p>
@@ -210,7 +211,7 @@ function Journal() {
 					</div>
 				)}
 
-				{!isLoading && displayedEntries.length > 0 && (
+				{!isFormOpen && !isLoading && displayedEntries.length > 0 && (
 					<div className='journal-grid'>
 						{displayedEntries.map((entry) => {
 							const gardenName = getGardenName(entry);
@@ -273,7 +274,7 @@ function Journal() {
 									</div>
 
 									{/* INLINE EDIT FORM */}
-									{editingEntry?.id === entry.id && (
+									{!isFormOpen && editingEntry?.id === entry.id && (
 										<div className='inline-edit-container'>
 											<JournalEntryForm
 												isOpen={true}
@@ -290,6 +291,17 @@ function Journal() {
 							);
 						})}
 					</div>
+				)}
+				{isFormOpen && (
+					<JournalEntryForm
+						isOpen={true}
+						entry={entryBeingEdited}
+						onClose={handleCloseForm}
+						onSubmitSuccess={async () => {
+							await loadEntries();
+							setIsFormOpen(false);
+						}}
+					/>
 				)}
 			</div>
 		</div>

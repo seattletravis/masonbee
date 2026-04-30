@@ -128,3 +128,37 @@
 	opacity: 0.6;
 	cursor: not-allowed;
 }
+/* Scope all form buttons so global .journal-button styles can't override them */
+.journal-entry-form button.submit-btn,
+.journal-entry-form button.cancel-btn {
+	all: unset; /* wipe inherited/global button styles */
+	display: inline-block;
+	padding: 0.6rem 1.2rem;
+	border-radius: 6px;
+	font-size: 1rem;
+	cursor: pointer;
+	text-align: center;
+	box-sizing: border-box;
+}
+
+/* Primary submit button */
+.journal-entry-form button.submit-btn {
+	background: #2563eb;
+	color: white;
+	font-weight: 600;
+}
+
+.journal-entry-form button.submit-btn:hover {
+	background: #1d4ed8;
+}
+
+/* Secondary cancel button */
+.journal-entry-form button.cancel-btn {
+	background: #f3f4f6;
+	color: #374151;
+	border: 1px solid #d1d5db;
+}
+
+.journal-entry-form button.cancel-btn:hover {
+	background: #e5e7eb;
+}
