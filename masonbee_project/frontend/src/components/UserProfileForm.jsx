@@ -91,29 +91,6 @@ function UserProfileForm({ isOpen, onClose }) {
 						<textarea name='bio' value={formData.bio} onChange={handleChange} />
 					</label>
 
-					{/* <label className='checkbox-row'>
-						<input
-							type='checkbox'
-							name='friend_request_notifications'
-							checked={formData.friend_request_notifications}
-							onChange={handleChange}
-						/>
-						Allow Friend Requests
-					</label> */}
-
-					{/* <label>
-						Avatar
-						<input type='file' accept='image/*' onChange={handleAvatarChange} />
-					</label> */}
-
-					{/* {avatarPreview && (
-						<img
-							src={avatarPreview}
-							alt='Avatar preview'
-							className='profile-avatar-preview'
-						/>
-					)} */}
-
 					<div className='profile-form-buttons'>
 						<button type='button' className='cancel-btn' onClick={onClose}>
 							Cancel

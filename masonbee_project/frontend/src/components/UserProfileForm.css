@@ -84,3 +84,20 @@
 .save-btn:hover {
 	background: #1f63c7;
 }
+/* Prevent iOS zoom */
+.profile-form-container input[type='text'],
+.profile-form-container textarea {
+	font-size: 16px;
+}
+
+/* Make modal stable when keyboard opens */
+.profile-form-modal {
+	align-items: flex-start;
+	padding-top: 2rem;
+}
+
+/* Allow scrolling instead of zooming */
+.profile-form-container {
+	max-height: 90vh;
+	overflow-y: auto;
+}
