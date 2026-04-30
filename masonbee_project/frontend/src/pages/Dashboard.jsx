@@ -74,7 +74,7 @@ function Dashboard() {
 				<Link to='/resources' className='dashboard-card dashboard-card-link'>
 					<h2 className='card-title'>Bee Resources</h2>
 					<p className='card-text'>
-						Guides, plant lists, and how‑to articles for supporting mason bees.
+						Guides, plant lists, and how‑to articles for supporting masonbees.
 					</p>
 				</Link>
 			</div>
