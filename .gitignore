@@ -57,3 +57,7 @@ desktop.ini
 build/
 dist/
 *.egg-info/
+
+frontend_build/
+*.json
+requirements.bak
