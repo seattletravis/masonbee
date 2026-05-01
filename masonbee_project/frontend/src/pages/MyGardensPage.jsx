@@ -88,10 +88,10 @@ function MyGardensPage() {
 	useEffect(() => {
 		async function hydrate() {
 			// 1. Hydrate default garden
-			if (defaultGarden?.id) {
-				const full = await get(`/api/gardens/${defaultGarden.id}/`);
-				if (full) setDefaultGarden(full);
-			}
+			// if (defaultGarden?.id) {
+			// 	const full = await get(`/api/gardens/${defaultGarden.id}/`);
+			// 	if (full?.data) setDefaultGarden(full.data);
+			// }
 
 			// 2. Hydrate pinned gardens immutably
 			const updatedPinned = {};

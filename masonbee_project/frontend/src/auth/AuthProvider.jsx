@@ -1,7 +1,7 @@
 // src/auth/AuthProvider.jsx
 import { createContext, useContext, useEffect, useState } from 'react';
 import useAuth from './useAuth';
-import { getUserDefaultGarden } from '../api/gardens';
+import { getUserDefaultGarden, getPinnedGardens } from '../api/gardens';
 
 const AuthContext = createContext(null);
 
@@ -22,36 +22,53 @@ export default function AuthProvider({ children }) {
 	} = useAuth();
 
 	// -------------------------------------------------------------
-	// GARDEN STATE (needed by MyGardensPage)
+	// GARDEN STATE
 	// -------------------------------------------------------------
 	const [defaultGarden, setDefaultGarden] = useState(null);
-	const [pinned, setPinned] = useState({}); // MUST be an object
+	const [pinned, setPinned] = useState({}); // { [id]: { id, garden } }
 	const hasPinnedGardens = Object.keys(pinned).length > 0;
 
 	const [hydrating, setHydrating] = useState(true);
 
 	// -------------------------------------------------------------
-	// HYDRATE DEFAULT GARDEN ON LOGIN
+	// HYDRATE DEFAULT + PINNED GARDENS ON LOGIN
 	// -------------------------------------------------------------
 	useEffect(() => {
-		async function loadDefault() {
+		async function hydrate() {
 			if (!isAuthenticated) {
 				setDefaultGarden(null);
+				setPinned({});
 				setHydrating(false);
 				return;
 			}
 
 			try {
-				const garden = await getUserDefaultGarden();
-				setDefaultGarden(garden || null);
+				// 1. Load default garden
+				const dg = await getUserDefaultGarden();
+				setDefaultGarden(dg || null);
 			} catch {
 				setDefaultGarden(null);
+			}
+
+			try {
+				// 2. Load pinned gardens
+				const records = await getPinnedGardens();
+				// records = [{ id, garden }, ...]
+				const mapped = {};
+				for (const r of records) {
+					if (r?.garden?.id) {
+						mapped[r.garden.id] = r;
+					}
+				}
+				setPinned(mapped);
+			} catch {
+				setPinned({});
 			}
 
 			setHydrating(false);
 		}
 
-		loadDefault();
+		hydrate();
 	}, [isAuthenticated]);
 
 	// -------------------------------------------------------------

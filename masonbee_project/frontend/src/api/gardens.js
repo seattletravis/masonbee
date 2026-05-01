@@ -15,14 +15,7 @@ export function getGarden(id) {
 }
 
 export async function getUserDefaultGarden() {
-	const response = await get('/api/gardens/default/');
-
-	// ⭐ If request() returned null (404), return null safely
-	if (response === null) {
-		return null;
-	}
-
-	return response.data;
+	return await get('/api/gardens/default/');
 }
 
 export function createGarden(data) {
@@ -49,4 +42,8 @@ export async function unpinGarden(id) {
 
 export async function setDefaultGardenAPI(id) {
 	return post('/api/gardens/default/', { garden_id: id });
+}
+
+export async function getPinnedGardens() {
+	return await get('/api/gardens/watched/');
 }
