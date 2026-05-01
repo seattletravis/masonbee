@@ -848,3 +848,324 @@ This app helps people stay in sync with the natural rhythm of these important po
 📬 Feedback & Contributions
 Contributions, issues, and feature requests are welcome.
 If you’d like to help expand the forecasting model or add support for additional species, feel free to open a PR or issue.
+
+SOP for Adding Community Garden Data:
+🌱 SOP: Cleaning & Importing Public Garden Data into the Mason Bee Finder App
+Purpose
+Ensure all public garden data added to the Mason Bee Finder app is:
+
+clean
+
+consistent
+
+normalized
+
+deduplicated
+
+geocoded
+
+and aligned with the Garden model
+
+This SOP applies to all city‑verified gardens (community, public, or habitat gardens).
+
+🧩 1. Data Sources & Raw Ingestion
+1.1 Approved Sources
+Only import data from:
+
+City GIS portals (ArcGIS Open Data)
+
+County GIS portals (King County, Pierce County, etc.)
+
+Official city websites
+
+Verified CSV/Excel datasets from parks departments
+
+1.2 Save raw data exactly as received
+Before cleaning, store the raw file in:
+
+Code
+/data/raw/<city>/<YYYY-MM-DD>/
+Allowed formats:
+
+.geojson
+
+.csv
+
+.xlsx
+
+.shp (converted to geojson)
+
+1.3 Insert raw rows into a staging table
+Use a staging table to avoid polluting production:
+
+Code
+raw_gardens(city, source_id, name_raw, address_raw, lat_raw, lon_raw, metadata_raw, imported_at)
+This gives you a safe place to practice SQL daily.
+
+🧼 2. Cleaning & Normalization Rules
+These rules ensure every garden record matches your Django model.
+
+2.1 Name Cleaning
+Trim whitespace
+
+Convert ALL CAPS → Title Case
+
+Remove city prefixes (“City of Seattle –”)
+
+Remove suffixes like “(P-Patch)” unless it’s part of the official name
+
+If name is missing, derive from park name or amenity name
+
+SQL example:
+
+sql
+UPDATE raw_gardens
+SET name_clean = INITCAP(TRIM(name_raw))
+WHERE name_clean IS NULL;
+2.2 Garden Type Classification
+Map source types → your model’s garden_type:
+
+Source Keyword garden_type
+“Community Garden”, “P-Patch”, “Allotment” community
+“Habitat”, “Pollinator”, “Native Garden” public
+“Private”, “School Garden”, “Church Garden” private
+Unknown community
+
+Rule:  
+If the city manages it → community  
+If it’s a habitat/pollinator site → public  
+If owned by a user → private (never imported from public data)
+
+2.3 Habitat Type
+If the dataset includes habitat info:
+
+Normalize to lowercase
+
+Replace spaces with underscores
+
+Examples: pollinator, native_plants, rain_garden
+
+If missing → leave NULL.
+
+2.4 Address Normalization
+Trim whitespace
+
+Standardize abbreviations (St, Ave, Blvd, Rd)
+
+Remove trailing commas
+
+If missing, derive from coordinates via reverse geocoding (optional)
+
+SQL example:
+
+sql
+UPDATE raw_gardens
+SET address_clean = REGEXP_REPLACE(address_raw, '\s+', ' ', 'g');
+2.5 City & State
+Always set:
+
+Code
+city = "<City Name>"
+state = "WA"
+Even if the dataset includes it.
+
+This ensures consistency across all cities.
+
+2.6 Coordinates
+Convert to decimal(15,6)
+
+Ensure lat is positive (47.x)
+
+Ensure lon is negative (-122.x)
+
+If coordinates missing → skip the record (cannot map it)
+
+2.7 Neighborhood
+If provided:
+
+Title Case
+
+Remove “Neighborhood” suffix
+
+If missing → leave NULL (optional: derive via GIS polygon)
+
+2.8 Managed By
+Always set:
+
+Code
+managed_by = "<City Parks Department>"
+Examples:
+
+“Seattle Department of Neighborhoods”
+
+“Renton Parks & Recreation”
+
+“Issaquah Parks & Community Services”
+
+“Kent Parks Department”
+
+2.9 URL
+If the dataset includes a link → store it.
+If not → leave NULL.
+
+2.10 num_plots & size_sqft
+If provided → store.
+If missing → leave NULL.
+
+2.11 source_id (REQUIRED, UNIQUE)
+This is your deduplication key.
+
+Use:
+
+Code
+<city>:<original_id>
+Examples:
+
+seattle:12345
+
+renton:park_amenity_88
+
+issaquah:gis_447
+
+kent:feature_1022
+
+This prevents duplicates across cities.
+
+🔍 3. Deduplication Rules
+Before inserting into the real Garden table:
+
+A garden is considered a duplicate if:
+same source_id  
+OR
+
+same name + same city + coordinates within 10 meters
+
+SQL example:
+
+sql
+SELECT \*
+FROM gardens g
+JOIN new_cleaned_data n
+ON g.city = n.city
+AND g.name = n.name
+AND ST_DWithin(
+ST_MakePoint(g.longitude, g.latitude)::geography,
+ST_MakePoint(n.longitude, n.latitude)::geography,
+10
+);
+If duplicate → skip.
+
+🌿 4. Insert into the Real Garden Table
+Insert only cleaned fields:
+
+sql
+INSERT INTO gardens (
+name,
+garden_type,
+habitat_type,
+address,
+cross_streets,
+city,
+state,
+latitude,
+longitude,
+neighborhood,
+managed_by,
+url,
+num_plots,
+size_sqft,
+source_id,
+is_public
+)
+SELECT
+name_clean,
+garden_type,
+habitat_type,
+address_clean,
+cross_streets_clean,
+city,
+state,
+lat_clean,
+lon_clean,
+neighborhood_clean,
+managed_by,
+url_clean,
+num_plots_clean,
+size_sqft_clean,
+source_id,
+TRUE
+FROM cleaned_gardens;
+Rule:  
+All city‑verified gardens must have:
+
+Code
+is_public = TRUE
+owner = NULL
+Your model enforces this automatically.
+
+📦 5. Post‑Import Validation
+After inserting:
+
+Run these checks:
+5.1 Missing coordinates
+sql
+SELECT _ FROM gardens WHERE latitude IS NULL OR longitude IS NULL;
+5.2 Missing names
+sql
+SELECT _ FROM gardens WHERE name IS NULL OR name = '';
+5.3 Duplicate names in same city
+sql
+SELECT name, city, COUNT(_)
+FROM gardens
+GROUP BY name, city
+HAVING COUNT(_) > 1;
+5.4 Invalid garden types
+sql
+SELECT DISTINCT garden_type FROM gardens;
+🗂️ 6. Documentation & Versioning
+For each import:
+
+Save raw file
+
+Save cleaned file
+
+Save SQL scripts used
+
+Log the import in /data/logs/import_log.md
+
+Log entry example:
+
+Code
+2026-05-01 — Renton
+
+- Source: https://data-renton.opendata.arcgis.com
+- Raw rows: 42
+- Cleaned rows: 38
+- Inserted: 36
+- Skipped (duplicates): 2
+- Notes: One garden missing coordinates, excluded.
+
+--------------------Data Search Logs / Data Hunting for Public Community Garden Data ----------------
+
+Data Search and Cleaning Logs:
+City: Renton, WA
+Date: 2026-05-01
+Search Duration: 90 minutes
+
+Sources Checked:
+
+- City GIS Portal: Yes (Parks, Open Spaces, Trails, Trees, Bikeways, Boats, Golf)
+- County GIS Portal: Yes (King County amenities)
+- Parks & Rec Website: Yes
+- PDFs/Brochures: Yes
+- General Web Search: Yes
+- OSM/Google Maps: Yes
+
+Outcome:
+No authoritative or structured community garden data found.
+Renton does not encode gardens as GIS amenities. Parks dataset contains no amenity fields referencing gardens.
+
+Notes:
+Renton likely has no city-managed community garden program. Skip and move to next city.
+
+Next Log:
