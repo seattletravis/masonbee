@@ -15,7 +15,7 @@
 .landing-subtitle {
 	font-size: 1.15rem;
 	color: #444;
-	margin-top: -0.25rem;
+	margin-top: -0.75rem;
 	margin-bottom: 1.75rem;
 	text-align: center;
 }
@@ -46,13 +46,13 @@
 
 /* CTA section */
 .landing-cta {
-	margin-top: 1rem;
+	margin-top: -0.25rem;
 	width: 90%;
 	text-align: center;
 }
 
 .landing-register-btn {
-	width: 90%;
+	width: 100%;
 	text-align: center;
 }
 
