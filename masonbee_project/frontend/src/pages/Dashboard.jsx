@@ -9,9 +9,7 @@ function Dashboard() {
 		<div className='dashboard page-wrapper'>
 			<header className='dashboard-header'>
 				<h1 className='dashboard-title'>Dashboard</h1>
-				<p className='dashboard-subtitle'>
-					Welcome back — here’s what’s happening in your garden.
-				</p>
+				<p className='dashboard-subtitle'>Welcome back!</p>
 			</header>
 
 			<div className='dashboard-grid'>
