@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="garden",
             constraint=models.CheckConstraint(
-                condition=models.Q(
+                check=models.Q(
                     ("owner__isnull", True), ("is_public", False), _connector="OR"
                 ),
                 name="user_gardens_must_be_private",
