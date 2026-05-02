@@ -49,18 +49,17 @@ export default function Register() {
 			return;
 		}
 
-		const hasSpecial = /[^A-Za-z0-9]/.test(password);
 		const hasUpper = /[A-Z]/.test(password);
 		const hasNumber = /[0-9]/.test(password);
 
-		if (password.length < 8 || !hasSpecial) {
+		if (password.length < 8) {
 			setPasswordStrength('weak');
-		} else if (password.length >= 8 && hasSpecial && (hasUpper || hasNumber)) {
-			setPasswordStrength('medium');
-		} else if (password.length >= 10 && hasSpecial && hasUpper && hasNumber) {
+		} else if (password.length >= 10 && hasUpper && hasNumber) {
 			setPasswordStrength('strong');
-		} else {
+		} else if (password.length >= 8 && (hasUpper || hasNumber)) {
 			setPasswordStrength('medium');
+		} else {
+			setPasswordStrength('weak');
 		}
 	}, [password]);
 
@@ -142,9 +141,7 @@ export default function Register() {
 			return;
 		}
 		if (passwordStrength === 'weak') {
-			setError(
-				'Password must be at least 8 characters and include a special character.',
-			);
+			setError('Password must be at least 8 characters.');
 			return;
 		}
 		if (password !== confirmPassword) {
