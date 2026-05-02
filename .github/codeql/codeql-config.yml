@@ -1,0 +1,5 @@
+paths-ignore:
+  - '**/jsi18n*.js'
+  - '**/djangojs.js'
+  - '**/i18n_catalog.js'
+  - '**/i18n/*.js'
