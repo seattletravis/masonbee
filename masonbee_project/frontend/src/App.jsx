@@ -161,7 +161,7 @@ export default function App() {
 						<Route path='/about' element={<AboutPage />} />
 
 						{/* DEFAULT REDIRECT */}
-						<Route path='/' element={<Navigate to='/login' replace />} />
+						{/* <Route path='/' element={<Navigate to='/login' replace />} /> */}
 					</Route>
 				</Routes>
 			</BrowserRouter>
